@@ -1,0 +1,10 @@
+.vscode
+nohup.out
+vendor
+runtime/*
+__debug_bin
+.env.local
+# .env.develop
+.env.test
+.env.production
+absGoDev
