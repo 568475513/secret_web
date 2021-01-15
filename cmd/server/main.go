@@ -9,11 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/fvbock/endless"
 
-	"github.com/RichardKnop/machinery/v1/config"
-	"github.com/RichardKnop/machinery/v1/log"
-	"github.com/RichardKnop/machinery/v1/tasks"
-	"github.com/RichardKnop/machinery/v2"
-
 	"abs/pkg/conf"
 	"abs/cmd/server/routers"
 )
@@ -55,45 +50,9 @@ func main() {
 
 	// Server Start Error!!!
 	if err != nil {
-		log.Printf("Server err: %v", err)
+		log.Fatalf("Server err: %v", err)
 	}
 	// 关闭连接，这一步后期再考虑
 	// models.CloseDB()
 	log.Printf("[info] Start Http Server Listening %s", endPoint)
-}
-
-func startServer() (*machinery.Server, error) {
-	cnf := &config.Config{
-		DefaultQueue:    "machinery_tasks",
-		ResultsExpireIn: 3600,
-		Redis: &config.RedisConfig{
-			MaxIdle:                3,
-			IdleTimeout:            240,
-			ReadTimeout:            15,
-			WriteTimeout:           15,
-			ConnectTimeout:         15,
-			NormalTasksPollPeriod:  1000,
-			DelayedTasksPollPeriod: 500,
-		},
-	}
-
-	// Create server instance
-	broker := redisbroker.New(cnf, "localhost:6379", "", "", 0)
-	backend := redisbackend.New(cnf, "localhost:6379", "", "", 0)
-	lock := eagerlock.New()
-	server := machinery.NewServer(cnf, broker, backend, lock)
-
-	// Register tasks
-	tasks := map[string]interface{}{
-		"add":               exampletasks.Add,
-		"multiply":          exampletasks.Multiply,
-		"sum_ints":          exampletasks.SumInts,
-		"sum_floats":        exampletasks.SumFloats,
-		"concat":            exampletasks.Concat,
-		"split":             exampletasks.Split,
-		"panic_task":        exampletasks.PanicTask,
-		"long_running_task": exampletasks.LongRunningTask,
-	}
-
-	return server, server.RegisterTasks(tasks)
 }

@@ -7,8 +7,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing/opentracing-go"
+	"github.com/RichardKnop/machinery/v1/tasks"
 
 	"abs/pkg/app"
+	"abs/pkg/job"
 	"abs/pkg/enums"
 	"abs/pkg/util"
 	"abs/internal/server/repository/app_conf"
@@ -38,6 +40,27 @@ func GetBaseInfo(c *gin.Context) {
 	if err = app.ParseRequest(c, &req); err != nil {
 		return
 	}
+
+	addTask0 := &tasks.Signature{
+		Name: "add",
+		Args: []tasks.Arg{
+			{
+				Type:  "int64",
+				Value: 1,
+			},
+			{
+				Type:  "int64",
+				Value: 1,
+			},
+		},
+	}
+	asyncResult, err := job.Machinery.SendTask(addTask0)
+	fmt.Printf("res: %+v", asyncResult)
+	if err != nil {
+		app.FailWithMessage(fmt.Sprintf("队列错误: %s", err.Error()), enums.ERROR, c)
+		return
+	}
+
 	tracer := opentracing.GlobalTracer()
 	span := tracer.StartSpan("直播主业务调用链路", opentracing.ChildOf(app.GetTracingSpan(c)))
 	span.SetTag("params", req)

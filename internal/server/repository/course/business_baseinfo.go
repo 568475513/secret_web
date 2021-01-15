@@ -1,7 +1,6 @@
 package course
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
@@ -193,7 +192,6 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	// 版本是否过期和功能是否过期0-未过期 1-即将过期，2-过期，-1未购买
 	// 推流直播暂不加权限限制
 	// 该类型直播间是否可用开关 0-不可用  1-可用
-	fmt.Printf("fdsfsdfdsfds: %d,,,%d",aliveIsRemind,versionUse)
 	if b.Alive.AliveType == e.AliveTypePush {
 		aliveConf["alive_type_state"] = 1
 	} else if (aliveIsRemind == 1 || aliveIsRemind == 0) && versionUse == 1 {
