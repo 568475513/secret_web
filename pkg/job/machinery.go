@@ -5,12 +5,12 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/RichardKnop/machinery/v1/config"
+	"github.com/RichardKnop/machinery/v2"
 	backendsiface "github.com/RichardKnop/machinery/v1/backends/iface"
 	redisbackend "github.com/RichardKnop/machinery/v1/backends/redis"
 	redisbroker "github.com/RichardKnop/machinery/v1/brokers/redis"
-	"github.com/RichardKnop/machinery/v1/config"
 	lockiface "github.com/RichardKnop/machinery/v1/locks/iface"
-	"github.com/RichardKnop/machinery/v2"
 )
 
 var Machinery *machinery.Server
