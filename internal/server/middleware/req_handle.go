@@ -16,7 +16,7 @@ func ReqParamHandle() gin.HandlerFunc {
 		c.Set("app_version", c.GetHeader("XE_X_APP_VERSION"))
 		// c.Set("force_collection", c.GetHeader("XE_X_FORCE_COLLECTION"))
 		c.Set("buz_uri", c.GetHeader("XE_X_BUZ_URI"))
-		// c.Set("client_ip", c.GetHeader("XE_X_CLIENT_IP"))
+		c.Set("client_ip", c.GetHeader("XE_X_CLIENT_IP"))
 		// c.Set("buz_referer", c.GetHeader("XE_X_BUZ_REFERER"))
 		c.Set("agent", c.GetHeader("XE_X_AGENT"))
 		// c.Set("is_manager", c.GetHeader("XE_X_IS_MANAGER"))

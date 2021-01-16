@@ -2,11 +2,22 @@ package tasks
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/RichardKnop/machinery/v1/log"
 )
+
+// Add ...
+func InsertUserPurchaseLog(args ...int) (int64, error) {
+	log.INFO.Print("Long running task started")
+	for _, arg := range args {
+		fmt.Printf("ffdfdfdfdf:%+v", arg)
+	}
+	log.INFO.Print("Long running task finished")
+	return 1, nil
+}
 
 // Add ...
 func Add(args ...int64) (int64, error) {

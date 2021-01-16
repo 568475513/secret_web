@@ -500,25 +500,20 @@ func (a *AliveInfo) UpdateViewCountToCache(viewCount int) (int, error) {
 	if err != nil {
 		viewCountByRedis = 0
 	}
-	// log.Printf("%v", isExist)
-	// log.Printf("%v", setTime)
-	// log.Printf("%v", viewCountByRedis)
 
 	if isExist != 0 && setTime != 0 && viewCountByRedis != 0 {
 		// redis有值，判断是否到更新周期时间，到更新时间则更新到数据库，并重置key，没到更新周期则更新缓存
 		viewCount, _ = redis.Int(redisConn.Do("incr", viewCountKey))
-		// log.Printf("%s", "获取缓存")
-		// log.Printf("%v", viewCount)
 		if time.Now().Second()-setTime >= updateTime {
 			redisConn.Do("set", setTimeKey, time.Now().Second())
-			//直接数据库写入
+			// 直接数据库写入
 			err = alive.UpdateViewCount(a.AppId, a.AliveId, viewCount)
 			if err != nil {
 				return viewCount - 1, err
 			}
 		}
 	} else {
-		//写入redis
+		// 写入redis
 		redisConn.Do("sadd", viewCountSetKey, key)
 		redisConn.Do("set", setTimeKey, time.Now().Second())
 		redisConn.Do("set", viewCountKey, viewCount+1)
@@ -590,8 +585,8 @@ func (a *AliveInfo) updatePv(resourceId string, resourceType int) {
 		} else {
 			pv = pvInfo.ViewCount + 1
 		}
-		_, _ = redisConn.Do("sadd", allPvSetCacheKey, pvSetValue)
-		_, _ = redisConn.Do("set", pvRefreshCacheKey, time.Now().Second())
+		redisConn.Do("sadd", allPvSetCacheKey, pvSetValue)
+		redisConn.Do("set", pvRefreshCacheKey, time.Now().Second())
 	} else {
 		//有缓存的情况
 		pv, _ = redis.Int(redisConn.Do("get", pvCacheKey))
@@ -603,10 +598,10 @@ func (a *AliveInfo) updatePv(resourceId string, resourceType int) {
 				logging.Error(err)
 				return
 			}
-			_, _ = redisConn.Do("set", pvRefreshCacheKey, time.Now().Second())
+			redisConn.Do("set", pvRefreshCacheKey, time.Now().Second())
 		}
 	}
-	_, _ = redisConn.Do("set", pvCacheKey, pv)
+	redisConn.Do("set", pvCacheKey, pv)
 }
 
 // 店铺版本决定默认是否开启快直播，老版本默认关闭，其余开启
@@ -649,7 +644,7 @@ func (a *AliveInfo) canUseFastLive(versionType int) bool {
 	return false
 }
 
-//判断用户是否打开快直播
+// 判断用户是否打开快直播
 func (a *AliveInfo) isUseFastLive(userId string) (bool, error) {
 	conn, err := redis_alive.GetLiveInteractConn()
 	if err != nil {

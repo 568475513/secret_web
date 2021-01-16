@@ -2,15 +2,19 @@ package job
 
 import (
 	"log"
+	"runtime/debug"
 
-	"github.com/spf13/cobra"
-	"github.com/RichardKnop/machinery/v1/tasks"
+	jobLogging "github.com/RichardKnop/logging"
 	jobLog "github.com/RichardKnop/machinery/v1/log"
+	"github.com/RichardKnop/machinery/v1/tasks"
+	"github.com/spf13/cobra"
+
 	// tracers "github.com/RichardKnop/machinery/example/tracers"
 
+	jobTasks "abs/internal/job/tasks"
 	"abs/pkg/conf"
 	"abs/pkg/job"
-	jobTasks "abs/internal/job/tasks"
+	"abs/pkg/logging"
 )
 
 var env string
@@ -24,8 +28,12 @@ var Cmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// 初始化各项服务
 		initStep()
+		// 注册日志
+		jobLog.SetInfo(logging.JLogger[jobLogging.INFO])
+		jobLog.SetError(logging.JLogger[jobLogging.ERROR])
 		// Register tasks
 		taskLists := map[string]interface{}{
+			"insert_user_purchase_log": jobTasks.InsertUserPurchaseLog,
 			"add":               jobTasks.Add,
 			"multiply":          jobTasks.Multiply,
 			"sum_ints":          jobTasks.SumInts,
@@ -47,7 +55,7 @@ var Cmd = &cobra.Command{
 		// Here we inject some custom code for error handling,
 		// start and end of task hooks, useful for metrics for example.
 		errorhandler := func(err error) {
-			jobLog.ERROR.Println("I am an error handler:", err)
+			jobLog.ERROR.Printf("Error: [%s]\nstack: %s\n", err.Error(), (debug.Stack()))
 		}
 
 		pretaskhandler := func(signature *tasks.Signature) {
@@ -80,6 +88,8 @@ func initStep() {
 	// 初始化各项服务
 	// 配置加载
 	conf.Init(env)
+	// 初始化Job日志
+	logging.InitJob()
 	// 初始化队列服务
 	job.MachineryStartServer(queue)
 }

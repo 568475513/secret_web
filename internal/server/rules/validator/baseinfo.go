@@ -10,13 +10,14 @@ type BaseInfoRuleV2 struct {
 	PaymentType int    `form:"payment_type" json:"payment_type" binding:"required"`
 	ProductId   string `form:"product_id" json:"product_id"`
 	// 老的BaseInfo兼容参数
-	ChannelId    string `json:"channel_id" form:"channel_id"`
-	ShareUserId  string `json:"share_user_id" form:"share_user_id"`
-	ShareAgent   string `json:"share_agent" form:"share_agent"`
-	ShareType    int    `json:"share_type" form:"share_type"`
-	ShareFrom    string `json:"share_from" form:"share_from"`
-	ContentAppId string `json:"content_app_id" form:"content_app_id"`
-	MoreWay      string `json:"more_way" form:"more_way"`
+	ChannelId     string `json:"channel_id" form:"channel_id"`
+	ShareUserId   string `json:"share_user_id" form:"share_user_id"`
+	ShareAgent    string `json:"share_agent" form:"share_agent"`
+	ShareType     int    `json:"share_type" form:"share_type"`
+	ShareFrom     string `json:"share_from" form:"share_from"`
+	ContentAppId  string `json:"content_app_id" form:"content_app_id"`
+	MoreWay       string `json:"more_way" form:"more_way"`
+	UseCollection bool   `json:"use_collection" form:"use_collection"` // 判断小程序是否使用个人模式
 }
 
 // v2/baseinfo.go/GetSecondaryInfo

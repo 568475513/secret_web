@@ -7,10 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing/opentracing-go"
-	"github.com/RichardKnop/machinery/v1/tasks"
 
 	"abs/pkg/app"
-	"abs/pkg/job"
 	"abs/pkg/enums"
 	"abs/pkg/util"
 	"abs/internal/server/repository/app_conf"
@@ -37,30 +35,10 @@ func GetBaseInfo(c *gin.Context) {
 		req validator.BaseInfoRuleV2
 	)
 	userId := app.GetUserId(c)
+	appId := app.GetAppId(c)
 	if err = app.ParseRequest(c, &req); err != nil {
 		return
 	}
-
-	addTask0 := &tasks.Signature{
-		Name: "add",
-		Args: []tasks.Arg{
-			{
-				Type:  "int64",
-				Value: 1,
-			},
-			{
-				Type:  "int64",
-				Value: 1,
-			},
-		},
-	}
-	asyncResult, err := job.Machinery.SendTask(addTask0)
-	fmt.Printf("res: %+v", asyncResult)
-	if err != nil {
-		app.FailWithMessage(fmt.Sprintf("队列错误: %s", err.Error()), enums.ERROR, c)
-		return
-	}
-
 	tracer := opentracing.GlobalTracer()
 	span := tracer.StartSpan("直播主业务调用链路", opentracing.ChildOf(app.GetTracingSpan(c)))
 	span.SetTag("params", req)
@@ -69,7 +47,7 @@ func GetBaseInfo(c *gin.Context) {
 
 	// 获取直播详情内容
 	childSpan := tracer.StartSpan("获取直播详情内容", opentracing.ChildOf(span.Context()))
-	aliveRep := course.AliveInfo{AppId: req.AppId, AliveId: req.ResourceId}
+	aliveRep := course.AliveInfo{AppId: appId, AliveId: req.ResourceId}
 	aliveInfo, err := aliveRep.GetAliveInfo()
 	childSpan.Finish()
 	if err != nil {
@@ -83,7 +61,7 @@ func GetBaseInfo(c *gin.Context) {
 
 	// 直播专栏关联信息
 	childSpan = tracer.StartSpan("获取直播专栏关联信息", opentracing.ChildOf(span.Context()))
-	proRep := course.Product{AppId: req.AppId, ResourceId: req.ResourceId}
+	proRep := course.Product{AppId: appId, ResourceId: req.ResourceId}
 	aliveRelations, err := proRep.GetResourceRelation()
 	childSpan.Finish()
 	if err != nil {
@@ -106,9 +84,9 @@ func GetBaseInfo(c *gin.Context) {
 		userType         uint
 	)
 	// 初始化权益实例
-	ap := ruser.UserPowerBusiness(req.AppId, userId, c.GetInt("agent_type"))
+	ap := ruser.UserPowerBusiness(appId, userId, c.GetInt("agent_type"))
 	// 初始化店铺配置相关
-	appRep := app_conf.AppInfo{AppId: req.AppId}
+	appRep := app_conf.AppInfo{AppId: appId}
 	// 此处需要补充致命错误输出后立刻返回
 	err = app.GoroutineNotPanic(func() (err error) {
 		goSpan := tracer.StartSpan("查询次级业务数据", opentracing.ChildOf(childSpan.Context()))
@@ -211,7 +189,7 @@ func GetBaseInfo(c *gin.Context) {
 	aliveConf := baseInfoRep.GetAliveConfInfo(baseConf, aliveModule, req.PaymentType)
 	availableInfo := baseInfoRep.GetAvailableInfo(available, availableProduct, expireAt)
 	// 回放服务
-	lookBackRep := material.LookBack{AppId: req.AppId, AliveId: req.ResourceId}
+	lookBackRep := material.LookBack{AppId: appId, AliveId: req.ResourceId}
 	lookBackExpire, _ := lookBackRep.GetLookbackExpire(int(aliveInfo.IsLookback), aliveModule.LookbackTime)
 	// 补充回放过期信息
 	aliveConf["lookback_time"] = lookBackExpire["lookback_time"]
@@ -228,7 +206,7 @@ func GetBaseInfo(c *gin.Context) {
 		}
 	}
 	// 邀请好友免费听逻辑 免费 非加密
-	shareRes := marketing.Share{AppId: req.AppId, UserId: userId, ProductId: req.ProductId, Alive: aliveInfo}
+	shareRes := marketing.Share{AppId: appId, UserId: userId, ProductId: req.ProductId, Alive: aliveInfo}
 	shareInfo := shareRes.GetShareInfoInit(products)
 	if aliveInfo.PaymentType != enums.PaymentTypeFree || aliveInfo.HavePassword == 1 {
 		shareInfo = shareRes.GetShareInfo(available, availableProduct, shareInfo)
@@ -237,6 +215,11 @@ func GetBaseInfo(c *gin.Context) {
 			availableInfo["available"] = true
 		}
 	}
+	// 数据上报服务
+	dataAsyn := data.AsynData{AppId: appId, UserId: userId, ResourceId: req.ResourceId, ProductId: req.ProductId}
+	// 用户购买关系埋点上报
+	dataAsyn.AsynDataUserPurchase(c, available)
+
 	// 开始组装数据
 	data := make(map[string]interface{})
 	// 父级专栏信息列表
@@ -252,7 +235,7 @@ func GetBaseInfo(c *gin.Context) {
 	// 直播自定义文案
 	data["caption_define"] = baseInfoRep.GetCaptionDefine(baseConf.CaptionDefine)
 	// 首页链接
-	data["index_url"] = util.UrlWrapper("homepage", c.GetString("buz_uri"), req.AppId)
+	data["index_url"] = util.UrlWrapper("homepage", c.GetString("buz_uri"), appId)
 	childSpan.Finish()
 	// 页面是否跳转
 	if url, code, msg := baseInfoRep.BaseInfoPageRedirect(products, available, baseConf.VersionType, req); code != 0 {
@@ -406,7 +389,6 @@ func DataReported(c *gin.Context) {
 		Way:               1,
 	}
 
-
 	available, _ := ap.IsInsideAliveAccess(aliveInfo.Id)                                                                                                                 //权益
 	aliveState := aliveRep.GetAliveState(aliveInfo.ZbStartAt.Time, aliveInfo.ZbStopAt.Time, aliveInfo.ManualStopAt.Time, aliveInfo.RewindTime.Time, aliveInfo.PushState) //直播状态
 	if aliveInfo.AliveType == 1 && available {
@@ -455,24 +437,24 @@ func DataReported(c *gin.Context) {
 				}
 			}
 
-			userPurchase := &data.UserPurchaseData{
-				AppId:          aliveInfo.AppId,
-				UserId:         app.GetUserId(c),
-				RawUrl:         c.Request.URL.String(),
-				Url:            c.Request.URL.Path,
-				Referer:        c.Request.Referer(),
-				AppVersion:     req.AppVersion,
-				Agent:          c.Request.UserAgent(),
-				Client:         req.Client,
-				UserCollection: req.UseCollection,
-				Ip:             c.ClientIP(),
-				ResourceType:   strconv.Itoa(enums.ResourceTypeLive),
-				ResourceId:     req.ResourceId,
-				ProductId:      req.ProductId,
-				IsResourcePay:  available,
-			}
+			// userPurchase := &data.UserPurchaseData{
+			// 	AppId:          aliveInfo.AppId,
+			// 	UserId:         app.GetUserId(c),
+			// 	RawUrl:         c.Request.URL.String(),
+			// 	Url:            c.Request.URL.Path,
+			// 	Referer:        c.Request.Referer(),
+			// 	AppVersion:     req.AppVersion,
+			// 	Agent:          c.Request.UserAgent(),
+			// 	Client:         req.Client,
+			// 	UserCollection: req.UseCollection,
+			// 	Ip:             c.ClientIP(),
+			// 	ResourceType:   strconv.Itoa(enums.ResourceTypeLive),
+			// 	ResourceId:     req.ResourceId,
+			// 	ProductId:      req.ProductId,
+			// 	IsResourcePay:  available,
+			// }
 
-			data.InsertUserPurchaseLog(userPurchase)
+			// data.InsertUserPurchaseLog(userPurchase)
 			return nil
 		},
 	)

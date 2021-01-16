@@ -4,24 +4,29 @@ import (
 	"fmt"
 	"os"
 	"time"
+	"log"
 
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	jobLogging "github.com/RichardKnop/logging"
 
 	"abs/pkg/conf"
 	"abs/pkg/util"
+	"abs/pkg/file"
 )
 
 // 日志实列
 var (
 	// 调用链路打印对象
-	ZLogger *zap.Logger
+	ZLogger  *zap.Logger
 	// 封装日志打印对象
-	ILogger *zap.Logger
-	ELogger *zap.Logger
+	ILogger  *zap.Logger
+	ELogger  *zap.Logger
 	// Es日志对象
 	EsLogger *zap.Logger
+	// Job日志对象
+	JLogger  jobLogging.Logger
 )
 
 // 初始化调用日志
@@ -64,6 +69,17 @@ func InitZipkin() {
 	})
 	ZLogger = zap.New(zapcore.NewCore(encoder, writeSyncerZ, zapcore.InfoLevel))
 	fmt.Println(">>>初始化调用链路日志完成")
+}
+
+// 初始化Job打印日志对象
+func InitJob() {
+	F, err := file.MustOpen(fmt.Sprintf("/job_abs_go_%s.log", time.Now().Format(os.Getenv("TIMEFORMAT"))), os.Getenv("ES_LOG_PATCH"), false)
+	if err != nil {
+		log.Fatalf("InitJob JLogger Setup err: %v", err)
+	}
+
+	JLogger = jobLogging.New(F, nil, new(jobLogging.ColouredFormatter))
+	fmt.Println(">>>初始化Job日志完成")
 }
 
 // getLogFileName get the save name of the log file
