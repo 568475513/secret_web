@@ -4,10 +4,10 @@ import (
 	"log"
 	"runtime/debug"
 
-	jobLogging "github.com/RichardKnop/logging"
 	jobLog "github.com/RichardKnop/machinery/v1/log"
 	"github.com/RichardKnop/machinery/v1/tasks"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 
 	// tracers "github.com/RichardKnop/machinery/example/tracers"
 
@@ -29,8 +29,7 @@ var Cmd = &cobra.Command{
 		// 初始化各项服务
 		initStep()
 		// 注册日志
-		jobLog.SetInfo(logging.JLogger[jobLogging.INFO])
-		jobLog.SetError(logging.JLogger[jobLogging.ERROR])
+		// ...
 		// Register tasks
 		taskLists := map[string]interface{}{
 			"insert_user_purchase_log": jobTasks.InsertUserPurchaseLog,
@@ -56,6 +55,12 @@ var Cmd = &cobra.Command{
 		// start and end of task hooks, useful for metrics for example.
 		errorhandler := func(err error) {
 			jobLog.ERROR.Printf("Error: [%s]\nstack: %s\n", err.Error(), (debug.Stack()))
+			logging.JLogger.Error("[Recovery from panic]",
+				zap.Any("error", err),
+				zap.String("type", "panic"),
+				zap.String("module_name", "alive_server_go_job"),
+				zap.String("stack", string(debug.Stack())),
+			)
 		}
 
 		pretaskhandler := func(signature *tasks.Signature) {
