@@ -38,7 +38,7 @@ func (share *Share) GetShareInfo(available, availableProduct bool, shareInfo Sha
 		// 查询用户是否领取了 免费听
 		availShareInfo, err := business.GetAvailShareInfo(share.AppId, e.ResourceTypeLive, share.Alive.Id, share.ProductId, share.UserId)
 		if err != nil {
-			logging.Warn(err)
+			logging.Error(err)
 		}
 		if availShareInfo.Id != 0 {
 			// 如果已经领取了，取出分享人id，并查询领取人数
@@ -46,7 +46,7 @@ func (share *Share) GetShareInfo(available, availableProduct bool, shareInfo Sha
 			// 已领取人数
 			hasReceivedShare, err := business.GetHasReceivedShare(share.AppId, e.ResourceTypeLive, share.Alive.Id, share.ProductId, shareInfo.ShareUserId)
 			if err != nil {
-				logging.Warn(err.Error())
+				logging.Error(err)
 			}
 			for k, v := range hasReceivedShare {
 				if v.ReceiveUserId == share.UserId {
