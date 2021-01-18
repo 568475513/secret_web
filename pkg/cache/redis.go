@@ -62,6 +62,16 @@ func Init() {
 	fmt.Println(">>>初始化缓存连接池完成")
 }
 
+// Job Cmd Setup Initialize the Redis instance
+func InitJob() {
+	fmt.Println(">开始初始化Job缓存连接池...")
+	// 直播redis
+	if err := redis_alive.Init(); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(">>>初始化Job缓存连接池完成")
+}
+
 // 集群redis
 func defaultInit() error {
 	RedisConn = &redis.Pool{

@@ -11,10 +11,10 @@ type DataUage struct {
 	ResourceId     string  `json:"resource_id"`
 	ResourceType   int     `json:"resource_type"`
 	ResourceName   string  `json:"resource_name"`
-	Size           float32 `json:"size"`
-	SizeCompressed float32 `json:"size_compressed"`
-	ImgSizeTotal   float32 `json:"img_size_total"`
-	SizeTotal      float32 `json:"size_total"`
+	Size           float64 `json:"size"`
+	SizeCompressed float64 `json:"size_compressed"`
+	ImgSizeTotal   float64 `json:"img_size_total"`
+	SizeTotal      float64 `json:"size_total"`
 	WxAppType      int     `json:"wx_app_type"`
 	Way            int     `json:"way"`
 	Model

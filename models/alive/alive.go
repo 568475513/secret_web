@@ -66,8 +66,8 @@ type Alive struct {
 	IfPush                 uint8               `json:"if_push"`
 	CreateMode             uint8               `json:"create_mode"`
 	VideoLength            int64               `json:"video_length"`
-	VideoSize              float32             `json:"video_size"`
-	AliveM3u8HighSize      float32             `json:"alive_m3u8_high_size"`
+	VideoSize              float64             `json:"video_size"`
+	AliveM3u8HighSize      float64             `json:"alive_m3u8_high_size"`
 	ForbidTalk             uint8               `json:"forbid_talk"`
 	ShowOnWall             uint8               `json:"show_on_wall"`
 	CanRecord              uint8               `json:"can_record"`

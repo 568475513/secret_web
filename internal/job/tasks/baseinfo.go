@@ -1,77 +1,82 @@
 package tasks
 
 import (
-	"errors"
-	"fmt"
-	"strings"
+	"strconv"
 	"time"
 
 	"github.com/RichardKnop/machinery/v1/log"
+
+	"abs/internal/job/repository/data"
 )
 
-// Add ...
-func InsertUserPurchaseLog(args ...int) (int64, error) {
-	log.INFO.Print("Long running task started")
-	for _, arg := range args {
-		fmt.Printf("ffdfdfdfdf:%+v", arg)
+// 购买关系埋点 ...
+func InsertUserPurchaseLog(args ...string) (bool, error) {
+	client, _ := strconv.Atoi(args[7])
+	uCollect, _ := strconv.ParseBool(args[8])
+	available, _ := strconv.ParseBool(args[13])
+	dataRep := data.BuryingPoint{}
+	userPurchase := &data.UserPurchaseData{
+		AppId:          args[0],
+		UserId:         args[1],
+		RawUrl:         args[2],
+		Url:            args[3],
+		Referer:        args[4],
+		AppVersion:     args[5],
+		Agent:          args[6],
+		Client:         int8(client),
+		UserCollection: uCollect,
+		Ip:             args[9],
+		ResourceType:   args[10],
+		ResourceId:     args[11],
+		ProductId:      args[12],
+		IsResourcePay:  available,
 	}
-	log.INFO.Print("Long running task finished")
-	return 1, nil
+
+	dataRep.InsertUserPurchaseLog(userPurchase)
+	return true, nil
 }
 
-// Add ...
-func Add(args ...int64) (int64, error) {
-	sum := int64(0)
-	for _, arg := range args {
-		sum += arg
+// 增加渠道浏览量 ...
+func AddChannelViewCount(args ...string) (bool, error) {
+	// 渠道上报实例
+	channelRepository := &data.Channels{
+		AppId:       args[0],
+		ChannelId:   args[1],
+		ResourceId:  args[2],
+		PaymentType: args[3],
+		ProductId:   args[4],
 	}
-	return sum, nil
+
+	channelRepository.AddChannelViewCount()
+	return true, nil
 }
 
-// Multiply ...
-func Multiply(args ...int64) (int64, error) {
-	sum := int64(1)
-	for _, arg := range args {
-		sum *= arg
+// 直接上报流量 ...
+func InsertFlowRecord(args ...string) (bool, error) {
+	reourceType, _ := strconv.Atoi(args[2])
+	vidioSize, _ := strconv.ParseFloat(args[5], 64)
+	aliveM3u8HighSize, _ := strconv.ParseFloat(args[6], 64)
+	imgSizeTotal, _ := strconv.ParseFloat(args[7], 64)
+	wxAppType, _ := strconv.Atoi(args[8])
+	way, _ := strconv.Atoi(args[9])
+	// 流量上报实例
+	dataUageBusiness := &data.DataUageBusiness{}
+	// 流量上报处理
+	// 流量上报结构体
+	flowReportData := data.FlowReportData{
+		AppId:             args[0],
+		UserId:            args[1],
+		ResourceType:      reourceType,
+		AliveId:           args[3],
+		Title:             args[4],
+		VidioSize:         vidioSize,
+		AliveM3u8HighSize: aliveM3u8HighSize,
+		ImgSizeTotal:      imgSizeTotal,
+		WxAppType:         wxAppType,
+		Way:               way,
 	}
-	return sum, nil
-}
 
-// SumInts ...
-func SumInts(numbers []int64) (int64, error) {
-	var sum int64
-	for _, num := range numbers {
-		sum += num
-	}
-	return sum, nil
-}
-
-// SumFloats ...
-func SumFloats(numbers []float64) (float64, error) {
-	var sum float64
-	for _, num := range numbers {
-		sum += num
-	}
-	return sum, nil
-}
-
-// Concat ...
-func Concat(strs []string) (string, error) {
-	var res string
-	for _, s := range strs {
-		res += s
-	}
-	return res, nil
-}
-
-// Split ...
-func Split(str string) ([]string, error) {
-	return strings.Split(str, ""), nil
-}
-
-// PanicTask ...
-func PanicTask() (string, error) {
-	panic(errors.New("oops"))
+	return dataUageBusiness.InsertFlowRecord(flowReportData), nil
 }
 
 // LongRunningTask ...

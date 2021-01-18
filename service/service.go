@@ -15,20 +15,8 @@ import (
 	"time"
 
 	e "abs/pkg/enums"
-	"abs/pkg/logging"
 	"abs/pkg/util"
 )
-
-// example【固定返回code data msg ，超时返回code：504】
-// req := service.Post("http://134.175.50.30:8090/_intranet/subscription_by_alive")
-// req.SetParam("app_id", "apppchqltpt3482")
-// req.SetParam("alive_id", "l_5fcf093560b26028de242f0d")
-// req.SetParam("user_id", "u_5fcf09668ac71_usxlbqR8sD")
-// req.SetTimeout(1 * time.Microsecond)
-// data, err := req.ToMap()
-// if err != nil {
-//     fmt.Printf("err : %v", err)
-// }
 
 // http请求池配置
 const (
@@ -146,7 +134,7 @@ func (x *XiaoeHttpRequest) getResponse() (resp *http.Response, err error) {
 		data["msg"] = fmt.Sprintf("url: %s[request timeout: %s]", x.req.URL, x.settings.Timeout)
 		byteData, _ := util.JsonEncode(data)
 		// 这个Error得改
-		logging.Error(string(byteData))
+		// logging.Error(string(byteData))
 		resp = new(http.Response)
 		resp.Body = ioutil.NopCloser(bytes.NewBuffer(byteData))
 		resp.Body.Close()
@@ -310,7 +298,7 @@ func (x *XiaoeHttpRequest) Bytes() ([]byte, error) {
 		// 输出打印
 		fmt.Println(msg)
 		// 输出相关日志
-		logging.Info(msg)
+		// logging.Info(msg)
 	}
 	return body, err
 }

@@ -48,6 +48,7 @@ const (
 	// 直播类型
 	AliveTypeVideo = 1
 	AliveTypePush  = 2
+	AliveOldTypePush  = 4
 
 	//回放过期类型
 	LookBackExpireTypeNever = 1 //永久

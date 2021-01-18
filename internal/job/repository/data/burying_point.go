@@ -100,7 +100,7 @@ func (b *BuryingPoint) InsertUserPurchaseLog(field *UserPurchaseData) {
 	}
 	jsonLog, _ := json.Marshal(logData)
 	b.initBussinessLogger(1, 3, 1024*1024, func() string {
-		return fmt.Sprintf("user_purchase_log_%s", time.Now().Format("2006_01_02"))
+		return fmt.Sprintf("user_purchase_log_%s.log", time.Now().Format("2006_01_02"))
 	}, util.GetRuntimeDir())
 	bLogger.SuperInfo(string(jsonLog))
 }
@@ -111,15 +111,14 @@ func (b *BuryingPoint) initBussinessLogger(maxAge int, maxBackup int, maxSize in
 	if bLogger != nil {
 		return
 	}
-	fileName := BornFileName(rule)
 	bLogger = &bussinessLogger{}
 	bLogger.MaxAge = maxSize
 	bLogger.MaxSize = maxSize
-	bLogger.FileName = fileName
 	bLogger.MaxBackup = maxBackup
 	bLogger.Path = path
-	bLogger.Logger = initZapLogeer(bLogger.MaxSize, bLogger.MaxBackup, bLogger.MaxAge, path+"/"+bLogger.FileName)
 	bLogger.rule = rule
+	bLogger.FileName = BornFileName(rule)
+	bLogger.Logger = initZapLogeer(bLogger.MaxSize, bLogger.MaxBackup, bLogger.MaxAge, path + "/" + bLogger.FileName)
 }
 
 func (*bussinessLogger) SuperInfo(msg string) {
@@ -150,6 +149,5 @@ func initZapLogeer(maxSize int, maxBackup int, maxAge int, fileName string) *zap
 }
 
 func BornFileName(rule func() string) string {
-	bLogger.rule = rule
 	return rule()
 }

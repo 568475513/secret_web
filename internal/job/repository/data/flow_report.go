@@ -10,24 +10,20 @@ import (
 )
 
 const (
-	cacheRedisDataUage string = "alive_data_uage_%s"
-
-	// 缓存时间控制(秒)
-	// -
-	rdeisDataUageCacheTime = 60 * 60 * 3
-)
-
-// 数据来信
-const (
+	// 数据来源
 	Applets          = 0 // 小程序
 	OfficialAccounts = 1 // 公众号
-)
 
-// 统计方式
-const (
+	// 统计方式
 	FrontEnd     = 0 // 前端页面上报
 	BackEnd      = 1 // 后台直接上报
 	LoopPlayback = 2 // 循环播放统计
+
+	// Redis keys
+	cacheRedisDataUage string = "alive_data_uage_%s"
+	// 缓存时间控制(秒)
+	// -
+	redisDataUageCacheTime = 60 * 60 * 3
 )
 
 // 上报 DTO对象，直接操作PO多余得字段可能不好造成参数模糊
@@ -40,8 +36,8 @@ type FlowReportData struct {
 	VidioSize         float64 // 视频大小
 	AliveM3u8HighSize float64 // meu8大小
 	ImgSizeTotal      float64
-	WxAppType         int // 数据来源 0-小程序 1-公众号
-	Way               int // 统计方式：0-前端页面上报  1-后台直接上报 2-循环播放统计
+	WxAppType         int     // 数据来源 0-小程序 1-公众号
+	Way               int     // 统计方式：0-前端页面上报  1-后台直接上报 2-循环播放统计
 }
 
 type DataUageBusiness struct {
@@ -99,7 +95,7 @@ func (business *DataUageBusiness) BaseInsertFlowRecord(flowReportData FlowReport
 			}
 		}
 		// 缓存3小时，这个缓存出异常不会影响业务，会回源到DB查询
-		conn.Do("SET", cacheKey, 1, "EX", rdeisDataUageCacheTime)
+		conn.Do("SET", cacheKey, 1, "EX", redisDataUageCacheTime)
 	}
 	return data.InsertFlowRecord(dataUage)
 }

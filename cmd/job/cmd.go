@@ -8,10 +8,11 @@ import (
 	"github.com/RichardKnop/machinery/v1/tasks"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
-
 	// tracers "github.com/RichardKnop/machinery/example/tracers"
 
 	jobTasks "abs/internal/job/tasks"
+	"abs/models"
+	"abs/pkg/cache"
 	"abs/pkg/conf"
 	"abs/pkg/job"
 	"abs/pkg/logging"
@@ -33,14 +34,9 @@ var Cmd = &cobra.Command{
 		// Register tasks
 		taskLists := map[string]interface{}{
 			"insert_user_purchase_log": jobTasks.InsertUserPurchaseLog,
-			"add":               jobTasks.Add,
-			"multiply":          jobTasks.Multiply,
-			"sum_ints":          jobTasks.SumInts,
-			"sum_floats":        jobTasks.SumFloats,
-			"concat":            jobTasks.Concat,
-			"split":             jobTasks.Split,
-			"panic_task":        jobTasks.PanicTask,
-			"long_running_task": jobTasks.LongRunningTask,
+			"add_channel_view_count":   jobTasks.AddChannelViewCount,
+			"insert_flow_record":       jobTasks.InsertFlowRecord,
+			"long_running_task":        jobTasks.LongRunningTask,
 		}
 		// 注册任务函数
 		if err := job.Machinery.RegisterTasks(taskLists); err != nil {
@@ -57,7 +53,7 @@ var Cmd = &cobra.Command{
 			jobLog.ERROR.Printf("Error: [%s]\nstack: %s\n", err.Error(), (debug.Stack()))
 			logging.JLogger.Error("[Recovery from panic]",
 				zap.Any("error", err),
-				zap.String("type", "panic"),
+				zap.String("type", "error"),
 				zap.String("module_name", "alive_server_go_job"),
 				zap.String("stack", string(debug.Stack())),
 			)
@@ -95,6 +91,10 @@ func initStep() {
 	conf.Init(env)
 	// 初始化Job日志
 	logging.InitJob()
+	// 启动相关redis
+	cache.InitJob()
+	// 启动各数据库连接
+	models.InitJob()
 	// 初始化队列服务
 	job.MachineryStartServer(queue)
 }

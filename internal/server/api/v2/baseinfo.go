@@ -216,9 +216,15 @@ func GetBaseInfo(c *gin.Context) {
 		}
 	}
 	// 数据上报服务
-	dataAsyn := data.AsynData{AppId: appId, UserId: userId, ResourceId: req.ResourceId, ProductId: req.ProductId}
+	aT := time.Now()
+	dataAsyn := data.AsynData{AppId: appId, UserId: userId, ResourceId: req.ResourceId, ProductId: req.ProductId, PaymentType: int(aliveInfo.PaymentType)}
 	// 用户购买关系埋点上报
-	dataAsyn.AsynDataUserPurchase(c, available)
+	// dataAsyn.AsynDataUserPurchase(c, available)
+	// 增加渠道浏览量
+	dataAsyn.AsynChannelViewCount(req.ChannelId)
+	// 直接上报流量
+	// dataAsyn.AsynFlowRecord(aliveInfo, available, aliveInfoDetail["alive_state"].(int))
+	fmt.Println("异步队列处理时间: ", time.Since(aT))
 
 	// 开始组装数据
 	data := make(map[string]interface{})
@@ -340,12 +346,12 @@ func GetSecondaryInfo(c *gin.Context) {
 }
 
 // @Summary 直播间数据上报接口
+// 备份使用？
 func DataReported(c *gin.Context) {
 	var (
 		err error
 		req validator.DataReportedV2
 	)
-
 	//参数校验
 	if err = app.ParseRequest(c, &req); err != nil {
 		return
@@ -363,7 +369,6 @@ func DataReported(c *gin.Context) {
 	userId := app.GetUserId(c)
 	//初始化权益实例
 	ap := ruser.UserPowerBusiness(req.AppId, userId, c.GetInt("agent_type"))
-
 	//渠道上报实例
 	channelRepository := &data.Channels{
 		AppId:       req.AppId,
@@ -384,14 +389,14 @@ func DataReported(c *gin.Context) {
 		Title:             aliveInfo.Title.String,
 		VidioSize:         aliveInfo.VideoSize,
 		AliveM3u8HighSize: aliveInfo.AliveM3u8HighSize,
-		ImgSizeTotal:      float32(0),
+		ImgSizeTotal:      float64(0),
 		WxAppType:         1,
 		Way:               1,
 	}
 
 	available, _ := ap.IsInsideAliveAccess(aliveInfo.Id)                                                                                                                 //权益
 	aliveState := aliveRep.GetAliveState(aliveInfo.ZbStartAt.Time, aliveInfo.ZbStopAt.Time, aliveInfo.ManualStopAt.Time, aliveInfo.RewindTime.Time, aliveInfo.PushState) //直播状态
-	if aliveInfo.AliveType == 1 && available {
+	if aliveInfo.AliveType == 1 && available {                                                                                                                           //视频直播
 		//直播类型（如果直播结束就是回看类型）
 		switch aliveState {
 		case 1:
@@ -399,12 +404,12 @@ func DataReported(c *gin.Context) {
 		case 3:
 			flowReportData.ResourceType = 5
 		}
-	}
-	if aliveState == 2 || aliveState == 4 {
-		aliveInfo.AliveM3u8HighSize, aliveInfo.VideoSize = float32(0), float32(0)
-	} else {
-		if aliveInfo.AliveM3u8HighSize == 0 {
-			aliveInfo.AliveM3u8HighSize = aliveInfo.VideoSize
+	} else if (aliveInfo.AliveType == 2 || aliveInfo.AliveType == 4) && available { //推流直播上报流量
+		flowReportData.ResourceType = 6
+		if aliveState == 3 {
+			flowReportData.ResourceType = 5
+		} else {
+			flowReportData.VidioSize, flowReportData.AliveM3u8HighSize = float64(0), float64(0)
 		}
 	}
 
@@ -421,11 +426,8 @@ func DataReported(c *gin.Context) {
 			return nil
 		},
 		func() error {
-			//用户购买关系上报
-			available = false
-			if aliveInfo.IsPublic == 0 {
-				available, err = ap.IsInsideAliveAccess(req.ResourceId)
-			} else {
+			// 用户购买关系上报
+			if aliveInfo.IsPublic != 0 {
 				if aliveInfo.PaymentType == enums.PaymentTypeFree && aliveInfo.HavePassword != 1 && aliveInfo.State == 0 {
 					available = true
 				} else {
@@ -436,25 +438,8 @@ func DataReported(c *gin.Context) {
 					}
 				}
 			}
-
-			// userPurchase := &data.UserPurchaseData{
-			// 	AppId:          aliveInfo.AppId,
-			// 	UserId:         app.GetUserId(c),
-			// 	RawUrl:         c.Request.URL.String(),
-			// 	Url:            c.Request.URL.Path,
-			// 	Referer:        c.Request.Referer(),
-			// 	AppVersion:     req.AppVersion,
-			// 	Agent:          c.Request.UserAgent(),
-			// 	Client:         req.Client,
-			// 	UserCollection: req.UseCollection,
-			// 	Ip:             c.ClientIP(),
-			// 	ResourceType:   strconv.Itoa(enums.ResourceTypeLive),
-			// 	ResourceId:     req.ResourceId,
-			// 	ProductId:      req.ProductId,
-			// 	IsResourcePay:  available,
-			// }
-
-			// data.InsertUserPurchaseLog(userPurchase)
+			dataRep := data.BuryingPoint{AppId: req.AppId, UserId: userId, ResourceId: req.ResourceId, ProductId: req.ProductId}
+			dataRep.InsertDataUserPurchase(c, available)
 			return nil
 		},
 	)
