@@ -219,11 +219,11 @@ func GetBaseInfo(c *gin.Context) {
 	aT := time.Now()
 	dataAsyn := data.AsynData{AppId: appId, UserId: userId, ResourceId: req.ResourceId, ProductId: req.ProductId, PaymentType: int(aliveInfo.PaymentType)}
 	// 用户购买关系埋点上报
-	// dataAsyn.AsynDataUserPurchase(c, available)
+	dataAsyn.AsynDataUserPurchase(c, available)
 	// 增加渠道浏览量
 	dataAsyn.AsynChannelViewCount(req.ChannelId)
 	// 直接上报流量
-	// dataAsyn.AsynFlowRecord(aliveInfo, available, aliveInfoDetail["alive_state"].(int))
+	dataAsyn.AsynFlowRecord(aliveInfo, available, aliveInfoDetail["alive_state"].(int))
 	fmt.Println("异步队列处理时间: ", time.Since(aT))
 
 	// 开始组装数据
