@@ -1,0 +1,17 @@
+# 定义stage
+stages:
+  - deploy
+
+alive-go-feature:
+  stage: deploy
+  only:
+    - develop
+  script:
+    - cd /data/wwwroot/abs_go
+    - su www
+    - git pull
+  #    - nohup systemctl restart abs.service &
+  #    - ./alived.sh stop
+  #    - nohup ./alived.sh start &
+  tags:
+    - develop
