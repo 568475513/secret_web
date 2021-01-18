@@ -57,7 +57,7 @@ func Init(env string) {
 // production: 生产环境配置.
 func getEnvMode(env string) string {
 	// 没有环境变量默认本地配置
-	if env == "" {
+	if env == "" || env == "local" {
 		env = os.Getenv("GOENVMODE")
 		if env == "" {
 			env = "local"
