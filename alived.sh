@@ -19,7 +19,7 @@ if [ $1 == "start" ]; then
     echo "start..."
     cd ${dir}
     #   nohup go run main.go > ./runtime/run.log 2>&1 &
-    rm ./absGoDev
+    # rm ./absGoDev
     go build -tags=jsoniter -o absGoDev -ldflags "-w -s"
     if [ $# -eq 2 ] && [ $2 == "-d" ]; then
         nohup ./absGoDev server > ./runtime/run.log 2>&1 &
@@ -52,7 +52,7 @@ if [ $1 == "start" ]; then
   elif [ $1 == "startjob" ]; then
     echo "start job..."
     cd ${dir}
-    rm ./absGoDev
+    # rm ./absGoDev
     go build -tags=jsoniter -o absGoDev -ldflags "-w -s"
     if [ $# -eq 2 ] && [ $2 == "-d" ]; then
         nohup ./absGoDev job > ./runtime/runjob.log 2>&1 &
