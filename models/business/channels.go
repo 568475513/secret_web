@@ -20,7 +20,7 @@ func GetChannelInfo(appId string, channelId string) (*Channels, error) {
 		return nil, err
 	}
 
-	return &channelInDB, err
+	return &channelInDB, nil
 }
 
 func UpdateChannelViewCount(appId string, channelId string) error {
