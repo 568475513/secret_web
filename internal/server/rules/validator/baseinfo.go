@@ -7,7 +7,7 @@ type BaseInfoRuleV2 struct {
 	ResourceId string `form:"resource_id" json:"resource_id" binding:"required"`
 	Type       string `form:"type" json:"type" binding:"required"`
 	// ResourceType  string `form:"resource_type" json:"resource_type"`
-	PaymentType int    `form:"payment_type" json:"payment_type" binding:"required"`
+	PaymentType int    `form:"payment_type" json:"payment_type"`
 	ProductId   string `form:"product_id" json:"product_id"`
 	// 老的BaseInfo兼容参数
 	ChannelId     string `json:"channel_id" form:"channel_id"`
