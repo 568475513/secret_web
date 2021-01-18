@@ -27,6 +27,8 @@ type AsynData struct {
 func (a *AsynData) AsynDataUserPurchase(c *gin.Context, available bool) error {
 	addTask := &tasks.Signature{
 		Name: "insert_user_purchase_log",
+		RetryCount: 2,
+		RetryTimeout: 1,
 		Args: []tasks.Arg{
 			{
 				// Name:  "app_id",
