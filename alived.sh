@@ -19,7 +19,7 @@ if [ $1 == "start" ]; then
     echo "start..."
     cd ${dir}
     #   nohup go run main.go > ./runtime/run.log 2>&1 &
-    # rm ./absGoDev
+    # rm -f ./absGoDev
     go build -tags=jsoniter -o absGoDev -ldflags "-w -s"
     if [ $# -eq 2 ] && [ $2 == "-d" ]; then
         nohup ./absGoDev server > ./runtime/run.log 2>&1 &
@@ -33,9 +33,9 @@ if [ $1 == "start" ]; then
   elif [ $1 == "restart" ]; then
     echo "restart..."
     cd ${dir}
-    rm ./absGoDev
+    rm -f ./absGoDev
     go build -tags=jsoniter -o absGoDev -ldflags "-w -s"
-    ps aux | grep "absGoDev" | grep -v grep | awk '{print $2}' | xargs kill -9
+    ps aux | grep "absGoDev server" | grep -v grep | awk '{print $2}' | xargs kill -9
     if [ $# -eq 2 ] && [ $2 == "-d" ]; then
         nohup ./absGoDev server > ./runtime/run.log 2>&1 &
         # tail -n 20 ./runtime/run.log
@@ -46,14 +46,14 @@ if [ $1 == "start" ]; then
   # 停止服务
   elif [ $1 == "stop" ]; then
     echo "stop..."
-    ps aux | grep "absGoDev" | grep -v grep | awk '{print $2}' | xargs kill
+    ps aux | grep "absGoDev server" | grep -v grep | awk '{print $2}' | xargs kill
     echo "stop success!"
   # job服务系列
   elif [ $1 == "startjob" ]; then
     echo "start job..."
     cd ${dir}
     # rm ./absGoDev
-    go build -tags=jsoniter -o absGoDev -ldflags "-w -s"
+    # go build -tags=jsoniter -o absGoDev -ldflags "-w -s"
     if [ $# -eq 2 ] && [ $2 == "-d" ]; then
         nohup ./absGoDev job > ./runtime/runjob.log 2>&1 &
     else
@@ -63,9 +63,9 @@ if [ $1 == "start" ]; then
   elif [ $1 == "restartjob" ]; then
     echo "restart job..."
     cd ${dir}
-    rm ./absGoDev
+    rm -f ./absGoDev
     go build job -tags=jsoniter -o absGoDev -ldflags "-w -s"
-    ps aux | grep "absGoDev" | grep -v grep | awk '{print $2}' | xargs kill -9
+    ps aux | grep "absGoDev job" | grep -v grep | awk '{print $2}' | xargs kill -9
     if [ $# -eq 2 ] && [ $2 == "-d" ]; then
         nohup ./absGoDev job > ./runtime/runjob.log 2>&1 &
     else
@@ -74,6 +74,6 @@ if [ $1 == "start" ]; then
     echo "restart job success!"
   elif [ $1 == "stopjob" ]; then
     echo "stop job..."
-    ps aux | grep "absGoDev" | grep -v grep | awk '{print $2}' | xargs kill
+    ps aux | grep "absGoDev job" | grep -v grep | awk '{print $2}' | xargs kill
     echo "stop job success!"
 fi
