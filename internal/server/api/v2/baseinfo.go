@@ -217,10 +217,6 @@ func GetBaseInfo(c *gin.Context) {
 	}
 	// 分享免费听逻辑
 	shareListenInfo := shareRes.GetShareListenInfo(&shareInfo, available)
-	aliveShareInfo := map[string]interface{}{
-		"share_info":        shareInfo,
-		"share_listen_info": shareListenInfo,
-	}
 
 	// 数据上报服务
 	aT := time.Now()
@@ -246,7 +242,10 @@ func GetBaseInfo(c *gin.Context) {
 	// 直播配置信息
 	data["alive_conf"] = aliveConf
 	// 直播分享邀请免费听逻辑
-	data["share_info"] = aliveShareInfo
+	data["share_info"] = map[string]interface{}{
+		"share_info": shareInfo,
+		"share_listen_info": shareListenInfo,
+	}
 	// 直播自定义文案
 	data["caption_define"] = baseInfoRep.GetCaptionDefine(baseConf.CaptionDefine)
 	// 首页链接
