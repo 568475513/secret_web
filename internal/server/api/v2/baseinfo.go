@@ -8,9 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing/opentracing-go"
 
-	"abs/pkg/app"
-	"abs/pkg/enums"
-	"abs/pkg/util"
 	"abs/internal/server/repository/app_conf"
 	"abs/internal/server/repository/course"
 	"abs/internal/server/repository/data"
@@ -18,6 +15,9 @@ import (
 	"abs/internal/server/repository/material"
 	ruser "abs/internal/server/repository/user"
 	"abs/internal/server/rules/validator"
+	"abs/pkg/app"
+	"abs/pkg/enums"
+	"abs/pkg/util"
 
 	// Model层不可以直接调用，这里只能做变量初始化
 	malive "abs/models/alive"
