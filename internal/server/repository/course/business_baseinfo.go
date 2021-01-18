@@ -4,13 +4,13 @@ import (
 	"strconv"
 	"time"
 
+	"abs/internal/server/rules/validator"
 	"abs/models/alive"
 	"abs/models/business"
 	"abs/pkg/cache/alive_static"
 	e "abs/pkg/enums"
 	"abs/pkg/logging"
 	"abs/pkg/util"
-	"abs/internal/server/rules/validator"
 	"abs/service"
 )
 
@@ -125,7 +125,7 @@ func (b *BaseInfo) GetAvailableInfo(available, availableProduct bool, expireAt s
 }
 
 // 组装直播店铺配置信息
-func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *alive.AliveModuleConf, paymentType int) map[string]interface{} {
+func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *alive.AliveModuleConf) map[string]interface{} {
 	aliveConf := make(map[string]interface{})
 	// 店铺名称
 	aliveConf["wx_app_name"] = baseConf.ShopName
@@ -141,8 +141,6 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	aliveConf["has_reward"] = baseConf.HasReward
 	// 打赏提醒是否显示 0-全部显示 1-仅讲师和打赏者可见
 	aliveConf["is_show_reward"] = b.Alive.ConfigShowReward
-	// 是否有邀请功能
-	aliveConf["can_record"] = baseConf.HasInvite
 	// 共享文件插件开关 0-不可用  1-可用
 	aliveConf["share_file_switch"] = 0
 	// 学员上墙开关 0-不可用  1-可用
@@ -213,7 +211,7 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	}
 	// 打赏功能是否过期
 	if versionState["alive_reward_is_remind"].(int) == 2 || versionState["alive_reward_is_remind"].(int) == -1 {
-		aliveConf["reward_switch"] = 1
+		aliveConf["reward_switch"] = 0
 	}
 	// 隐藏直播间人次功能是否过期
 	// if versionState["alive_show_man_time_is_remind"].(int) == 1 || versionState["alive_show_man_time_is_remind"].(int) == 0 {
@@ -241,21 +239,12 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 		aliveConf["is_open_complete_time"] = 1
 	}
 
-	// 邀请卡排行版开关 邀请卡开关 去掉了？@kevinYang
-	// aliveConf["need_invite"] = false
-	// aliveConf["need_invite_list"] = false
-	// if baseConf.HasInvite == 1 &&
-	// 	(b.Alive.PaymentType == e.PaymentTypeFree || (paymentType == e.PaymentTypeSingle && b.Alive.PaymentType == e.PaymentTypeSingle) || paymentType == e.PaymentTypeProduct) {
-	// 	aliveConf["need_invite"] = true
-	// 	aliveConf["need_invite_list"] = true
-	// }
-
 	return aliveConf
 }
 
 // 直播静态页的信息采集【用户】
 func (b *BaseInfo) SetAliveUserToStaticRedis(userId string) {
-	err := alive_static.HsetNxString(staticAliveHashUser, b.Alive.Id + userId, 1, 3600*24)
+	err := alive_static.HsetNxString(staticAliveHashUser, b.Alive.Id+userId, 1, 3600*24)
 	if err != nil {
 		logging.Error(err)
 	}

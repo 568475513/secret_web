@@ -8,9 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing/opentracing-go"
 
-	"abs/pkg/app"
-	"abs/pkg/enums"
-	"abs/pkg/util"
 	"abs/internal/server/repository/app_conf"
 	"abs/internal/server/repository/course"
 	"abs/internal/server/repository/data"
@@ -18,6 +15,9 @@ import (
 	"abs/internal/server/repository/material"
 	ruser "abs/internal/server/repository/user"
 	"abs/internal/server/rules/validator"
+	"abs/pkg/app"
+	"abs/pkg/enums"
+	"abs/pkg/util"
 
 	// Model层不可以直接调用，这里只能做变量初始化
 	malive "abs/models/alive"
@@ -186,7 +186,7 @@ func GetBaseInfo(c *gin.Context) {
 	products = append(products, termList...)
 	baseInfoRep := course.BaseInfo{Alive: aliveInfo, AliveRep: &aliveRep, UserType: userType}
 	aliveInfoDetail := baseInfoRep.GetAliveInfoDetail(userId)
-	aliveConf := baseInfoRep.GetAliveConfInfo(baseConf, aliveModule, req.PaymentType)
+	aliveConf := baseInfoRep.GetAliveConfInfo(baseConf, aliveModule)
 	availableInfo := baseInfoRep.GetAvailableInfo(available, availableProduct, expireAt)
 	// 回放服务
 	lookBackRep := material.LookBack{AppId: appId, AliveId: req.ResourceId}
@@ -215,6 +215,9 @@ func GetBaseInfo(c *gin.Context) {
 			availableInfo["available"] = true
 		}
 	}
+	// 分享免费听逻辑
+	shareListenInfo := shareRes.GetShareListenInfo(&shareInfo, available)
+
 	// 数据上报服务
 	aT := time.Now()
 	dataAsyn := data.AsynData{AppId: appId, UserId: userId, ResourceId: req.ResourceId, ProductId: req.ProductId, PaymentType: int(aliveInfo.PaymentType)}
@@ -238,6 +241,11 @@ func GetBaseInfo(c *gin.Context) {
 	data["alive_play"] = alivePlayInfo
 	// 直播配置信息
 	data["alive_conf"] = aliveConf
+	// 直播分享邀请免费听逻辑
+	data["share_info"] = map[string]interface{}{
+		"share_info": shareInfo,
+		"share_listen_info": shareListenInfo,
+	}
 	// 直播自定义文案
 	data["caption_define"] = baseInfoRep.GetCaptionDefine(baseConf.CaptionDefine)
 	// 首页链接

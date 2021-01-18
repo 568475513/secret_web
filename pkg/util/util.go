@@ -165,17 +165,17 @@ func JudgeDate(versionType int, expireTime string) map[string]interface{} {
 
 	if expireTime != "0000-00-00 00:00:00" {
 		expireParse, _ := time.Parse("2006-01-02 15:04:05", expireTime)
-		expire := expireParse.Second()
+		expire := expireParse.Unix()
 		if versionType == 4 {
-			if time.Now().Second() > expire {
+			if time.Now().Unix() > expire {
 				result["time"] = expireTime
 				result["type"] = 1 //标准版已经过期
-			} else if expire-time.Now().Second() < 8*24*3600 {
+			} else if expire-time.Now().Unix() < 8*24*3600 {
 				result["time"] = expireTime
 				result["type"] = 2 //标准版即将过期
 			}
 		} else if versionType == 0 {
-			if time.Now().Second() > expire {
+			if time.Now().Unix() > expire {
 				result["time"] = expireTime
 				result["type"] = 3 //试用版已经过期
 			} else {
