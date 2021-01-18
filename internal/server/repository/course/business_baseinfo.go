@@ -125,7 +125,7 @@ func (b *BaseInfo) GetAvailableInfo(available, availableProduct bool, expireAt s
 }
 
 // 组装直播店铺配置信息
-func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *alive.AliveModuleConf, paymentType int) map[string]interface{} {
+func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *alive.AliveModuleConf) map[string]interface{} {
 	aliveConf := make(map[string]interface{})
 	// 店铺名称
 	aliveConf["wx_app_name"] = baseConf.ShopName
@@ -240,15 +240,6 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	} else {
 		aliveConf["is_open_complete_time"] = 1
 	}
-
-	// 邀请卡排行版开关 邀请卡开关 去掉了？@kevinYang
-	// aliveConf["need_invite"] = false
-	// aliveConf["need_invite_list"] = false
-	// if baseConf.HasInvite == 1 &&
-	// 	(b.Alive.PaymentType == e.PaymentTypeFree || (paymentType == e.PaymentTypeSingle && b.Alive.PaymentType == e.PaymentTypeSingle) || paymentType == e.PaymentTypeProduct) {
-	// 	aliveConf["need_invite"] = true
-	// 	aliveConf["need_invite_list"] = true
-	// }
 
 	return aliveConf
 }

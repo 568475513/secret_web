@@ -27,6 +27,7 @@ func (c *Channels) AddChannelViewCount() {
 		channelInDB, err := business.GetChannelInfo(c.AppId, c.ChannelId)
 		if err != nil {
 			logging.JLogger.Error(err.Error(), zap.Stack("stack"))
+			// logging.Error(err)
 			return
 		}
 		if channelInDB.ChannelType == 0 {
