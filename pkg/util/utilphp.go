@@ -91,10 +91,10 @@ func PutParmToStr(tempParam map[string]interface{}) (strBase64 string, err error
 }
 
 // 获取直播间地址
-func GetAliveRoomUrl(resourceId string, productId string, channelId string, appId string, extraData string) string {
-	params := map[string]string{
-		"type":          strconv.Itoa(e.PaymentTypeReward),
-		"resource_type": strconv.Itoa(e.ResourceTypeLive),
+func GetAliveRoomUrl(resourceId string, productId string, channelId string, appId string, extraData int) string {
+	params := map[string]interface{}{
+		"type":          e.PaymentTypeReward,
+		"resource_type": e.ResourceTypeLive,
 		"resource_id":   resourceId,
 		"product_id":    productId,
 		"channel_id":    channelId,

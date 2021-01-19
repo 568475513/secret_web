@@ -55,5 +55,5 @@ const (
 	LookBackExpireTypeFixed = 2 //固定日期
 
 	//直播房间页
-	AliveRoomPage = "0" // 直播房间页
+	AliveRoomPage = 0 // 直播房间页
 )
