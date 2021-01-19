@@ -196,6 +196,8 @@ func GetBaseInfo(c *gin.Context) {
 	// 补充讲师信息
 	aliveInfoDetail["user_title"] = roleInfo["user_title"]
 	aliveConf["is_can_exceptional"] = roleInfo["is_can_exceptional"]
+	// 补充老直播间链接
+	aliveInfoDetail["old_live_room_url"] = util.GetAliveRoomUrl(req.ResourceId, req.ProductId, req.ChannelId, req.AppId)
 	// 获取播放连接【错误处理需要仓库层打印】
 	alivePlayInfo, _ := aliveRep.GetAliveLiveUrl(aliveInfo.AliveType, c.GetInt("agent_type"), userId, aliveInfo.PlayUrl, aliveInfo.ChannelId, baseConf.VersionType)
 	// 直播静态操作
