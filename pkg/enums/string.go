@@ -46,11 +46,14 @@ const (
 	AliveStateDelete = 2
 
 	// 直播类型
-	AliveTypeVideo = 1
-	AliveTypePush  = 2
-	AliveOldTypePush  = 4
+	AliveTypeVideo   = 1
+	AliveTypePush    = 2
+	AliveOldTypePush = 4
 
 	//回放过期类型
 	LookBackExpireTypeNever = 1 //永久
 	LookBackExpireTypeFixed = 2 //固定日期
+
+	//直播房间页
+	AliveRoomPage = "0" // 直播房间页
 )
