@@ -171,6 +171,10 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	if versionState := util.JudgeDate(baseConf.VersionType, baseConf.ExpireTime); versionState["type"] == 1 || versionState["type"] == 3 {
 		versionUse = 0
 	}
+	//开启PC网校 0为关闭 1为开启
+	aliveConf["open_pc_network_school"] = baseConf.IsEnable
+	//PC网校自定义域名
+	aliveConf["pc_network_school_index_url"] = baseConf.PcCustomDomain
 
 	// 版本过期信息
 	versionState := b.getAppExpireTime(baseConf.Profit)

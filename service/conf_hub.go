@@ -36,6 +36,8 @@ type ConfHubInfo struct {
 	Extra    map[string]interface{} `json:"extra"`
 	H5Custom map[string]interface{} `json:"h5_custom"`
 	Safe     map[string]interface{} `json:"safe"`
+	Pc       map[string]interface{} `json:"pc"`
+	Domain   map[string]interface{} `json:"domain"`
 }
 
 // 店铺基本配置
@@ -59,7 +61,11 @@ type AppBaseConf struct {
 	OnlyH5Play          int `json:"only_h5_play"`
 	VideoPlayerType     int `json:"video_player_type"` // 0-默认播放器 1-自研播放器 (默认0)
 	// profit
-	Profit          map[string]interface{} `json:"profit"`
+	Profit map[string]interface{} `json:"profit"`
+	// pc
+	IsEnable int `json:"is_enable"` //是否启用PC：0-否，1-是
+	// domain
+	PcCustomDomain string `json:"pc_custom_domain"` //pc店铺自定义域名(无schema前缀)
 }
 
 // 配置中心获取配置，传入fields中需要获取的字段。
