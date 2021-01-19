@@ -197,7 +197,7 @@ func GetBaseInfo(c *gin.Context) {
 	aliveInfoDetail["user_title"] = roleInfo["user_title"]
 	aliveConf["is_can_exceptional"] = roleInfo["is_can_exceptional"]
 	// 补充老直播间链接
-	aliveInfoDetail["old_live_room_url"] = util.GetAliveRoomUrl(req.ResourceId, req.ProductId, req.ChannelId, req.AppId)
+	aliveInfoDetail["old_live_room_url"] = util.GetAliveRoomUrl(req.ResourceId, req.ProductId, req.ChannelId, req.AppId, enums.AliveRoomPage)
 	// 获取播放连接【错误处理需要仓库层打印】
 	alivePlayInfo, _ := aliveRep.GetAliveLiveUrl(aliveInfo.AliveType, c.GetInt("agent_type"), userId, aliveInfo.PlayUrl, aliveInfo.ChannelId, baseConf.VersionType)
 	// 直播静态操作
@@ -206,6 +206,10 @@ func GetBaseInfo(c *gin.Context) {
 		if aliveInfo.PaymentType == 1 {
 			baseInfoRep.SetAliveUserToStaticRedis(userId)
 		}
+	}
+	// 判断是否是讲师,讲师不用付费
+	if !availableInfo["available"].(bool) && userType == 1 {
+		availableInfo["available"] = true
 	}
 	// 邀请好友免费听逻辑 免费 非加密
 	shareRes := marketing.Share{AppId: appId, UserId: userId, ProductId: req.ProductId, Alive: aliveInfo}
