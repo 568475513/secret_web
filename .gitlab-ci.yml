@@ -12,7 +12,7 @@ abs-go:
     - cd /data/wwwroot/abs_go
     - su www
     - git pull
-    # - ./alived.sh restart -d
+    - ./alived.sh restart -d
   tags:
     - abs-go
 
