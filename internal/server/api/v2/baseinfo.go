@@ -129,6 +129,10 @@ func GetBaseInfo(c *gin.Context) {
 				}
 			}
 		}
+		// 判断是否是讲师,讲师不用付费
+		if !available && userType == 1 {
+			available = true
+		}
 		return
 	}, func() (err error) {
 		// 专栏权益

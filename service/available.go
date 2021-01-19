@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"time"
@@ -68,9 +67,6 @@ func (ava *AvailableService) IsResourceAvailable(params ResourceAvailable) (expi
 	request.SetHeader("Content-Type", "application/json")
 	request.SetTimeout(availableTimeout * time.Millisecond)
 	result, err := request.ToMap()
-	log.Println("权益请求：", ava)
-	log.Println("权益请求：", params)
-	log.Println("权益请求：", result)
 	if err != nil {
 		logging.Error(fmt.Sprintf("权益IsResourceAvailable，Http获取错误：%s", err.Error()))
 		return
