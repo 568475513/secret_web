@@ -33,7 +33,7 @@ func InitRouter() *gin.Engine {
 	// 处理公共请求参数以及网关转发参数
 	r.Use(middleware.ReqParamHandle())
 	// 调用链路zipkin
-	r.Use(middleware.ZipkinTracer())
+	r.Use(middleware.ZipkinTracer(true))
 
 	// 此处可写公共路由...
 	// 健康检测接口

@@ -1,8 +1,10 @@
 # 定义stage
 stages:
   - deploy
+  - tstbuild
+  - tstdeploy
 
-alive-go-feature:
+abs-go:
   stage: deploy
   only:
     - develop
@@ -10,8 +12,28 @@ alive-go-feature:
     - cd /data/wwwroot/abs_go
     - su www
     - git pull
-  #    - nohup systemctl restart abs.service &
-  #    - ./alived.sh stop
-  #    - nohup ./alived.sh start &
+    # - ./alived.sh restart -d
   tags:
-    - develop
+    - abs-go
+
+# 测试环境自动化部署
+tst_build:
+  stage: tstbuild
+  only:
+    - /.*\.t.*$/
+  script:
+    - src_path=`pwd`
+    - cicd_package $src_path
+    # - ./alived.sh restart -d
+  tags:
+    - TEST_BUILD_DEPLOY
+
+tst_deploy:
+  stage: tstdeploy
+  only:
+    - /.*\.t.*$/
+  script:
+    - cicd_deploy $CI_PROJECT_NAME $CI_COMMIT_TAG
+    # - ./alived.sh restart -d
+  tags:
+    - TEST_BUILD_DEPLOY

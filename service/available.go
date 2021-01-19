@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"time"
@@ -44,7 +45,7 @@ const (
 	// 资源是否可用
 	cmdIsResourceAvailable = "/isResourceAvailable"
 	// 权益超时设置ms[time.Millisecond]
-	availableTimeout = 1000
+	availableTimeout = 700
 )
 
 // 用户权益请求
@@ -67,6 +68,9 @@ func (ava *AvailableService) IsResourceAvailable(params ResourceAvailable) (expi
 	request.SetHeader("Content-Type", "application/json")
 	request.SetTimeout(availableTimeout * time.Millisecond)
 	result, err := request.ToMap()
+	log.Println("权益请求：", ava)
+	log.Println("权益请求：", params)
+	log.Println("权益请求：", result)
 	if err != nil {
 		logging.Error(fmt.Sprintf("权益IsResourceAvailable，Http获取错误：%s", err.Error()))
 		return
