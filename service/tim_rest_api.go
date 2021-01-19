@@ -21,6 +21,5 @@ func (t *TimeRestApi) GenerateUserSig() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	// ...
 	return string(result), nil
 }
