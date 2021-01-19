@@ -33,7 +33,6 @@ const (
 	appConfSwitchCacheTime = "120"
 	// 配置中心配置
 	confHubInfoCacheTime = "60"
-
 )
 
 // 已废弃，请忽使用！！！
@@ -183,7 +182,7 @@ func (a *AppInfo) GetConfHubInfo() (baseConf *service.AppBaseConf, err error) {
 
 	// 获取配置服务
 	conInfo := service.ConfHubServer{AppId: a.AppId, WxAppType: 1}
-	result, err := conInfo.GetConf([]string{"base", "version", "profit", "switches", "extra", "h5_custom", "safe"})
+	result, err := conInfo.GetConf([]string{"base", "version", "profit", "switches", "extra", "h5_custom", "safe", "pc", "domain"})
 	if err != nil {
 		return
 	}
@@ -221,7 +220,8 @@ func (a *AppInfo) handleConfResult(result service.ConfHubInfo) *service.AppBaseC
 		RelateSellInfo:      int(result.H5Custom["relate_sell_info"].(float64)),
 		VideoPlayerType:     int(result.H5Custom["video_player_type"].(float64)),
 		// 新增在这里加
-		// ...
+		PcCustomDomain: result.Domain["pc_custom_domain"].(string),
+		IsEnable:       int(result.Pc["is_enable"].(float64)),
 		// 是否只有H5观看
 		OnlyH5Play: int(result.Safe["only_h5_play"].(float64)),
 		// Profit数据
