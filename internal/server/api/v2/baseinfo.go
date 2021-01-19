@@ -207,10 +207,6 @@ func GetBaseInfo(c *gin.Context) {
 			baseInfoRep.SetAliveUserToStaticRedis(userId)
 		}
 	}
-	// 判断是否是讲师,讲师不用付费
-	if !availableInfo["available"].(bool) && userType == 1 {
-		availableInfo["available"] = true
-	}
 	// 邀请好友免费听逻辑 免费 非加密
 	shareRes := marketing.Share{AppId: appId, UserId: userId, ProductId: req.ProductId, Alive: aliveInfo}
 	shareInfo := shareRes.GetShareInfoInit(products)
