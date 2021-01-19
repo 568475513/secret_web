@@ -51,7 +51,7 @@ func (b *BaseInfo) GetAliveInfoDetail(userId string) map[string]interface{} {
 	// 直播类型（语音/视频）0-语音直播，1-视频直播 2-推流直播
 	aliveInfoDetail["alive_type"] = b.Alive.AliveType
 	// 获取直播状态
-	aliveInfoDetail["alive_state"] = b.AliveRep.GetAliveState(b.Alive.ZbStartAt.Time, b.Alive.ZbStopAt.Time, b.Alive.ManualStopAt.Time, b.Alive.RewindTime.Time, b.Alive.PushState)
+	aliveInfoDetail["alive_state"] = b.AliveRep.GetAliveStates(b.Alive)
 	// 推流状态，0推流结束，1推流中，2推流未开始
 	aliveInfoDetail["push_state"] = b.Alive.PushState
 	// 直播剩余时长（秒）

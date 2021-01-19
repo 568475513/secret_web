@@ -13,6 +13,7 @@ import (
 	"abs/models/sub_business"
 	"abs/pkg/cache/redis_alive"
 	"abs/pkg/cache/redis_gray"
+	"abs/pkg/enums"
 	e "abs/pkg/enums"
 	"abs/pkg/logging"
 	"abs/pkg/util"
@@ -244,21 +245,45 @@ func (a *AliveInfo) GetAliveRoomIsBan() bool {
 
 // 获取直播回放链接的状态
 func (a *AliveInfo) GetAliveLookBackStates(aliveInfo *alive.Alive) (aliveState int) {
-	//now := time.Now()
-
-	if aliveInfo.AliveType == 2 || aliveInfo.AliveType == 4 { //视频直播
+	if aliveInfo.AliveType == enums.AliveTypePush || aliveInfo.AliveType == enums.AliveOldTypePush {
+		// 视频推流直播
 		aliveState = a.GetAliveState(aliveInfo.ZbStartAt.Time, aliveInfo.ZbStopAt.Time, aliveInfo.ManualStopAt.Time, aliveInfo.RewindTime.Time, aliveInfo.PushState)
-		//if aliveState == 2 {
-		//	//zbStopAt := time.Unix(now.Unix(), 0).Format("2006-01-02 15:04:05")
-		//}
-	} else if aliveInfo.AliveType == 1 {
-		//视频直播状态
+	} else if aliveInfo.AliveType == enums.AliveTypeVideo {
+		// 视频直播状态
 		aliveState = a.GetAliveStateUtils(aliveInfo.ZbStartAt.Time, aliveInfo.VideoLength, aliveInfo.ManualStopAt.Time, aliveInfo.ZbStopAt.Time)
 	} else {
-		//语音或ppt直播
+		// 语音或ppt直播
 		aliveState = a.GetAliveStateForOthers(aliveInfo.ZbStartAt.Time, aliveInfo.ManualStopAt.Time, aliveInfo.ZbStopAt.Time)
 	}
+	return
+}
 
+// 获取直播的状态
+func (a *AliveInfo) GetAliveStates(aliveInfo *alive.Alive) (aliveState int) {
+	now := time.Now()
+	if aliveInfo.AliveType == enums.AliveTypePush || aliveInfo.AliveType == enums.AliveOldTypePush {
+		// 视频推流直播
+		aliveState = a.GetAliveState(aliveInfo.ZbStartAt.Time, aliveInfo.ZbStopAt.Time, aliveInfo.ManualStopAt.Time, aliveInfo.RewindTime.Time, aliveInfo.PushState)
+		// 互动状态默认互动时间为五分钟
+		if aliveState == enums.AliveTypePush {
+			aliveInfo.ZbStopAt.Time = aliveInfo.ZbStopAt.Time.Add(300 * time.Second)
+		}
+		// 直播已经开始（提前开始解决提前开始倒计时问题）
+		if aliveState != 0 {
+			if aliveInfo.ZbStartAt.Time.Add(60 * time.Second).After(now) {
+				aliveInfo.ZbStartAt.Time = now
+			}
+			// 提前一分钟，避免客户端与服务器的时间差
+			m, _ := time.ParseDuration("-1m")
+			aliveInfo.ZbStartAt.Time = aliveInfo.ZbStartAt.Time.Add(m)
+		}
+	} else if aliveInfo.AliveType == enums.AliveTypeVideo {
+		// 视频直播状态
+		aliveState = a.GetAliveStateUtils(aliveInfo.ZbStartAt.Time, aliveInfo.VideoLength, aliveInfo.ManualStopAt.Time, aliveInfo.ZbStopAt.Time)
+	} else {
+		// 语音或ppt直播
+		aliveState = a.GetAliveStateForOthers(aliveInfo.ZbStartAt.Time, aliveInfo.ManualStopAt.Time, aliveInfo.ZbStopAt.Time)
+	}
 	return
 }
 
