@@ -129,10 +129,6 @@ func GetBaseInfo(c *gin.Context) {
 				}
 			}
 		}
-		// 判断是否是讲师,讲师不用付费
-		if !available && userType == 1 {
-			available = true
-		}
 		return
 	}, func() (err error) {
 		// 专栏权益
@@ -212,6 +208,10 @@ func GetBaseInfo(c *gin.Context) {
 		if aliveInfo.PaymentType == 1 {
 			baseInfoRep.SetAliveUserToStaticRedis(userId)
 		}
+	}
+	// 判断是否是讲师,讲师不用付费
+	if !available && userType == 1 {
+		available = true
 	}
 	// 邀请好友免费听逻辑 免费 非加密
 	shareRes := marketing.Share{AppId: appId, UserId: userId, ProductId: req.ProductId, Alive: aliveInfo}
