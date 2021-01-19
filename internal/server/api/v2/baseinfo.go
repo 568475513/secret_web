@@ -2,7 +2,6 @@ package v2
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
@@ -36,7 +35,6 @@ func GetBaseInfo(c *gin.Context) {
 		req validator.BaseInfoRuleV2
 	)
 	userId := app.GetUserId(c)
-	log.Println(userId)
 	appId := app.GetAppId(c)
 	if err = app.ParseRequest(c, &req); err != nil {
 		return
@@ -210,8 +208,8 @@ func GetBaseInfo(c *gin.Context) {
 		}
 	}
 	// 判断是否是讲师,讲师不用付费
-	if !available && userType == 1 {
-		available = true
+	if !availableInfo["available"].(bool) && userType == 1 {
+		availableInfo["available"] = true
 	}
 	// 邀请好友免费听逻辑 免费 非加密
 	shareRes := marketing.Share{AppId: appId, UserId: userId, ProductId: req.ProductId, Alive: aliveInfo}
