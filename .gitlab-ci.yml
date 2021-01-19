@@ -14,4 +14,4 @@ abs-go:
   #    - ./alived.sh stop
   #    - nohup ./alived.sh start &
   tags:
-    - develop
+    - abs-go
