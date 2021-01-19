@@ -91,7 +91,7 @@ func PutParmToStr(tempParam map[string]interface{}) (strBase64 string, err error
 }
 
 // 获取直播间地址
-func GetAliveRoomUrl(resourceId string, productId string, channelId string, appId string) string {
+func GetAliveRoomUrl(resourceId string, productId string, channelId string, appId string, extraData string) string {
 	params := map[string]string{
 		"type":          strconv.Itoa(e.PaymentTypeReward),
 		"resource_type": strconv.Itoa(e.ResourceTypeLive),
@@ -99,6 +99,7 @@ func GetAliveRoomUrl(resourceId string, productId string, channelId string, appI
 		"product_id":    productId,
 		"channel_id":    channelId,
 		"app_id":        appId,
+		"extra_data":    extraData,
 	}
 	return fmt.Sprintf("/content_page/%s", SafeBase64Encode(params))
 }
