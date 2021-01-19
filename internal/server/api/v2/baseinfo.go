@@ -2,6 +2,7 @@ package v2
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -35,6 +36,7 @@ func GetBaseInfo(c *gin.Context) {
 		req validator.BaseInfoRuleV2
 	)
 	userId := app.GetUserId(c)
+	log.Println(userId)
 	appId := app.GetAppId(c)
 	if err = app.ParseRequest(c, &req); err != nil {
 		return
