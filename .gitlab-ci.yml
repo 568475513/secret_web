@@ -2,7 +2,7 @@
 stages:
   - deploy
 
-alive-go-feature:
+abs-go:
   stage: deploy
   only:
     - develop
