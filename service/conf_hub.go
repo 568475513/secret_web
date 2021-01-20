@@ -53,10 +53,10 @@ type AppBaseConf struct {
 	// extra 相关
 	CaptionDefine string `json:"caption_define"` // 直播自定义文案
 	// 开关相关
-	HasReward           int // 是否有打赏功能
-	HasInvite           int // 是否有邀请功能
-	AuthenticState      int
-	IsShowResourcecount int
+	HasReward           int `json:"has_reward"` // 是否有打赏功能
+	HasInvite           int `json:"has_invite"` // 是否有邀请功能
+	AuthenticState      int `json:"authentic_state"`
+	IsShowResourcecount int `json:"is_show_resourcecount"`
 	RelateSellInfo      int `json:"relate_sell_info"` // 是否显示关联售卖界面，默认1-显示，0-不显示
 	OnlyH5Play          int `json:"only_h5_play"`
 	VideoPlayerType     int `json:"video_player_type"` // 0-默认播放器 1-自研播放器 (默认0)

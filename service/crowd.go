@@ -16,7 +16,7 @@ const (
 	// 查看封禁BuzServer版本
 	GetUserBlackStatusUrlByBuz = "crowd/get_user_resource_auth"
 	// 超时设置ms
-	timeoutCrowd = 500
+	timeoutCrowd = 700
 )
 
 // 用户黑名单服务

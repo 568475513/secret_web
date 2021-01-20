@@ -2,7 +2,6 @@ package v2
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
@@ -36,7 +35,6 @@ func GetBaseInfo(c *gin.Context) {
 		req validator.BaseInfoRuleV2
 	)
 	userId := app.GetUserId(c)
-	log.Println(userId)
 	appId := app.GetAppId(c)
 	if err = app.ParseRequest(c, &req); err != nil {
 		return
@@ -299,9 +297,9 @@ func GetSecondaryInfo(c *gin.Context) {
 		userInfo, err = userRep.GetUserInfo()
 		return
 	}, func() (err error) {
-		// 查询用户是否在黑名单
+		// 查询用户是否在黑名单【返回错误不抛出】
 		blackInfo, err = userRep.GetUserBlackStates()
-		return
+		return nil
 	}, func() (err error) {
 		// 查询短信预约总开关
 		appMsgSwitch, err = appRep.GetAppConfSwitchState()

@@ -51,7 +51,7 @@ func (b *BaseInfo) GetAliveInfoDetail(userId string) map[string]interface{} {
 	// 直播类型（语音/视频）0-语音直播，1-视频直播 2-推流直播
 	aliveInfoDetail["alive_type"] = b.Alive.AliveType
 	// 获取直播状态
-	aliveInfoDetail["alive_state"] = b.AliveRep.GetAliveState(b.Alive.ZbStartAt.Time, b.Alive.ZbStopAt.Time, b.Alive.ManualStopAt.Time, b.Alive.RewindTime.Time, b.Alive.PushState)
+	aliveInfoDetail["alive_state"] = b.AliveRep.GetAliveStates(b.Alive)
 	// 推流状态，0推流结束，1推流中，2推流未开始
 	aliveInfoDetail["push_state"] = b.Alive.PushState
 	// 直播剩余时长（秒）
@@ -109,6 +109,10 @@ func (b *BaseInfo) GetAvailableInfo(available, availableProduct bool, expireAt s
 	availableInfo["have_password"] = b.Alive.HavePassword
 	availableInfo["is_try"] = b.Alive.IsTry
 	availableInfo["is_public"] = b.Alive.IsPublic
+	// 判断是否是讲师,讲师不用付费
+	if !available && b.UserType == 1 {
+		availableInfo["available"] = true
+	}
 	// 买赠功能
 	// availableInfo["gift_buy"] = 0
 	// if b.Alive.State == 1 {
@@ -399,7 +403,7 @@ func (b *BaseInfo) getAppExpireTime(profit map[string]interface{}) map[string]in
 			if v == "video" || v == "alive_push" || v == "alive_video_voice" {
 				result[v+"_is_remind"] = 1
 			} else {
-				expireTime, _ := time.Parse("2006-01-02 03:04:05", permissionArray[v].(string))
+				expireTime, _ := time.Parse("2006-01-02 15:04:05", permissionArray[v].(string))
 				leftTime := expireTime.Unix() - time.Now().Unix()
 				result[v+"_expire_time"] = permissionArray[v]
 
