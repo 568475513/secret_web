@@ -174,10 +174,11 @@ func (a *AppInfo) GetConfHubInfo() (baseConf *service.AppBaseConf, err error) {
 	cacheKey := fmt.Sprintf(shopInfoKey, a.AppId)
 	info, err := redis.Bytes(conn.Do("GET", cacheKey))
 	if err == nil {
-		confHubInfo := service.ConfHubInfo{}
-		util.JsonDecode(info, &confHubInfo)
-		baseConf = a.handleConfResult(confHubInfo)
-		return
+		if err = util.JsonDecode(info, &baseConf); err != nil {
+			logging.Error(err)
+		} else {
+			return
+		}
 	}
 
 	// 获取配置服务
@@ -190,8 +191,8 @@ func (a *AppInfo) GetConfHubInfo() (baseConf *service.AppBaseConf, err error) {
 	baseConf = a.handleConfResult(result)
 
 	// 缓存
-	if confHubInfoBytes, err := util.JsonEncode(result); err == nil {
-		if _, err = conn.Do("SET", cacheKey, confHubInfoBytes, "EX", confHubInfoCacheTime); err != nil {
+	if baseConfBytes, err := util.JsonEncode(baseConf); err == nil {
+		if _, err = conn.Do("SET", cacheKey, baseConfBytes, "EX", confHubInfoCacheTime); err != nil {
 			logging.Error(err)
 		}
 	}
