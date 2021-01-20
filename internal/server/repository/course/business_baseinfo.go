@@ -403,7 +403,7 @@ func (b *BaseInfo) getAppExpireTime(profit map[string]interface{}) map[string]in
 			if v == "video" || v == "alive_push" || v == "alive_video_voice" {
 				result[v+"_is_remind"] = 1
 			} else {
-				expireTime, _ := time.Parse("2006-01-02 03:04:05", permissionArray[v].(string))
+				expireTime, _ := time.Parse("2006-01-02 15:04:05", permissionArray[v].(string))
 				leftTime := expireTime.Unix() - time.Now().Unix()
 				result[v+"_expire_time"] = permissionArray[v]
 
