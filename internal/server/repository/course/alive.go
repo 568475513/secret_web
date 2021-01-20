@@ -34,9 +34,10 @@ const (
 	staticAliveHashId   = "hash_static_alive_id_%s"
 	staticAliveHashUser = "hash_static_alive_user_%s"
 	// view_count店铺id跟直播id集合
-	viewCountSetKey     = "view_count_set_key"
-	viewCountTimeKeyNew = "view_count_update_set_time_new:%s:%s"
-	aliveViewCountNew   = "alive_view_count_new:%s:%s" // 直播访问量
+	viewCountSetKey      = "view_count_set_key"
+	viewCountTimeKeyNew  = "view_count_update_set_time_new:%s:%s"
+	aliveViewCountNew    = "alive_view_count_new:%s:%s"     // 直播访问量
+	forbiddenUserListKey = "forbidden_user_list_key:%s:%s"  // 直播禁言
 	// 带货PV
 	pvCacheKeyPre    = "alive_take_goods_pv:%s:%s:%s"              // pv缓存键
 	timeCacheKeyPre  = "alive_take_goods_pv_refresh_time:%s:%s:%s" // pv缓存上一次刷新时间键
@@ -228,6 +229,27 @@ func (a *AliveInfo) GetAliveImIsShow(roomId, userId string) (isShow int) {
 		return
 	}
 	if aliveForbids.IsUseful > 0 {
+		isShow = 0
+	}
+	return
+}
+
+// 查询直播是否被禁言【Redis版】
+// 暂时不可用，可问jessica
+func (a *AliveInfo) GetAliveImIsShowForRedis(roomId, userId string) (isShow int) {
+	isShow = 1
+	conn, _ := redis_alive.GetForbiddenUserConn()
+	defer conn.Close()
+
+	cacheKey := fmt.Sprintf(forbiddenUserListKey, a.AppId, roomId)
+	isExist, err := redis.Int(conn.Do("HEXISTS", cacheKey, userId, userId))
+	if err != nil {
+		logging.Error(err)
+		return
+	}
+
+	// 存在即被禁言
+	if isExist == 1 {
 		isShow = 0
 	}
 	return
