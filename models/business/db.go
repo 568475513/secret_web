@@ -54,8 +54,8 @@ func Init() {
 	// 日志[生产必须关闭！]
 	if os.Getenv("RUNMODE") == "debug" {
 		db.LogMode(true)
+		// db.SetLogger(log.New(os.Stdout, "\r\n", 0))
 	}
-	// db.SetLogger(log.New(os.Stdout, "\r\n", 0))
 }
 
 // 初始化读写数据库连接

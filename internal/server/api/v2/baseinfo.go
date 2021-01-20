@@ -297,9 +297,9 @@ func GetSecondaryInfo(c *gin.Context) {
 		userInfo, err = userRep.GetUserInfo()
 		return
 	}, func() (err error) {
-		// 查询用户是否在黑名单
+		// 查询用户是否在黑名单【返回错误不抛出】
 		blackInfo, err = userRep.GetUserBlackStates()
-		return
+		return nil
 	}, func() (err error) {
 		// 查询短信预约总开关
 		appMsgSwitch, err = appRep.GetAppConfSwitchState()
