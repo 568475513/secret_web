@@ -133,7 +133,7 @@ func (x *XiaoeHttpRequest) getResponse() (resp *http.Response, err error) {
 		data["code"] = e.TIMEOUT
 		data["msg"] = fmt.Sprintf("url: %s[request timeout: %s]", x.req.URL, x.settings.Timeout)
 		byteData, _ := util.JsonEncode(data)
-		// 这个Error得改
+		// 这个Error得改，还不能打开
 		// logging.Error(string(byteData))
 		resp = new(http.Response)
 		resp.Body = ioutil.NopCloser(bytes.NewBuffer(byteData))
@@ -298,6 +298,7 @@ func (x *XiaoeHttpRequest) Bytes() ([]byte, error) {
 		// 输出打印
 		fmt.Println(msg)
 		// 输出相关日志
+		// 这里不能打开，除非job也有日志体系
 		// logging.Info(msg)
 	}
 	return body, err
