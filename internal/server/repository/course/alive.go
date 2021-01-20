@@ -400,16 +400,13 @@ type LiveUrl struct {
 // 获取直播推流链接
 func (a *AliveInfo) GetAliveLiveUrl(aliveType uint8, agentType int, UserId, playUrl, channelId string, version int) (LiveUrl, error) {
 	liveUrl := LiveUrl{}
-	timeStamp := time.Now().Second()
+	timeStamp := time.Now().Unix()
 	playUrls := make([]string, 0)
 	supportSharpness := map[string]interface{}{
 		"fluent":  "流畅", //流畅（480P）
 		"default": "原画", //默认原画
 	}
 	err := util.JsonDecode([]byte(playUrl), &playUrls)
-	if err != nil {
-		return liveUrl, err
-	}
 	if len(playUrls) >= 3 && (aliveType == 4 || aliveType == 2) {
 		liveUrl.PcAliveVideoUrl = playUrls[1]
 		liveUrl.AliveVideoUrl, liveUrl.MiniAliveVideoUrl = playUrls[2], playUrls[2]
