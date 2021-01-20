@@ -426,6 +426,12 @@ func (a *AliveInfo) GetAliveLiveUrl(aliveType uint8, agentType int, UserId, play
 		liveUrl.PcAliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 		i := 0
 		for k, v := range supportSharpness {
+			switch k {
+			case "fluent":
+				i = 0
+			case "default":
+				i = 1
+			}
 			currentSharpnessUrl := a.getPlayUrlBySharpness(k, playUrls[2], channelId)
 			liveUrl.AliveVideoMoreSharpness[i] = map[string]interface{}{
 				"definition_name": v,
@@ -440,7 +446,6 @@ func (a *AliveInfo) GetAliveLiveUrl(aliveType uint8, agentType int, UserId, play
 				"url":             currentSharpnessUrl,
 				"encrypt":         "",
 			}
-			i++
 		}
 
 		// 快直播O端名单目录
