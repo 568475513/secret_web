@@ -118,3 +118,15 @@ func GetSubBusinessConn() (redis.Conn, error) {
 
 	return conn, nil
 }
+
+// 获取直播禁言业务连接【database = 1】
+func GetForbiddenUserConn() (redis.Conn, error) {
+	conn := AliveRedisConn.Get()
+
+	_, err := conn.Do("SELECT", 1)
+	if err != nil {
+		return conn, err
+	}
+
+	return conn, nil
+}
