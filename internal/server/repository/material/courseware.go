@@ -85,7 +85,7 @@ func (c *CourseWare) GetCourseWareInfoByAliveId() (*alive.CourseWare, error) {
 
 	//判断是否有数据
 	if cacheCourseWareInfo.Id.String == "" {
-		return nil, err
+		return nil, fmt.Errorf("GetCourseWareInfoByAliveId Error:%s", "无课件数据")
 	}
 
 	//定义课件数组字段
