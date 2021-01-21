@@ -26,13 +26,13 @@ type AliveInfo struct {
 
 const (
 	// Redis key
-	aliveInfoKey         = "base_info_alive_info_%s_%s"
+	aliveInfoKey         = "base_info_alive_info:%s:%s"
 	aliveViewCountNewKey = "alive_view_count_new:%s:%s"
 	aliveModuleConf      = "alive_module_conf:%s:%s"
 	aliveCircuitBreaker  = "alive:circuitBreaker"
 	// 直播静态相关
-	staticAliveHashId   = "hash_static_alive_id_%s"
-	staticAliveHashUser = "hash_static_alive_user_%s"
+	staticAliveHashId    = "hash_static_alive_id_%s"
+	staticAliveHashUser  = "hash_static_alive_user_%s"
 	// view_count店铺id跟直播id集合
 	viewCountSetKey      = "view_count_set_key"
 	viewCountTimeKeyNew  = "view_count_update_set_time_new:%s:%s"
@@ -43,15 +43,14 @@ const (
 	timeCacheKeyPre  = "alive_take_goods_pv_refresh_time:%s:%s:%s" // pv缓存上一次刷新时间键
 	allPvSetCacheKey = "alive_take_goods_pv_set:"                  // 所有带货商品pv集合缓存
 	expirationTime   = 300                                         // pv缓存有效时间，单位秒
+	// 不使用快直播名单
+	notUseFastLiveKey = "notUseFastLive"
 
 	// 缓存时间控制(秒)
 	// 直播详情
 	aliveInfoCacheTime = "60"
 	// 直播的ModuleConf
 	aliveModuleConfCacheTime = "60"
-
-	// 不使用快直播名单
-	notUseFastLiveKey = "notUseFastLive"
 )
 
 // 获取直播详情
