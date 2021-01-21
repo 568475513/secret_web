@@ -17,19 +17,19 @@ type Share struct {
 }
 
 type ShareInfo struct {
-	IsShareFree      uint8
-	ShareUserId      string
-	Num              int
-	SurplusNum       int
-	ShareResource    int
-	HasShareResource []*business.ShareRecords
-	ProductInfo      *business.PayProducts
+	IsShareFree      uint8  `json:"is_share_free"`
+	ShareUserId      string `json:"share_user_id"`
+	Num              int    `json:"num"`
+	SurplusNum       int    `json:"surplus_num"`
+	ShareResource    int    `json:"share_resource"`
+	HasShareResource []*business.ShareRecords `json:"has_share_resource"`
+	ProductInfo      *business.PayProducts    `json:"product_info"`
 }
 
 type ShareListenInfo struct {
-	IsShareListen    bool
-	ShareListenUser  string
-	IsShowShareCount bool
+	IsShareListen    bool   `json:"is_share_listen"`
+	ShareListenUser  string `json:"share_listen_user"`
+	IsShowShareCount bool   `json:"is_show_share_count"`
 }
 
 func (share *Share) GetShareInfo(available, availableProduct bool, shareInfo ShareInfo) ShareInfo {
