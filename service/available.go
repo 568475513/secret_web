@@ -1,12 +1,14 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
 	"time"
 
 	"abs/pkg/app"
+	"abs/pkg/enums"
 	e "abs/pkg/enums"
 	"abs/pkg/logging"
 	"abs/pkg/util"
@@ -142,6 +144,7 @@ func (ava *AvailableService) IsProductAvailable(params ProductAvailable) (expire
 
 // 判断内部课程和加密课程方法
 func (ava *AvailableService) IsResourceAccess(resourceId string, filterFree bool, needExpire int) (bool, error) {
+	var responseMap app.Response
 	request := Get(fmt.Sprintf("%sxe.user.permission.check", os.Getenv("LB_PF_RIGHTS_IN")))
 	params := map[string]string{
 		"region": ava.AppId,
@@ -155,11 +158,13 @@ func (ava *AvailableService) IsResourceAccess(resourceId string, filterFree bool
 	}
 	request.SetParams(params)
 	request.SetTimeout(availableTimeout * time.Millisecond)
-	var responseMap app.Response
 	err := request.ToJSON(&responseMap)
 	if err != nil || responseMap.Code != e.SUCCESS {
 		logging.Error(err)
 		return false, err
+	}
+	if responseMap.Code != enums.SUCCESS {
+		return false, errors.New(fmt.Sprintf("请求权益【内部课程和加密】信息错误：%s", responseMap.Msg))
 	}
 	data := responseMap.Data.(map[string]interface{})
 	AuthState, _ := data["auth_state"].(float64)
