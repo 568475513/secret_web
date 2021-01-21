@@ -30,6 +30,9 @@ const (
 	maxOpenConns = 1000
 	// 用于设置闲置的连接数.设置闲置的连接数则当开启的一个连接使用完成后可以放在池里等候下一次使用。
 	maxIdleConns = 32
+	// 可以重用连接的最长时间[5分钟先]
+	// 防止closing bad idle connection: EOF（ 在 MySQL Server 主动断开连接之前，MySQL Client 的连接池中的连接被关闭掉），具体值要问DBA
+	maxLifetime = 300
 )
 
 // 初始化数据库连接
@@ -50,6 +53,7 @@ func Init() {
 	db.Callback().Update().Replace("gorm:update_time_stamp", updateTimeStampForUpdateCallback)
 	db.DB().SetMaxIdleConns(maxIdleConns)
 	db.DB().SetMaxOpenConns(maxOpenConns)
+	db.DB().SetConnMaxLifetime(time.Second * maxLifetime)
 
 	// 日志[生产必须关闭！]
 	if os.Getenv("RUNMODE") == "debug" {
