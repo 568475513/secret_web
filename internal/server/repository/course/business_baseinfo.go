@@ -39,7 +39,7 @@ func (b *BaseInfo) GetAliveInfoDetail(userId string) map[string]interface{} {
 	aliveInfoDetail["product_id"] = b.Alive.ProductId.String
 	// 直播封面或者暖场图
 	aliveInfoDetail["img_url"] = b.Alive.ImgUrl.String
-	if b.Alive.AliveroomImgUrl.Valid {
+	if b.Alive.AliveroomImgUrl.String != "" {
 		aliveInfoDetail["img_url"] = b.Alive.AliveroomImgUrl.String
 	}
 	// 首页展示的直播图

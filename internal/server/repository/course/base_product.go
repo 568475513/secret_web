@@ -23,7 +23,7 @@ type Product struct {
 
 const (
 	// Redis key
-	proResRelation = "pro_res_relation_%s_%s"
+	proResRelation = "pro_res_relation:%s:%s"
 	activityTags   = "%s:%s:%s"
 
 	// 设置缓存过期时间
