@@ -17,11 +17,11 @@ type Share struct {
 }
 
 type ShareInfo struct {
-	IsShareFree      uint8  `json:"is_share_free"`
-	ShareUserId      string `json:"share_user_id"`
-	Num              int    `json:"num"`
-	SurplusNum       int    `json:"surplus_num"`
-	ShareResource    int    `json:"share_resource"`
+	IsShareFree      uint8                    `json:"is_share_free"`
+	ShareUserId      string                   `json:"share_user_id"`
+	Num              int                      `json:"num"`
+	SurplusNum       int                      `json:"surplus_num"`
+	ShareResource    int                      `json:"share_resource"`
 	HasShareResource []*business.ShareRecords `json:"has_share_resource"`
 	ProductInfo      *business.PayProducts    `json:"product_info"`
 }
