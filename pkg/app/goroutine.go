@@ -40,6 +40,8 @@ func GoroutineNotPanic(handlers ...func() error) (err error) {
 			if err == nil && e != nil {
 				err = e
 			}
+			// 解除协程占用Cpu
+			return
 		}(f)
 	}
 	// 等待执行完
