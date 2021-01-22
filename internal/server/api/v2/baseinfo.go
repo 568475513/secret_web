@@ -287,7 +287,7 @@ func GetSecondaryInfo(c *gin.Context) {
 		blackInfo    service.UserBlackInfo
 		baseConf     *service.AppBaseConf
 	)
-	data := make(map[string]interface{})
+	data := map[string]interface{}{"alive_id": aliveInfo.Id}
 	// 初始化用户实例
 	userRep, userInfoMap := ruser.UserBusinessConstrct(appId, userId), make(map[string]interface{})
 	// 初始化店铺配置相关
