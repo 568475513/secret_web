@@ -29,13 +29,11 @@ var Cmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// 初始化各项服务
 		initStep()
-
+		// 注册任务【Register tasks】
+		registerTasks()
 		// 注册日志
 		// jobLog.SetError(...)
-		// 注册任务函数
-		if err := job.Machinery.RegisterTasks(getRegisterTasks()); err != nil {
-			log.Fatalf("Job Machinery Register tasks err: %v", err)
-		}
+		// jobLog.SetInfo(...)
 
 		// The second argument is a consumer tag
 		// Ideally, each worker should have a unique tag (worker1, worker2 etc)
@@ -95,7 +93,7 @@ func initStep() {
 
 // 注册的任务写到这里来
 // Register tasks
-func getRegisterTasks() map[string]interface{} {
+func registerTasks() {
 	// Register tasks
 	// taskLists := map[string]interface{}{
 	// 	"insert_user_purchase_log": jobTasks.InsertUserPurchaseLog,
@@ -114,5 +112,8 @@ func getRegisterTasks() map[string]interface{} {
 		"long_running_task":        jobTasks.LongRunningTask,
 	}
 
-	return taskLists
+	// 注册任务函数
+	if err := job.Machinery.RegisterTasks(taskLists); err != nil {
+		log.Fatalf("Job Machinery Register tasks err: %v", err)
+	}
 }
