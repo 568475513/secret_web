@@ -295,7 +295,8 @@ func GetSecondaryInfo(c *gin.Context) {
 	err = app.GoroutineNotPanic(func() (err error) {
 		// 获取用户的基本信息
 		userInfo, err = userRep.GetUserInfo()
-		return
+		// Todo 记得这里是否抛出错误
+		return nil
 	}, func() (err error) {
 		// 查询用户是否在黑名单【返回错误不抛出】
 		blackInfo, err = userRep.GetUserBlackStates()
