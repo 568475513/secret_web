@@ -41,7 +41,11 @@ func ZipkinTracer(isAlibaba bool) gin.HandlerFunc {
 		log.Fatalf("unable to create local endpoint: %+v\n", err)
 	}
 	// set-up our sampling strategy
-	sampler := zipkin.NewModuloSampler(1)
+	// sampler := zipkin.NewModuloSampler(1)
+	sampler, err := zipkin.NewBoundarySampler(float64(0.2), 2)
+	if err != nil {
+		log.Fatalf("[采样率]set-up our sampling strategy err: %+v\n", err)
+	}
 	// initialize the tracer
 	tracer, err := zipkin.NewTracer(
 		reporter,
