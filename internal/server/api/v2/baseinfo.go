@@ -192,6 +192,7 @@ func GetBaseInfo(c *gin.Context) {
 	aliveInfoDetail := baseInfoRep.GetAliveInfoDetail(userId)
 	aliveConf := baseInfoRep.GetAliveConfInfo(baseConf, aliveModule)
 	availableInfo := baseInfoRep.GetAvailableInfo(available, availableProduct, expireAt)
+	available = availableInfo["available"].(bool)
 	// 回放服务
 	lookBackRep := material.LookBack{AppId: appId, AliveId: req.ResourceId}
 	lookBackExpire, _ := lookBackRep.GetLookbackExpire(int(aliveInfo.IsLookback), aliveModule.LookbackTime)
@@ -218,6 +219,7 @@ func GetBaseInfo(c *gin.Context) {
 		shareInfo = shareRes.GetShareInfo(available, availableProduct, shareInfo)
 		// 如果领取了免费听 则将该资源置位可用！
 		if shareInfo.ShareUserId != "" && shareInfo.Num > 0 {
+			available = true
 			availableInfo["available"] = true
 		}
 	}
@@ -249,7 +251,7 @@ func GetBaseInfo(c *gin.Context) {
 	data["alive_conf"] = aliveConf
 	// 直播分享邀请免费听逻辑
 	data["share_info"] = map[string]interface{}{
-		"share_info": shareInfo,
+		"share_info":        shareInfo,
 		"share_listen_info": shareListenInfo,
 	}
 	// 直播自定义文案
