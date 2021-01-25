@@ -112,30 +112,34 @@ func GetBaseInfo(c *gin.Context) {
 		return nil
 	}, func() (err error) {
 		// 用户权益
-		goSpan := tracer.StartSpan("用户权益", opentracing.ChildOf(childSpan.Context()))
-		defer goSpan.Finish()
 		if aliveInfo.IsPublic == 0 {
+			goSpan := tracer.StartSpan("用户内部培训权益", opentracing.ChildOf(childSpan.Context()))
+			defer goSpan.Finish()
 			available, err = ap.IsInsideAliveAccess(req.ResourceId)
 		} else {
 			if aliveInfo.PaymentType == enums.PaymentTypeFree && aliveInfo.HavePassword != 1 && aliveInfo.State == 0 {
 				available = true
 			} else {
 				if aliveInfo.HavePassword == 1 {
+					goSpan := tracer.StartSpan("用户密码直播权益", opentracing.ChildOf(childSpan.Context()))
+					defer goSpan.Finish()
 					available, err = ap.IsEncryAliveAccess(req.ResourceId)
 				} else {
+					goSpan := tracer.StartSpan("用户权益", opentracing.ChildOf(childSpan.Context()))
+					defer goSpan.Finish()
 					expireAt, available = ap.IsHaveAlivePower(req.ResourceId, strconv.Itoa(enums.ResourceTypeLive), true)
 				}
 			}
 		}
 		return
 	}, func() (err error) {
-		// 专栏权益
-		goSpan := tracer.StartSpan("专栏权益", opentracing.ChildOf(childSpan.Context()))
-		defer goSpan.Finish()
 		if aliveInfo.PaymentType == enums.PaymentTypeFree && aliveInfo.HavePassword != 1 {
 			// 目前这里只是针对免费直播不进行查询专栏的订购关系，赋默认值, 默认值为false，这个参数目前只用于微信初始化接口，慎用其他地方
 			availableProduct = false
 		} else {
+			// 专栏权益
+			goSpan := tracer.StartSpan("专栏权益", opentracing.ChildOf(childSpan.Context()))
+			defer goSpan.Finish()
 			// 如果该资源或者当前专栏不可用 查询分享者信息
 			_, availableProduct = ap.IsHaveSpecialColumnPower(req.ProductId)
 		}
@@ -357,7 +361,7 @@ func GetSecondaryInfo(c *gin.Context) {
 }
 
 // @Summary 直播间数据上报接口
-// 备份使用？
+// 备份使用中
 func DataReported(c *gin.Context) {
 	var (
 		err error
