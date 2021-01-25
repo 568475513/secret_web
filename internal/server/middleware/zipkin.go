@@ -42,7 +42,7 @@ func ZipkinTracer(isAlibaba bool) gin.HandlerFunc {
 	}
 	// set-up our sampling strategy
 	// sampler := zipkin.NewModuloSampler(1)
-	sampler, err := zipkin.NewBoundarySampler(float64(0.2), 2)
+	sampler, err := zipkin.NewBoundarySampler(float64(0.1), 2)
 	if err != nil {
 		log.Fatalf("[采样率]set-up our sampling strategy err: %+v\n", err)
 	}
