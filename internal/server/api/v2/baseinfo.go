@@ -223,9 +223,10 @@ func GetBaseInfo(c *gin.Context) {
 	}
 	// 分享免费听逻辑
 	shareListenInfo := shareRes.GetShareListenInfo(&shareInfo, available)
+	childSpan.Finish()
 
 	// 数据上报服务
-	aT := time.Now()
+	childSpan = tracer.StartSpan("异步队列处理时间", opentracing.ChildOf(span.Context()))
 	dataAsyn := data.AsynData{AppId: appId, UserId: userId, ResourceId: req.ResourceId, ProductId: req.ProductId, PaymentType: int(aliveInfo.PaymentType)}
 	// 用户购买关系埋点上报
 	dataAsyn.AsynDataUserPurchase(c, available)
@@ -233,7 +234,7 @@ func GetBaseInfo(c *gin.Context) {
 	dataAsyn.AsynChannelViewCount(req.ChannelId)
 	// 直接上报流量
 	dataAsyn.AsynFlowRecord(aliveInfo, available, aliveInfoDetail["alive_state"].(int))
-	fmt.Println("异步队列处理时间: ", time.Since(aT))
+	childSpan.Finish()
 
 	// 开始组装数据
 	data := make(map[string]interface{})
@@ -256,7 +257,6 @@ func GetBaseInfo(c *gin.Context) {
 	data["caption_define"] = baseInfoRep.GetCaptionDefine(baseConf.CaptionDefine)
 	// 首页链接
 	data["index_url"] = util.UrlWrapper("homepage", c.GetString("buz_uri"), appId)
-	childSpan.Finish()
 	// 页面是否跳转
 	if url, code, msg := baseInfoRep.BaseInfoPageRedirect(products, available, baseConf.VersionType, req); code != 0 {
 		app.OkWithCodeData(msg, map[string]string{"url": url}, code, c)

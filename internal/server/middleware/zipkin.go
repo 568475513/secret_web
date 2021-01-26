@@ -2,13 +2,14 @@ package middleware
 
 import (
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing/opentracing-go"
 	zkOt "github.com/openzipkin-contrib/zipkin-go-opentracing"
-	httpreporter "github.com/openzipkin/zipkin-go/reporter/http"
-	"github.com/openzipkin/zipkin-go/reporter"
 	"github.com/openzipkin/zipkin-go"
+	"github.com/openzipkin/zipkin-go/reporter"
+	httpreporter "github.com/openzipkin/zipkin-go/reporter/http"
 
 	"abs/pkg/logging"
 	pzipkin "abs/pkg/provider/zipkin"
@@ -41,10 +42,16 @@ func ZipkinTracer(isAlibaba bool) gin.HandlerFunc {
 		log.Fatalf("unable to create local endpoint: %+v\n", err)
 	}
 	// set-up our sampling strategy
-	// sampler := zipkin.NewModuloSampler(1)
-	sampler, err := zipkin.NewBoundarySampler(float64(0.1), 2)
-	if err != nil {
-		log.Fatalf("[采样率]set-up our sampling strategy err: %+v\n", err)
+	var sampler zipkin.Sampler
+	if os.Getenv("RUNMODE") == "debug" {
+		// 采样-全采集
+		sampler = zipkin.NewModuloSampler(1)
+	} else {
+		// 高流量一定量随机采样
+		sampler, err = zipkin.NewBoundarySampler(float64(0.1), 2)
+		if err != nil {
+			log.Fatalf("[采样率]set-up our sampling strategy err: %+v\n", err)
+		}
 	}
 	// initialize the tracer
 	tracer, err := zipkin.NewTracer(
