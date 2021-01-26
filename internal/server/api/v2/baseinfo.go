@@ -361,8 +361,8 @@ func GetSecondaryInfo(c *gin.Context) {
 	app.OkWithData(data, c)
 }
 
-// @Summary 直播间数据上报接口
 // 备份使用中
+// @Summary 直播间数据上报接口
 func DataReported(c *gin.Context) {
 	var (
 		err error
