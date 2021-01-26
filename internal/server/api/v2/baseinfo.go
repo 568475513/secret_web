@@ -205,7 +205,6 @@ func GetBaseInfo(c *gin.Context) {
 	aliveInfoDetail := baseInfoRep.GetAliveInfoDetail(userId)
 	aliveConf := baseInfoRep.GetAliveConfInfo(baseConf, aliveModule)
 	availableInfo := baseInfoRep.GetAvailableInfo(available, availableProduct, expireAt)
-	available = availableInfo["available"].(bool)
 	// 回放服务
 	lookBackRep := material.LookBack{AppId: appId, AliveId: req.ResourceId}
 	lookBackExpire, _ := lookBackRep.GetLookbackExpire(int(aliveInfo.IsLookback), aliveModule.LookbackTime)
