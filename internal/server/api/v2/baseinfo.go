@@ -188,6 +188,19 @@ func GetBaseInfo(c *gin.Context) {
 	// 给专栏添加活动标签
 	products = marketing.GetActivityTags(products, 2, c.GetString("client"), c.GetString("app_version"))
 	products = append(products, termList...)
+	// 邀请好友免费听逻辑 免费 非加密
+	shareRes := marketing.Share{AppId: appId, UserId: userId, ProductId: req.ProductId, Alive: aliveInfo}
+	shareInfo := shareRes.GetShareInfoInit(products)
+	if aliveInfo.PaymentType != enums.PaymentTypeFree || aliveInfo.HavePassword == 1 {
+		shareInfo = shareRes.GetShareInfo(available, availableProduct, shareInfo)
+		// 如果领取了免费听 则将该资源置位可用！
+		if shareInfo.ShareUserId != "" && shareInfo.Num > 0 {
+			available = true
+		}
+	}
+	// 分享免费听逻辑
+	shareListenInfo := shareRes.GetShareListenInfo(&shareInfo, available)
+	// 业务数据封装
 	baseInfoRep := course.BaseInfo{Alive: aliveInfo, AliveRep: &aliveRep, UserType: userType}
 	aliveInfoDetail := baseInfoRep.GetAliveInfoDetail(userId)
 	aliveConf := baseInfoRep.GetAliveConfInfo(baseConf, aliveModule)
@@ -212,19 +225,6 @@ func GetBaseInfo(c *gin.Context) {
 			baseInfoRep.SetAliveUserToStaticRedis(userId)
 		}
 	}
-	// 邀请好友免费听逻辑 免费 非加密
-	shareRes := marketing.Share{AppId: appId, UserId: userId, ProductId: req.ProductId, Alive: aliveInfo}
-	shareInfo := shareRes.GetShareInfoInit(products)
-	if aliveInfo.PaymentType != enums.PaymentTypeFree || aliveInfo.HavePassword == 1 {
-		shareInfo = shareRes.GetShareInfo(available, availableProduct, shareInfo)
-		// 如果领取了免费听 则将该资源置位可用！
-		if shareInfo.ShareUserId != "" && shareInfo.Num > 0 {
-			available = true
-			availableInfo["available"] = true
-		}
-	}
-	// 分享免费听逻辑
-	shareListenInfo := shareRes.GetShareListenInfo(&shareInfo, available)
 	childSpan.Finish()
 
 	// 数据上报服务
