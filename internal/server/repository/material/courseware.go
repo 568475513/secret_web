@@ -279,7 +279,7 @@ func (c *CourseWare) GetCourseWareInfoCacheByAliveId(s []string) (*alive.CourseW
 				return nil, err
 			}
 
-			_, err = conn.Do("SET", cacheKey, value, "EX", "1")
+			_, err = conn.Do("SET", cacheKey, value, "EX", courseWareInfoCacheTime)
 			if err != nil {
 				return nil, err
 			}

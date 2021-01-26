@@ -29,19 +29,11 @@ var Cmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// 初始化各项服务
 		initStep()
+		// 注册任务【Register tasks】
+		registerTasks()
 		// 注册日志
-		// ...
-		// Register tasks
-		taskLists := map[string]interface{}{
-			"insert_user_purchase_log": jobTasks.InsertUserPurchaseLog,
-			"add_channel_view_count":   jobTasks.AddChannelViewCount,
-			"insert_flow_record":       jobTasks.InsertFlowRecord,
-			"long_running_task":        jobTasks.LongRunningTask,
-		}
-		// 注册任务函数
-		if err := job.Machinery.RegisterTasks(taskLists); err != nil {
-			log.Fatalf("Job Machinery Register tasks err: %v", err)
-		}
+		// jobLog.SetError(...)
+		// jobLog.SetInfo(...)
 
 		// The second argument is a consumer tag
 		// Ideally, each worker should have a unique tag (worker1, worker2 etc)
@@ -97,4 +89,31 @@ func initStep() {
 	models.InitJob()
 	// 初始化队列服务
 	job.MachineryStartServer(queue)
+}
+
+// 注册的任务写到这里来
+// Register tasks
+func registerTasks() {
+	// Register tasks
+	// taskLists := map[string]interface{}{
+	// 	"insert_user_purchase_log": jobTasks.InsertUserPurchaseLog,
+	// 	"add_channel_view_count":   jobTasks.AddChannelViewCount,
+	// 	"insert_flow_record":       jobTasks.InsertFlowRecord,
+	// 	"long_running_task":        jobTasks.LongRunningTask,
+	// }
+	taskLists := map[string]interface{}{
+		// 购买关系埋点
+		"insert_user_purchase_log": jobTasks.InsertUserPurchaseLog,
+		// 渠道上报
+		"add_channel_view_count":   jobTasks.AddChannelViewCount,
+		// 流量上报
+		"insert_flow_record":       jobTasks.InsertFlowRecord,
+		// Test
+		"long_running_task":        jobTasks.LongRunningTask,
+	}
+
+	// 注册任务函数
+	if err := job.Machinery.RegisterTasks(taskLists); err != nil {
+		log.Fatalf("Job Machinery Register tasks err: %v", err)
+	}
 }

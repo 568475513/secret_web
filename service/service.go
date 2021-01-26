@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -133,7 +134,7 @@ func (x *XiaoeHttpRequest) getResponse() (resp *http.Response, err error) {
 		data["code"] = e.TIMEOUT
 		data["msg"] = fmt.Sprintf("url: %s[request timeout: %s]", x.req.URL, x.settings.Timeout)
 		byteData, _ := util.JsonEncode(data)
-		// 这个Error得改
+		// 这个Error得改，还不能打开
 		// logging.Error(string(byteData))
 		resp = new(http.Response)
 		resp.Body = ioutil.NopCloser(bytes.NewBuffer(byteData))
@@ -273,14 +274,16 @@ func (x *XiaoeHttpRequest) body(data interface{}) *XiaoeHttpRequest {
 func (x *XiaoeHttpRequest) Bytes() ([]byte, error) {
 	bT := time.Now()
 	resp, err := x.getResponse()
+	defer resp.Body.Close()
+	// 请求错误
 	if err != nil {
 		return nil, err
 	}
+	// 没有内容
 	if resp.Body == nil {
 		return nil, nil
 	}
-
-	defer resp.Body.Close()
+	// 压缩类型
 	if resp.Header.Get("Content-Encoding") == "gzip" {
 		reader, err := gzip.NewReader(resp.Body)
 		if err != nil {
@@ -291,13 +294,18 @@ func (x *XiaoeHttpRequest) Bytes() ([]byte, error) {
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
+	// Http状态码错误
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(fmt.Sprintf("请求[%s]Url: %s，返回错误的状态码[%d]", x.req.Method, x.req.URL, resp.StatusCode))
+	}
 	if x.debug() {
 		eT := time.Since(bT)
 		// string(body)
-		msg := fmt.Sprintf("- 发起第三方请求【%s】：Url: %s\n Method: %s\n Params: %+v\n Resp: %s\n", eT, x.req.URL, x.req.Method, x.params, "不打印~")
+		msg := fmt.Sprintf("- 发起第三方请求【%s】：Url: %s\n Method: %s\n Params: %+v\n Resp: %s\n", eT, x.req.URL, x.req.Method, x.params, string(body))
 		// 输出打印
 		fmt.Println(msg)
 		// 输出相关日志
+		// 这里不能打开，除非job也有日志体系
 		// logging.Info(msg)
 	}
 	return body, err

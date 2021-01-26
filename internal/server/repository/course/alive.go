@@ -26,31 +26,31 @@ type AliveInfo struct {
 
 const (
 	// Redis key
-	aliveInfoKey         = "base_info_alive_info_%s_%s"
+	aliveInfoKey         = "base_info_alive_info:%s:%s"
 	aliveViewCountNewKey = "alive_view_count_new:%s:%s"
 	aliveModuleConf      = "alive_module_conf:%s:%s"
 	aliveCircuitBreaker  = "alive:circuitBreaker"
 	// 直播静态相关
-	staticAliveHashId   = "hash_static_alive_id_%s"
-	staticAliveHashUser = "hash_static_alive_user_%s"
+	staticAliveHashId    = "hash_static_alive_id_%s"
+	staticAliveHashUser  = "hash_static_alive_user_%s"
 	// view_count店铺id跟直播id集合
-	viewCountSetKey     = "view_count_set_key"
-	viewCountTimeKeyNew = "view_count_update_set_time_new:%s:%s"
-	aliveViewCountNew   = "alive_view_count_new:%s:%s" // 直播访问量
+	viewCountSetKey      = "view_count_set_key"
+	viewCountTimeKeyNew  = "view_count_update_set_time_new:%s:%s"
+	aliveViewCountNew    = "alive_view_count_new:%s:%s"     // 直播访问量
+	forbiddenUserListKey = "forbidden_user_list_key:%s:%s"  // 直播禁言
 	// 带货PV
 	pvCacheKeyPre    = "alive_take_goods_pv:%s:%s:%s"              // pv缓存键
 	timeCacheKeyPre  = "alive_take_goods_pv_refresh_time:%s:%s:%s" // pv缓存上一次刷新时间键
 	allPvSetCacheKey = "alive_take_goods_pv_set:"                  // 所有带货商品pv集合缓存
 	expirationTime   = 300                                         // pv缓存有效时间，单位秒
+	// 不使用快直播名单
+	notUseFastLiveKey = "notUseFastLive"
 
 	// 缓存时间控制(秒)
 	// 直播详情
 	aliveInfoCacheTime = "60"
 	// 直播的ModuleConf
 	aliveModuleConfCacheTime = "60"
-
-	// 不使用快直播名单
-	notUseFastLiveKey = "notUseFastLive"
 )
 
 // 获取直播详情
@@ -228,6 +228,27 @@ func (a *AliveInfo) GetAliveImIsShow(roomId, userId string) (isShow int) {
 		return
 	}
 	if aliveForbids.IsUseful > 0 {
+		isShow = 0
+	}
+	return
+}
+
+// 查询直播是否被禁言【Redis版】
+// 暂时不可用，可问jessica
+func (a *AliveInfo) GetAliveImIsShowForRedis(roomId, userId string) (isShow int) {
+	isShow = 1
+	conn, _ := redis_alive.GetForbiddenUserConn()
+	defer conn.Close()
+
+	cacheKey := fmt.Sprintf(forbiddenUserListKey, a.AppId, roomId)
+	isExist, err := redis.Int(conn.Do("HEXISTS", cacheKey, userId, userId))
+	if err != nil {
+		logging.Error(err)
+		return
+	}
+
+	// 存在即被禁言
+	if isExist == 1 {
 		isShow = 0
 	}
 	return
@@ -472,9 +493,10 @@ func (a *AliveInfo) GetAliveLiveUrl(aliveType uint8, agentType int, UserId, play
 	} else {
 		liveUrl.MiniAliveVideoUrl = fmt.Sprintf("https://%s/%s.m3u8?%d", util.GetH5Domain(a.AppId, true), a.AliveId, timeStamp)
 		liveUrl.AliveVideoUrl = liveUrl.MiniAliveVideoUrl
-		liveUrl.VideoAliveUseCos = true //置为使用cos录播方式
 		// play_url不为空--不为小程序--不在O端名单内
-		if redis_gray.InGrayShop("video_alive_not_use_cos", a.AppId) && playUrl != "" && agentType != 14 {
+		if !redis_gray.InGrayShop("video_alive_not_use_cos", a.AppId) && playUrl != "" && agentType != 14 {
+			liveUrl.VideoAliveUseCos = true //置为使用cos录播方式
+
 			if len(playUrls) != 0 {
 				liveUrl.NewAliveVideoUrl = playUrls[3]
 			} else {

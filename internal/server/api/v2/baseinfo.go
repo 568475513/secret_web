@@ -112,30 +112,34 @@ func GetBaseInfo(c *gin.Context) {
 		return nil
 	}, func() (err error) {
 		// 用户权益
-		goSpan := tracer.StartSpan("用户权益", opentracing.ChildOf(childSpan.Context()))
-		defer goSpan.Finish()
 		if aliveInfo.IsPublic == 0 {
+			goSpan := tracer.StartSpan("用户内部培训权益", opentracing.ChildOf(childSpan.Context()))
+			defer goSpan.Finish()
 			available, err = ap.IsInsideAliveAccess(req.ResourceId)
 		} else {
 			if aliveInfo.PaymentType == enums.PaymentTypeFree && aliveInfo.HavePassword != 1 && aliveInfo.State == 0 {
 				available = true
 			} else {
 				if aliveInfo.HavePassword == 1 {
+					goSpan := tracer.StartSpan("用户密码直播权益", opentracing.ChildOf(childSpan.Context()))
+					defer goSpan.Finish()
 					available, err = ap.IsEncryAliveAccess(req.ResourceId)
 				} else {
+					goSpan := tracer.StartSpan("用户权益", opentracing.ChildOf(childSpan.Context()))
+					defer goSpan.Finish()
 					expireAt, available = ap.IsHaveAlivePower(req.ResourceId, strconv.Itoa(enums.ResourceTypeLive), true)
 				}
 			}
 		}
 		return
 	}, func() (err error) {
-		// 专栏权益
-		goSpan := tracer.StartSpan("专栏权益", opentracing.ChildOf(childSpan.Context()))
-		defer goSpan.Finish()
 		if aliveInfo.PaymentType == enums.PaymentTypeFree && aliveInfo.HavePassword != 1 {
 			// 目前这里只是针对免费直播不进行查询专栏的订购关系，赋默认值, 默认值为false，这个参数目前只用于微信初始化接口，慎用其他地方
 			availableProduct = false
 		} else {
+			// 专栏权益
+			goSpan := tracer.StartSpan("专栏权益", opentracing.ChildOf(childSpan.Context()))
+			defer goSpan.Finish()
 			// 如果该资源或者当前专栏不可用 查询分享者信息
 			_, availableProduct = ap.IsHaveSpecialColumnPower(req.ProductId)
 		}
@@ -184,6 +188,19 @@ func GetBaseInfo(c *gin.Context) {
 	// 给专栏添加活动标签
 	products = marketing.GetActivityTags(products, 2, c.GetString("client"), c.GetString("app_version"))
 	products = append(products, termList...)
+	// 邀请好友免费听逻辑 免费 非加密
+	shareRes := marketing.Share{AppId: appId, UserId: userId, ProductId: req.ProductId, Alive: aliveInfo}
+	shareInfo := shareRes.GetShareInfoInit(products)
+	if aliveInfo.PaymentType != enums.PaymentTypeFree || aliveInfo.HavePassword == 1 {
+		shareInfo = shareRes.GetShareInfo(available, availableProduct, shareInfo)
+		// 如果领取了免费听 则将该资源置位可用！
+		if shareInfo.ShareUserId != "" && shareInfo.Num > 0 {
+			available = true
+		}
+	}
+	// 分享免费听逻辑
+	shareListenInfo := shareRes.GetShareListenInfo(&shareInfo, available)
+	// 业务数据封装
 	baseInfoRep := course.BaseInfo{Alive: aliveInfo, AliveRep: &aliveRep, UserType: userType}
 	aliveInfoDetail := baseInfoRep.GetAliveInfoDetail(userId)
 	aliveConf := baseInfoRep.GetAliveConfInfo(baseConf, aliveModule)
@@ -197,7 +214,7 @@ func GetBaseInfo(c *gin.Context) {
 	aliveInfoDetail["user_title"] = roleInfo["user_title"]
 	aliveConf["is_can_exceptional"] = roleInfo["is_can_exceptional"]
 	// 补充老直播间链接
-	aliveInfoDetail["old_live_room_url"] = util.GetAliveRoomUrl(req.ResourceId, req.ProductId, req.ChannelId, req.AppId, enums.AliveRoomPage)
+	aliveInfoDetail["old_live_room_url"] = util.GetAliveRoomUrl(req.ResourceId, req.ProductId, req.ChannelId, appId, enums.AliveRoomPage)
 	// 获取播放连接【错误处理需要仓库层打印】
 	alivePlayInfo, _ := aliveRep.GetAliveLiveUrl(aliveInfo.AliveType, c.GetInt("agent_type"), userId, aliveInfo.PlayUrl, aliveInfo.ChannelId, baseConf.VersionType)
 	// 直播静态操作
@@ -207,21 +224,10 @@ func GetBaseInfo(c *gin.Context) {
 			baseInfoRep.SetAliveUserToStaticRedis(userId)
 		}
 	}
-	// 邀请好友免费听逻辑 免费 非加密
-	shareRes := marketing.Share{AppId: appId, UserId: userId, ProductId: req.ProductId, Alive: aliveInfo}
-	shareInfo := shareRes.GetShareInfoInit(products)
-	if aliveInfo.PaymentType != enums.PaymentTypeFree || aliveInfo.HavePassword == 1 {
-		shareInfo = shareRes.GetShareInfo(available, availableProduct, shareInfo)
-		// 如果领取了免费听 则将该资源置位可用！
-		if shareInfo.ShareUserId != "" && shareInfo.Num > 0 {
-			availableInfo["available"] = true
-		}
-	}
-	// 分享免费听逻辑
-	shareListenInfo := shareRes.GetShareListenInfo(&shareInfo, available)
+	childSpan.Finish()
 
 	// 数据上报服务
-	aT := time.Now()
+	childSpan = tracer.StartSpan("异步队列处理时间", opentracing.ChildOf(span.Context()))
 	dataAsyn := data.AsynData{AppId: appId, UserId: userId, ResourceId: req.ResourceId, ProductId: req.ProductId, PaymentType: int(aliveInfo.PaymentType)}
 	// 用户购买关系埋点上报
 	dataAsyn.AsynDataUserPurchase(c, available)
@@ -229,7 +235,7 @@ func GetBaseInfo(c *gin.Context) {
 	dataAsyn.AsynChannelViewCount(req.ChannelId)
 	// 直接上报流量
 	dataAsyn.AsynFlowRecord(aliveInfo, available, aliveInfoDetail["alive_state"].(int))
-	fmt.Println("异步队列处理时间: ", time.Since(aT))
+	childSpan.Finish()
 
 	// 开始组装数据
 	data := make(map[string]interface{})
@@ -245,14 +251,13 @@ func GetBaseInfo(c *gin.Context) {
 	data["alive_conf"] = aliveConf
 	// 直播分享邀请免费听逻辑
 	data["share_info"] = map[string]interface{}{
-		"share_info": shareInfo,
+		"share_info":        shareInfo,
 		"share_listen_info": shareListenInfo,
 	}
 	// 直播自定义文案
 	data["caption_define"] = baseInfoRep.GetCaptionDefine(baseConf.CaptionDefine)
 	// 首页链接
 	data["index_url"] = util.UrlWrapper("homepage", c.GetString("buz_uri"), appId)
-	childSpan.Finish()
 	// 页面是否跳转
 	if url, code, msg := baseInfoRep.BaseInfoPageRedirect(products, available, baseConf.VersionType, req); code != 0 {
 		app.OkWithCodeData(msg, map[string]string{"url": url}, code, c)
@@ -287,7 +292,7 @@ func GetSecondaryInfo(c *gin.Context) {
 		blackInfo    service.UserBlackInfo
 		baseConf     *service.AppBaseConf
 	)
-	data := make(map[string]interface{})
+	data := map[string]interface{}{"alive_id": aliveInfo.Id}
 	// 初始化用户实例
 	userRep, userInfoMap := ruser.UserBusinessConstrct(appId, userId), make(map[string]interface{})
 	// 初始化店铺配置相关
@@ -295,7 +300,8 @@ func GetSecondaryInfo(c *gin.Context) {
 	err = app.GoroutineNotPanic(func() (err error) {
 		// 获取用户的基本信息
 		userInfo, err = userRep.GetUserInfo()
-		return
+		// Todo 记得这里是否抛出错误
+		return nil
 	}, func() (err error) {
 		// 查询用户是否在黑名单【返回错误不抛出】
 		blackInfo, err = userRep.GetUserBlackStates()
@@ -356,7 +362,7 @@ func GetSecondaryInfo(c *gin.Context) {
 }
 
 // @Summary 直播间数据上报接口
-// 备份使用？
+// 备份使用中
 func DataReported(c *gin.Context) {
 	var (
 		err error
