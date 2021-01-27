@@ -68,8 +68,8 @@ func LogToEs(msg string, data interface{}) {
 		zap.Any("info", data),
 		zap.String("type", "info"),
 		zap.String("module_name", "alive_server_go"),
-		zap.String("method", "Default"),
-		zap.String("target_url", "Default"),
-		zap.String("request", "Default"),
+		zap.String("method", "-"),
+		zap.String("target_url", "-"),
+		zap.String("request", "-"),
 	)
 }

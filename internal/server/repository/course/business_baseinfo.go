@@ -113,23 +113,11 @@ func (b *BaseInfo) GetAvailableInfo(available, availableProduct bool, expireAt s
 	if !available && b.UserType == 1 {
 		availableInfo["available"] = true
 	}
-	// 买赠功能
-	// availableInfo["gift_buy"] = 0
-	// if b.Alive.State == 1 {
-	// 	availableInfo["in_recycle"] = b.Alive.RecycleBinState
-	// } else {
-	// 	availableInfo["in_recycle"] = 0
-	// }
-	// if b.Alive.IsStopSell == 0 && b.Alive.RecycleBinState == 0 && b.Alive.StartAt.Time.After(now) {
-	// 	availableInfo["time_left"] = b.Alive.StartAt.Time.Sub(now).Seconds()
-	// } else {
-	// 	availableInfo["time_left"] = 0
-	// }
 	return availableInfo
 }
 
 // 组装直播店铺配置信息
-func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *alive.AliveModuleConf) map[string]interface{} {
+func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *alive.AliveModuleConf, paymentType int) map[string]interface{} {
 	aliveConf := make(map[string]interface{})
 	// 店铺名称
 	aliveConf["wx_app_name"] = baseConf.ShopName
@@ -246,6 +234,12 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 		aliveConf["is_open_complete_time"] = 0
 	} else {
 		aliveConf["is_open_complete_time"] = 1
+	}
+	// 邀请卡开关
+	aliveConf["need_invite"] = false
+	if baseConf.HasInvite == 1 &&
+		(b.Alive.PaymentType == e.PaymentTypeFree || (paymentType == e.PaymentTypeSingle && b.Alive.PaymentType == e.PaymentTypeSingle) || paymentType == e.PaymentTypeProduct) {
+		aliveConf["need_invite"] = true
 	}
 
 	return aliveConf
