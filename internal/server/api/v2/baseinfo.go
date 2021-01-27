@@ -203,7 +203,7 @@ func GetBaseInfo(c *gin.Context) {
 	// 业务数据封装
 	baseInfoRep := course.BaseInfo{Alive: aliveInfo, AliveRep: &aliveRep, UserType: userType}
 	aliveInfoDetail := baseInfoRep.GetAliveInfoDetail(userId)
-	aliveConf := baseInfoRep.GetAliveConfInfo(baseConf, aliveModule)
+	aliveConf := baseInfoRep.GetAliveConfInfo(baseConf, aliveModule, req.PaymentType)
 	availableInfo := baseInfoRep.GetAvailableInfo(available, availableProduct, expireAt)
 	// 回放服务
 	lookBackRep := material.LookBack{AppId: appId, AliveId: req.ResourceId}
@@ -361,7 +361,7 @@ func GetSecondaryInfo(c *gin.Context) {
 	app.OkWithData(data, c)
 }
 
-// 备份使用中
+// @Todo 备份使用中
 // @Summary 直播间数据上报接口
 func DataReported(c *gin.Context) {
 	var (
