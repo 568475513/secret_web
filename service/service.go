@@ -301,7 +301,7 @@ func (x *XiaoeHttpRequest) Bytes() ([]byte, error) {
 	if x.debug() {
 		eT := time.Since(bT)
 		// string(body)
-		msg := fmt.Sprintf("- 发起第三方请求【%s】：Url: %s\n Method: %s\n Params: %+v\n Resp: %s\n", eT, x.req.URL, x.req.Method, x.params, string(body))
+		msg := fmt.Sprintf("- 发起第三方请求【%s】：Url: %s\n Method: %s\n Params: %+v\n Resp: %s\n", eT, x.req.URL, x.req.Method, x.params, "~不打印")
 		// 输出打印
 		fmt.Println(msg)
 		// 输出相关日志
