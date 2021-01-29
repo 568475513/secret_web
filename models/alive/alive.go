@@ -214,7 +214,7 @@ func GetAliveRole(appId string, aliveId string) ([]*AliveRole, error) {
 		Where("app_id=? and alive_id=? and state=?", appId, aliveId, 0).
 		Find(&ar)
 	// 内存泄露风险
-	defer db.Close()
+	// defer db.Close()
 	if db.Error != nil && db.Error != gorm.ErrRecordNotFound {
 		return nil, db.Error
 	}
