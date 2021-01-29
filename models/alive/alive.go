@@ -207,11 +207,16 @@ func GetAliveInfoByChannelId(channelId string, s []string) (*Alive, error) {
 // 获取直播讲师信息详情
 func GetAliveRole(appId string, aliveId string) ([]*AliveRole, error) {
 	var ar []*AliveRole
-	err := db.Select("role_name,user_id,user_name,is_current_lecturer,is_can_exceptional").
+	// err := db.Select("role_name,user_id,user_name,is_current_lecturer,is_can_exceptional").
+	// 	Where("app_id=? and alive_id=? and state=?", appId, aliveId, 0).
+	// 	Find(&ar).Error
+	db := db.Select("role_name,user_id,user_name,is_current_lecturer,is_can_exceptional").
 		Where("app_id=? and alive_id=? and state=?", appId, aliveId, 0).
-		Find(&ar).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return nil, err
+		Find(&ar)
+	// 内存泄露风险
+	defer db.Close()
+	if db.Error != nil && db.Error != gorm.ErrRecordNotFound {
+		return nil, db.Error
 	}
 
 	return ar, nil
