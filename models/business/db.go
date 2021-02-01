@@ -27,12 +27,12 @@ const (
 	// 其它库
 	DatabaseConfig = "db_ex_config"
 	// 用于设置最大打开的连接数，默认值为0表示不限制.设置最大的连接数，可以避免并发太高导致连接mysql出现too many connections的错误。
-	maxOpenConns = 1000
+	maxOpenConns = 320
 	// 用于设置闲置的连接数.设置闲置的连接数则当开启的一个连接使用完成后可以放在池里等候下一次使用。
 	maxIdleConns = 32
 	// 可以重用连接的最长时间[5分钟先]
 	// 防止closing bad idle connection: EOF（ 在 MySQL Server 主动断开连接之前，MySQL Client 的连接池中的连接被关闭掉），具体值要问DBA
-	maxLifetime = 300
+	maxLifetime = 180
 )
 
 // 初始化数据库连接
