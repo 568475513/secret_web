@@ -16,11 +16,11 @@ type VideoMiddleTranscode struct {
 	VideoMp4High         string  `json:"video_mp4_high"`
 	VideoMp4Size         float64 `json:"video_mp4_size"`
 	VideoMp4HighSize     float64 `json:"video_mp4_high_size"`
-	VideoMp4Vbitrate     uint8   `json:"video_mp4_vbitrate"`
-	VideoMp4HighVbitrate uint8   `json:"video_mp4_high_vbitrate"`
+	VideoMp4Vbitrate     int     `json:"video_mp4_vbitrate"`
+	VideoMp4HighVbitrate int     `json:"video_mp4_high_vbitrate"`
 	VideoHls             string  `json:"video_hls"`
 	VideoSize            float64 `json:"video_size"`
-	VideoLength          uint8   `json:"video_length"`
+	VideoLength          int     `json:"video_length"`
 	M3u8Url              string  `json:"m3u8url"`
 	SourceType           uint8   `json:"source_type"`
 }
