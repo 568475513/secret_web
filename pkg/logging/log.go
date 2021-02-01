@@ -25,7 +25,7 @@ func Warn(param interface{}) {
 	case string:
 		ILogger.Warn(param.(string), zap.Any("error", param))
 	case error:
-		ILogger.Warn(param.(error).Error(), zap.Error(param.(error)), zap.String("stack", string(debug.Stack())))
+		ILogger.Warn(param.(error).Error(), zap.Error(param.(error)), zap.Stack("stack"))
 	default:
 		ILogger.Warn("Warn!!!", zap.Any("warn", param), zap.Stack("stack"))
 	}

@@ -43,7 +43,7 @@ func ZipkinTracer(isAlibaba bool) gin.HandlerFunc {
 	}
 	// set-up our sampling strategy
 	var sampler zipkin.Sampler
-	if os.Getenv("RUNMODE") == "debug" {
+	if os.Getenv("RUNMODE") == "debug233" {
 		// 采样-全采集
 		sampler = zipkin.NewModuloSampler(1)
 	} else {

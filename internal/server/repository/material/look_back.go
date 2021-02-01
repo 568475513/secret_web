@@ -14,9 +14,9 @@ import (
 	"abs/models/sub_business"
 	"abs/pkg/cache/redis_alive"
 	"abs/pkg/cache/redis_gray"
+	e "abs/pkg/enums"
 	"abs/pkg/logging"
 	"abs/pkg/util"
-	e "abs/pkg/enums"
 )
 
 const (
@@ -149,7 +149,7 @@ func (lb *LookBack) GetLookBackFile(appId string, aliveId string) (*alive.AliveL
 	cacheKey := fmt.Sprintf(aliveLookBackKey, lb.AppId, lb.AliveId)
 	info, err := redis.Bytes(conn.Do("GET", cacheKey))
 	if err != nil {
-		logging.Error(err)
+		logging.Warn(err)
 	} else {
 		json.Unmarshal(info, &cacheAliveLookBack)
 		return cacheAliveLookBack, nil

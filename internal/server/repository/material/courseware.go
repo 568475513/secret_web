@@ -212,7 +212,7 @@ func (c *CourseWare) GetCourseWareInfoCache(courseWareId []string, s []string) (
 	cacheKey := fmt.Sprintf(aliveCourseWareInfoKey, c.AppId, c.AliveId, courseWareId, joinsKey)
 	courseWareInfo, err := redis.Bytes(conn.Do("GET", cacheKey))
 	if err != nil {
-		logging.Error(err)
+		logging.Warn(err)
 	} else {
 		json.Unmarshal(courseWareInfo, &cacheCourseWareInfo)
 	}
@@ -262,7 +262,7 @@ func (c *CourseWare) GetCourseWareInfoCacheByAliveId(s []string) (*alive.CourseW
 	cacheCourseWareInfo = &alive.CourseWare{}
 	courseWareInfo, err := redis.Bytes(conn.Do("GET", cacheKey))
 	if err != nil {
-		logging.Error(err)
+		logging.Warn(err)
 	} else {
 		json.Unmarshal(courseWareInfo, &cacheCourseWareInfo)
 	}

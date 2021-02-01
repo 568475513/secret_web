@@ -210,6 +210,11 @@ func GetAliveRole(appId string, aliveId string) ([]*AliveRole, error) {
 	err := db.Select("role_name,user_id,user_name,is_current_lecturer,is_can_exceptional").
 		Where("app_id=? and alive_id=? and state=?", appId, aliveId, 0).
 		Find(&ar).Error
+	// db := db.Select("role_name,user_id,user_name,is_current_lecturer,is_can_exceptional").
+	// 	Where("app_id=? and alive_id=? and state=?", appId, aliveId, 0).
+	// 	Find(&ar)
+	// 内存泄露风险
+	// defer db.Rows().Close()
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
@@ -262,13 +267,14 @@ func GetAliveHlsResult(channelId string, s []string) (*AliveConcatHlsResult, err
 
 // 更新直播观看人数
 func UpdateViewCount(appId, aliveId string, viewCount int) error {
-	_, err := GetAliveInfo(appId, aliveId, []string{"view_count"})
-	if err != nil {
-		return err
-	}
+	// Todo:暂时没有用@AllenWang
+	// _, err := GetAliveInfo(appId, aliveId, []string{"view_count"})
+	// if err != nil {
+	// 	return err
+	// }
 	//todo 上报ES
 
-	err = db.Where("app_id=? and id=?", appId, aliveId).Update("view_count", viewCount).Limit(1).Error
+	err := db.Where("app_id=? and id=?", appId, aliveId).Update("view_count", viewCount).Limit(1).Error
 	if err != nil {
 		return err
 	}
