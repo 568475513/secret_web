@@ -41,9 +41,9 @@ func InitLog() {
 	// if err != nil {
 	// 	log.Fatalf(fmt.Sprintf("level.UnmarshalText InitLogger failed, err: %v\n", err))
 	// }
-	// zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), writeSyncerE), // 打印到控制台和文件
+	// zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), writeSyncerE) // 打印到控制台和文件
 	ELogger = zap.New(zapcore.NewCore(encoder, writeSyncerE, zapcore.ErrorLevel), zap.AddCaller(), zap.AddCallerSkip(1))
-	ILogger = zap.New(zapcore.NewCore(encoder, writeSyncerI, zapcore.DebugLevel), zap.AddCaller())
+	ILogger = zap.New(zapcore.NewCore(encoder, writeSyncerI, zapcore.DebugLevel), zap.AddCaller(), zap.AddCallerSkip(1))
 	fmt.Println(">>>初始化调用日志完成")
 }
 
