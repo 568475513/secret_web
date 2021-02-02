@@ -63,7 +63,7 @@ func GetCourseWareInfoByAliveId(appId, aliveId string, s []string) (*CourseWare,
 
 	err := db.Table("t_courseware").
 		Select(s).
-		Where("app_id=? and alive_id=?", appId, aliveId).
+		Where("app_id=? and alive_id=? and use_state=?", appId, aliveId, 1).
 		First(&cw).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
