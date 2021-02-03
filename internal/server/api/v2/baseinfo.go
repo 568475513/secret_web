@@ -326,7 +326,7 @@ func GetSecondaryInfo(c *gin.Context) {
 	}
 	baseInfoRep := course.Secondary{Alive: aliveInfo, UserInfo: &userInfo, BuzUri: c.GetString("buz_uri")}
 	// 写入邀请关系
-	if baseInfoRep.GetInviteState(baseConf.HasInvite, req.PaymentType) {
+	if baseInfoRep.GetInviteState(baseConf.HasInvite, req.PaymentType) && aliveInfo.PaymentType == enums.PaymentTypeFree {
 		inviteBusiness := marketing.InviteBusiness{AppId: appId, UserId: userId}
 		inviteBusiness.AddInviteCountUtilsNew(marketing.InviteUserInfo{
 			ShareUserId:  req.ShareUserId,

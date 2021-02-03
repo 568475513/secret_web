@@ -31,13 +31,13 @@ const (
 	aliveModuleConf      = "alive_module_conf:%s:%s"
 	aliveCircuitBreaker  = "alive:circuitBreaker"
 	// 直播静态相关
-	staticAliveHashId    = "hash_static_alive_id_%s"
-	staticAliveHashUser  = "hash_static_alive_user_%s"
+	staticAliveHashId   = "hash_static_alive_id_%s"
+	staticAliveHashUser = "hash_static_alive_user_%s"
 	// view_count店铺id跟直播id集合
 	viewCountSetKey      = "view_count_set_key"
 	viewCountTimeKeyNew  = "view_count_update_set_time_new:%s:%s"
-	aliveViewCountNew    = "alive_view_count_new:%s:%s"     // 直播访问量
-	forbiddenUserListKey = "forbidden_user_list_key:%s:%s"  // 直播禁言
+	aliveViewCountNew    = "alive_view_count_new:%s:%s"    // 直播访问量
+	forbiddenUserListKey = "forbidden_user_list_key:%s:%s" // 直播禁言
 	// 带货PV
 	pvCacheKeyPre    = "alive_take_goods_pv:%s:%s:%s"              // pv缓存键
 	timeCacheKeyPre  = "alive_take_goods_pv_refresh_time:%s:%s:%s" // pv缓存上一次刷新时间键
