@@ -31,13 +31,13 @@ const (
 	aliveModuleConf      = "alive_module_conf:%s:%s"
 	aliveCircuitBreaker  = "alive:circuitBreaker"
 	// 直播静态相关
-	staticAliveHashId    = "hash_static_alive_id_%s"
-	staticAliveHashUser  = "hash_static_alive_user_%s"
+	staticAliveHashId   = "hash_static_alive_id_%s"
+	staticAliveHashUser = "hash_static_alive_user_%s"
 	// view_count店铺id跟直播id集合
 	viewCountSetKey      = "view_count_set_key"
 	viewCountTimeKeyNew  = "view_count_update_set_time_new:%s:%s"
-	aliveViewCountNew    = "alive_view_count_new:%s:%s"     // 直播访问量
-	forbiddenUserListKey = "forbidden_user_list_key:%s:%s"  // 直播禁言
+	aliveViewCountNew    = "alive_view_count_new:%s:%s"    // 直播访问量
+	forbiddenUserListKey = "forbidden_user_list_key:%s:%s" // 直播禁言
 	// 带货PV
 	pvCacheKeyPre    = "alive_take_goods_pv:%s:%s:%s"              // pv缓存键
 	timeCacheKeyPre  = "alive_take_goods_pv_refresh_time:%s:%s:%s" // pv缓存上一次刷新时间键
@@ -495,6 +495,10 @@ func (a *AliveInfo) GetAliveLiveUrl(aliveType uint8, agentType int, UserId, play
 		liveUrl.AliveVideoUrl = liveUrl.MiniAliveVideoUrl
 		// play_url不为空--不为小程序--不在O端名单内
 		if !redis_gray.InGrayShop("video_alive_not_use_cos", a.AppId) && playUrl != "" && agentType != 14 {
+			logging.Info("新录播方式log")
+			logging.Info(!redis_gray.InGrayShop("video_alive_not_use_cos", a.AppId))
+			logging.Info(playUrl)
+			logging.Info(agentType)
 			liveUrl.VideoAliveUseCos = true //置为使用cos录播方式
 
 			if len(playUrls) != 0 {
