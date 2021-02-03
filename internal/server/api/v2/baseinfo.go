@@ -326,17 +326,15 @@ func GetSecondaryInfo(c *gin.Context) {
 	}
 	baseInfoRep := course.Secondary{Alive: aliveInfo, UserInfo: &userInfo, BuzUri: c.GetString("buz_uri")}
 	// 写入邀请关系
-	if baseInfoRep.GetInviteState(baseConf.HasInvite, req.PaymentType) {
-		if aliveInfo.PaymentType == enums.PaymentTypeFree {
-			inviteBusiness := marketing.InviteBusiness{AppId: appId, UserId: userId}
-			inviteBusiness.AddInviteCountUtilsNew(marketing.InviteUserInfo{
-				ShareUserId:  req.ShareUserId,
-				PaymentType:  2, // 这个payment_type有坑，对老代码妥协的结果
-				ResourceType: enums.ResourceTypeLive,
-				ResourceId:   req.ResourceId,
-				ProductId:    req.ProductId,
-			})
-		}
+	if baseInfoRep.GetInviteState(baseConf.HasInvite, req.PaymentType) && aliveInfo.PaymentType == enums.PaymentTypeFree {
+		inviteBusiness := marketing.InviteBusiness{AppId: appId, UserId: userId}
+		inviteBusiness.AddInviteCountUtilsNew(marketing.InviteUserInfo{
+			ShareUserId:  req.ShareUserId,
+			PaymentType:  2, // 这个payment_type有坑，对老代码妥协的结果
+			ResourceType: enums.ResourceTypeLive,
+			ResourceId:   req.ResourceId,
+			ProductId:    req.ProductId,
+		})
 	}
 	// 组装用户信息
 	userInfoMap["phone"] = userInfo.Phone
