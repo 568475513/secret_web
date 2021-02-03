@@ -495,10 +495,6 @@ func (a *AliveInfo) GetAliveLiveUrl(aliveType uint8, agentType int, UserId, play
 		liveUrl.AliveVideoUrl = liveUrl.MiniAliveVideoUrl
 		// play_url不为空--不为小程序--不在O端名单内
 		if !redis_gray.InGrayShop("video_alive_not_use_cos", a.AppId) && playUrl != "" && agentType != 14 {
-			logging.Info("新录播方式log")
-			logging.Info(!redis_gray.InGrayShop("video_alive_not_use_cos", a.AppId))
-			logging.Info(playUrl)
-			logging.Info(agentType)
 			liveUrl.VideoAliveUseCos = true //置为使用cos录播方式
 
 			if len(playUrls) != 0 {
