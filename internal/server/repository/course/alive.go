@@ -419,7 +419,7 @@ type LiveUrl struct {
 }
 
 // 获取直播推流链接
-func (a *AliveInfo) GetAliveLiveUrl(aliveType uint8, agentType int, UserId, playUrl, channelId string, version int) (LiveUrl, error) {
+func (a *AliveInfo) GetAliveLiveUrl(aliveType uint8, agentType int, UserId, playUrl, channelId string, version int, enableWebRtc int) (LiveUrl, error) {
 	liveUrl := LiveUrl{}
 	timeStamp := time.Now().Unix()
 	playUrls := make([]string, 0)
@@ -437,7 +437,8 @@ func (a *AliveInfo) GetAliveLiveUrl(aliveType uint8, agentType int, UserId, play
 		if err != nil {
 			return liveUrl, err
 		}
-		enableWebRtc := a.canUseFastLive(version) // 店铺设置是否开启快直播
+		// 去掉～
+		// enableWebRtc := a.canUseFastLive(version) // 店铺设置是否开启快直播
 
 		// 普通直播多清晰度
 		liveUrl.AliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
@@ -465,9 +466,10 @@ func (a *AliveInfo) GetAliveLiveUrl(aliveType uint8, agentType int, UserId, play
 				"encrypt":         "",
 			}
 		}
-
+		fmt.Println(redis_gray.InGrayShop("fast_alive_switch", a.AppId))
+		fmt.Println(util.Substr(playUrls[0], 0, 4) == "rtmp")
 		// 快直播O端名单目录
-		if redis_gray.InGrayShop("fast_alive_switch", a.AppId) && isUserWebRtc && enableWebRtc && util.Substr(playUrls[0], 0, 4) == "rtmp" {
+		if redis_gray.InGrayShop("fast_alive_switch", a.AppId) && isUserWebRtc && enableWebRtc == 1 && util.Substr(playUrls[0], 0, 4) == "rtmp" {
 			liveUrl.AliveFastWebrtcurl = "webrtc" + util.Substr(playUrls[0], 4, len(playUrls[0]))
 			liveUrl.FastAliveSwitch = true
 
