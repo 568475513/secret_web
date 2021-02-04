@@ -35,7 +35,7 @@ func GetBaseInfo(c *gin.Context) {
 		req validator.BaseInfoRuleV2
 	)
 	userId := app.GetUserId(c)
-	appId := app.GetAppId(c)
+	req.AppId = app.GetAppId(c)
 	if err = app.ParseRequest(c, &req); err != nil {
 		return
 	}
@@ -47,7 +47,7 @@ func GetBaseInfo(c *gin.Context) {
 
 	// 获取直播详情内容
 	childSpan := tracer.StartSpan("获取直播详情内容", opentracing.ChildOf(span.Context()))
-	aliveRep := course.AliveInfo{AppId: appId, AliveId: req.ResourceId}
+	aliveRep := course.AliveInfo{AppId: req.AppId, AliveId: req.ResourceId}
 	aliveInfo, err := aliveRep.GetAliveInfo()
 	childSpan.Finish()
 	if err != nil {
@@ -61,7 +61,7 @@ func GetBaseInfo(c *gin.Context) {
 
 	// 直播专栏关联信息
 	childSpan = tracer.StartSpan("获取直播专栏关联信息", opentracing.ChildOf(span.Context()))
-	proRep := course.Product{AppId: appId, ResourceId: req.ResourceId}
+	proRep := course.Product{AppId: req.AppId, ResourceId: req.ResourceId}
 	aliveRelations, err := proRep.GetResourceRelation()
 	childSpan.Finish()
 	if err != nil {
@@ -84,9 +84,9 @@ func GetBaseInfo(c *gin.Context) {
 		userType         uint
 	)
 	// 初始化权益实例
-	ap := ruser.UserPowerBusiness(appId, userId, c.GetInt("agent_type"))
+	ap := ruser.UserPowerBusiness(req.AppId, userId, c.GetInt("agent_type"))
 	// 初始化店铺配置相关
-	appRep := app_conf.AppInfo{AppId: appId}
+	appRep := app_conf.AppInfo{AppId: req.AppId}
 	// 此处需要补充致命错误输出后立刻返回
 	err = app.GoroutineNotPanic(func() (err error) {
 		goSpan := tracer.StartSpan("查询次级业务数据", opentracing.ChildOf(childSpan.Context()))
@@ -189,7 +189,7 @@ func GetBaseInfo(c *gin.Context) {
 	products = marketing.GetActivityTags(products, 2, c.GetString("client"), c.GetString("app_version"))
 	products = append(products, termList...)
 	// 邀请好友免费听逻辑 免费 非加密
-	shareRes := marketing.Share{AppId: appId, UserId: userId, ProductId: req.ProductId, Alive: aliveInfo}
+	shareRes := marketing.Share{AppId: req.AppId, UserId: userId, ProductId: req.ProductId, Alive: aliveInfo}
 	shareInfo := shareRes.GetShareInfoInit(products)
 	if aliveInfo.PaymentType != enums.PaymentTypeFree || aliveInfo.HavePassword == 1 {
 		shareInfo = shareRes.GetShareInfo(available, availableProduct, shareInfo)
@@ -202,21 +202,22 @@ func GetBaseInfo(c *gin.Context) {
 	shareListenInfo := shareRes.GetShareListenInfo(&shareInfo, available)
 	// 业务数据封装
 	baseInfoRep := course.BaseInfo{Alive: aliveInfo, AliveRep: &aliveRep, UserType: userType}
-	aliveInfoDetail := baseInfoRep.GetAliveInfoDetail(userId)
+	aliveInfoDetail := baseInfoRep.GetAliveInfoDetail()
 	aliveConf := baseInfoRep.GetAliveConfInfo(baseConf, aliveModule)
 	availableInfo := baseInfoRep.GetAvailableInfo(available, availableProduct, expireAt)
 	// 回放服务
-	lookBackRep := material.LookBack{AppId: appId, AliveId: req.ResourceId}
+	lookBackRep := material.LookBack{AppId: req.AppId, AliveId: req.ResourceId}
 	lookBackExpire, _ := lookBackRep.GetLookbackExpire(int(aliveInfo.IsLookback), aliveModule.LookbackTime)
 	// 补充回放过期信息
 	aliveConf["lookback_time"] = lookBackExpire["lookback_time"]
 	// 补充讲师信息
+	aliveInfoDetail["user_id"] = userId
 	aliveInfoDetail["user_title"] = roleInfo["user_title"]
 	aliveConf["is_can_exceptional"] = roleInfo["is_can_exceptional"]
 	// 补充老直播间链接
-	aliveInfoDetail["old_live_room_url"] = util.GetAliveRoomUrl(req.ResourceId, req.ProductId, req.ChannelId, appId, enums.AliveRoomPage)
+	aliveInfoDetail["old_live_room_url"] = util.GetAliveRoomUrl(req.ResourceId, req.ProductId, req.ChannelId, req.AppId, enums.AliveRoomPage)
 	// 获取播放连接【错误处理需要仓库层打印】
-	alivePlayInfo, _ := aliveRep.GetAliveLiveUrl(aliveInfo.AliveType, c.GetInt("agent_type"), userId, aliveInfo.PlayUrl, aliveInfo.ChannelId, baseConf.VersionType, baseConf.EnableWebRtc)
+	alivePlayInfo := baseInfoRep.GetAliveLiveUrl(c.GetInt("agent_type"), baseConf.VersionType, baseConf.EnableWebRtc, userId)
 	// 直播静态操作
 	if available && (aliveInfoDetail["alive_state"].(int) == 1 || aliveInfo.ZbStartAt.Equal(time.Now())) {
 		baseInfoRep.SetAliveIdToStaticRedis()
@@ -228,7 +229,7 @@ func GetBaseInfo(c *gin.Context) {
 
 	// 数据上报服务
 	childSpan = tracer.StartSpan("异步队列处理时间", opentracing.ChildOf(span.Context()))
-	dataAsyn := data.AsynData{AppId: appId, UserId: userId, ResourceId: req.ResourceId, ProductId: req.ProductId, PaymentType: int(aliveInfo.PaymentType)}
+	dataAsyn := data.AsynData{AppId: req.AppId, UserId: userId, ResourceId: req.ResourceId, ProductId: req.ProductId, PaymentType: int(aliveInfo.PaymentType)}
 	// 用户购买关系埋点上报
 	dataAsyn.AsynDataUserPurchase(c, available)
 	// 增加渠道浏览量
@@ -257,7 +258,7 @@ func GetBaseInfo(c *gin.Context) {
 	// 直播自定义文案
 	data["caption_define"] = baseInfoRep.GetCaptionDefine(baseConf.CaptionDefine)
 	// 首页链接
-	data["index_url"] = util.UrlWrapper("homepage", c.GetString("buz_uri"), appId)
+	data["index_url"] = util.UrlWrapper("homepage", c.GetString("buz_uri"), req.AppId)
 	// 页面是否跳转
 	if url, code, msg := baseInfoRep.BaseInfoPageRedirect(products, available, baseConf.VersionType, req); code != 0 {
 		app.OkWithCodeData(msg, map[string]string{"url": url}, code, c)

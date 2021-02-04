@@ -1,13 +1,20 @@
 package course
 
 import (
+	"fmt"
+	"os"
 	"strconv"
+	"strings"
 	"time"
+
+	"github.com/gomodule/redigo/redis"
 
 	"abs/internal/server/rules/validator"
 	"abs/models/alive"
 	"abs/models/business"
 	"abs/pkg/cache/alive_static"
+	"abs/pkg/cache/redis_alive"
+	"abs/pkg/cache/redis_gray"
 	e "abs/pkg/enums"
 	"abs/pkg/logging"
 	"abs/pkg/util"
@@ -21,8 +28,22 @@ type BaseInfo struct {
 	UserType uint
 }
 
+// 快直播结构体
+type LiveUrl struct {
+	PcAliveVideoUrl           string                   `json:"pc_alive_video_url"`            //pc播放地址
+	MiniAliveVideoUrl         string                   `json:"mini_alive_video_url"`          //小程序播放地址
+	AliveVideoUrl             string                   `json:"alive_video_url"`               //上传视频播放地址
+	AliveFastWebrtcurl        string                   `json:"alive_fast_webrtcurl"`          //快直播播放地址
+	NewAliveVideoUrl          string                   `json:"new_alive_video_url"`           //录播新方式的播放链接
+	FastAliveSwitch           bool                     `json:"fast_alive_switch"`             //快直播开关
+	VideoAliveUseCos          bool                     `json:"video_alive_use_cos"`           //置为使用cos录播方式
+	AliveVideoMoreSharpness   []map[string]interface{} `json:"alive_video_more_sharpness"`    //普通直播多清晰度
+	PcAliveVideoMoreSharpness []map[string]interface{} `json:"pc_alive_video_more_sharpness"` //pc普通直播多清晰度
+	AliveFastMoreSharpness    []map[string]interface{} `json:"alive_fast_more_sharpness"`     //快直播多清晰度
+}
+
 // 组装直播的基本信息
-func (b *BaseInfo) GetAliveInfoDetail(userId string) map[string]interface{} {
+func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 	aliveInfoDetail, now := make(map[string]interface{}), time.Now()
 	aliveInfoDetail["app_id"] = b.AliveRep.AppId
 	aliveInfoDetail["alive_id"] = b.Alive.Id
@@ -85,7 +106,6 @@ func (b *BaseInfo) GetAliveInfoDetail(userId string) map[string]interface{} {
 	}
 	// 用户类型学员、讲师
 	aliveInfoDetail["user_type"] = b.UserType
-	aliveInfoDetail["user_id"] = userId
 	// 参数加密串
 	aliveInfoDetail["param_str"], _ = util.PutParmToStr(map[string]interface{}{
 		"payment_type":  e.PaymentTypeSingle,
@@ -239,6 +259,108 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	return aliveConf
 }
 
+// 获取直播间相关的链接
+func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId string) (liveUrl LiveUrl) {
+	timeStamp := time.Now().Unix()
+	supportSharpness := map[string]interface{}{
+		"fluent":  "流畅", //流畅（480P）
+		"default": "原画", //默认原画
+	}
+	var (
+		playUrls       []string
+		err            error
+		isUserWebRtc   bool
+		// isEnableWebRtc bool
+	)
+	if err = util.JsonDecode([]byte(b.Alive.PlayUrl), &playUrls); err != nil {
+		logging.Error(fmt.Sprintf("获取直播间播放链接JsonDecode错误：%s", err.Error()))
+		return
+	}
+	if len(playUrls) >= 3 && (b.Alive.AliveType == e.AliveTypePush || b.Alive.AliveType == e.AliveOldTypePush) {
+		liveUrl.PcAliveVideoUrl = playUrls[1]
+		liveUrl.AliveVideoUrl, liveUrl.MiniAliveVideoUrl = playUrls[2], playUrls[2]
+		// 店铺设置是否开启快直播【无用了现在】
+		// isEnableWebRtc = b.canUseFastLive(version)
+		// 快直播功能判断
+		// 用户是否可用快直播
+		if isUserWebRtc, err = b.isUseFastLive(UserId); err != nil {
+			logging.Error(fmt.Sprintf("获取用户是否可用快直播错误：%s", err.Error()))
+			// 这里需要返回吗？
+			return
+		}
+		// 普通直播多清晰度
+		liveUrl.AliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
+		liveUrl.PcAliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
+		i := 0
+		for k, v := range supportSharpness {
+			switch k {
+			case "fluent":
+				i = 0
+			case "default":
+				i = 1
+			}
+			liveUrl.AliveVideoMoreSharpness[i] = map[string]interface{}{
+				"definition_name": v,
+				"definition_p":    k,
+				"url":             b.getPlayUrlBySharpness(k, playUrls[2], b.Alive.ChannelId),
+				"encrypt":         "",
+			}
+			liveUrl.PcAliveVideoMoreSharpness[i] = map[string]interface{}{
+				"definition_name": v,
+				"definition_p":    k,
+				"url":             b.getPlayUrlBySharpness(k, playUrls[1], b.Alive.ChannelId),
+				"encrypt":         "",
+			}
+		}
+		
+		// 快直播O端名单目录
+		isGray := redis_gray.InGrayShop("fast_alive_switch", b.AliveRep.AppId)
+		if isGray && isUserWebRtc && enableWebRtc == 1 && util.Substr(playUrls[0], 0, 4) == "rtmp" {
+			liveUrl.AliveFastWebrtcurl = "webrtc" + util.Substr(playUrls[0], 4, len(playUrls[0]))
+			liveUrl.FastAliveSwitch = true
+			//快直播多清晰度
+			liveUrl.AliveFastMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
+			i := 0
+			for k, v := range supportSharpness {
+				switch k {
+				case "fluent":
+					i = 0
+				case "default":
+					i = 1
+				}
+				liveUrl.AliveFastMoreSharpness[i] = map[string]interface{}{
+					"definition_name": v,
+					"definition_p":    k,
+					"url":             b.getPlayUrlBySharpness(k, liveUrl.AliveFastWebrtcurl, b.Alive.ChannelId),
+					"encrypt":         "",
+				}
+			}
+		}
+	} else {
+		liveUrl.MiniAliveVideoUrl = fmt.Sprintf("https://%s/%s.m3u8?%d", util.GetH5Domain(b.AliveRep.AppId, true), b.AliveRep.AliveId, timeStamp)
+		liveUrl.AliveVideoUrl = liveUrl.MiniAliveVideoUrl
+		isGrayBool := redis_gray.InGrayShop("video_alive_not_use_cos", b.AliveRep.AppId)
+		// play_url不为空--不为小程序--不在O端名单内
+		if !isGrayBool && b.Alive.PlayUrl != "" && agentType != 14 {
+			// Es日志
+			// logging.LogToEs("新录播方式log", map[string]interface{}{
+			// 	"app_id": a.AppId,
+			// 	"redis_gray": grayBool,
+			// 	"playUrl": playUrl,
+			// 	"agentType": agentType,
+			// })
+			// 置为使用cos录播方式
+			liveUrl.VideoAliveUseCos = true
+			if len(playUrls) != 0 {
+				liveUrl.NewAliveVideoUrl = playUrls[3]
+			} else {
+				liveUrl.NewAliveVideoUrl = b.Alive.PlayUrl
+			}
+		}
+	}
+	return
+}
+
 // 直播静态页的信息采集【用户】
 func (b *BaseInfo) SetAliveUserToStaticRedis(userId string) {
 	err := alive_static.HsetNxString(staticAliveHashUser, b.Alive.Id+userId, 1, 3600*24)
@@ -366,6 +488,58 @@ func (b *BaseInfo) GetCaptionDefine(captionDefineJson string) map[string]string 
 }
 
 // 私有方法 ===============================================================================
+// 判断用户是否打开快直播
+func (b *BaseInfo) isUseFastLive(userId string) (bool, error) {
+	conn, err := redis_alive.GetLiveInteractConn()
+	if err != nil {
+		return false, err
+	}
+	defer conn.Close()
+
+	flag, err := redis.Bool(conn.Do("SISMEMBER", notUseFastLiveKey, b.AliveRep.AppId+userId))
+	if err != nil {
+		return false, err
+	}
+	return !flag, nil
+}
+
+// 根据清晰度替换播放链接, sharpness可切换的清晰度：default默认，fluent流畅
+func (b *BaseInfo) getPlayUrlBySharpness(sharpness, playUrl, channelId string) string {
+	replaceStr := ""
+	switch sharpness {
+	case "fluent":
+		replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_FLUENT"))
+	default:
+		replaceStr = ""
+	}
+
+	if replaceStr != "" {
+		playUrl = strings.Replace(playUrl, channelId, replaceStr, -1)
+	}
+	return playUrl
+}
+
+// 店铺版本决定默认是否开启快直播，老版本默认关闭，其余开启【老逻辑，现在不在用了好像】
+func (b *BaseInfo) canUseFastLive(versionType int) bool {
+	//允许开快直播的版本
+	switch versionType {
+	case e.VERSION_TYPE_PROBATION:
+		return true
+	case e.VERSION_TYPE_ONLINE_EDUCATION:
+		return true
+	case e.VERSION_TYPE_ADVANCED:
+		return true
+	case e.VERSION_TYPE_STANDARD:
+		return true
+	case e.VERSION_TYPE_TRAINING_STD:
+		return true
+	case e.VERSION_TYPE_TRAINING_TRY:
+		return true
+	default:
+		return false
+	}
+}
+
 // 获取版本过期信息
 func (b *BaseInfo) getAppExpireTime(profit map[string]interface{}) map[string]interface{} {
 	// 查询直播间插件功能过期信息
