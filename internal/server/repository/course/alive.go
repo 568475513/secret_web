@@ -494,9 +494,16 @@ func (a *AliveInfo) GetAliveLiveUrl(aliveType uint8, agentType int, UserId, play
 		liveUrl.MiniAliveVideoUrl = fmt.Sprintf("https://%s/%s.m3u8?%d", util.GetH5Domain(a.AppId, true), a.AliveId, timeStamp)
 		liveUrl.AliveVideoUrl = liveUrl.MiniAliveVideoUrl
 		// play_url不为空--不为小程序--不在O端名单内
-		if !redis_gray.InGrayShop("video_alive_not_use_cos", a.AppId) && playUrl != "" && agentType != 14 {
-			liveUrl.VideoAliveUseCos = true //置为使用cos录播方式
-
+		grayBool := redis_gray.InGrayShop("video_alive_not_use_cos", a.AppId)
+		if !grayBool && playUrl != "" && agentType != 14 {
+			// logging.LogToEs("新录播方式log", map[string]interface{}{
+			// 	"app_id": a.AppId,
+			// 	"redis_gray": grayBool,
+			// 	"playUrl": playUrl,
+			// 	"agentType": agentType,
+			// })
+			// 置为使用cos录播方式
+			liveUrl.VideoAliveUseCos = true
 			if len(playUrls) != 0 {
 				liveUrl.NewAliveVideoUrl = playUrls[3]
 			} else {
