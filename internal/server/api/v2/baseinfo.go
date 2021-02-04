@@ -216,7 +216,7 @@ func GetBaseInfo(c *gin.Context) {
 	// 补充老直播间链接
 	aliveInfoDetail["old_live_room_url"] = util.GetAliveRoomUrl(req.ResourceId, req.ProductId, req.ChannelId, appId, enums.AliveRoomPage)
 	// 获取播放连接【错误处理需要仓库层打印】
-	alivePlayInfo, _ := aliveRep.GetAliveLiveUrl(aliveInfo.AliveType, c.GetInt("agent_type"), userId, aliveInfo.PlayUrl, aliveInfo.ChannelId, baseConf.VersionType)
+	alivePlayInfo, _ := aliveRep.GetAliveLiveUrl(aliveInfo.AliveType, c.GetInt("agent_type"), userId, aliveInfo.PlayUrl, aliveInfo.ChannelId, baseConf.VersionType, baseConf.EnableWebRtc)
 	// 直播静态操作
 	if available && (aliveInfoDetail["alive_state"].(int) == 1 || aliveInfo.ZbStartAt.Equal(time.Now())) {
 		baseInfoRep.SetAliveIdToStaticRedis()

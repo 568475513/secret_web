@@ -38,6 +38,7 @@ type ConfHubInfo struct {
 	Safe     map[string]interface{} `json:"safe"`
 	Pc       map[string]interface{} `json:"pc"`
 	Domain   map[string]interface{} `json:"domain"`
+	Live     map[string]interface{} `json:"live"`
 }
 
 // 店铺基本配置
@@ -60,6 +61,7 @@ type AppBaseConf struct {
 	RelateSellInfo      int `json:"relate_sell_info"` // 是否显示关联售卖界面，默认1-显示，0-不显示
 	OnlyH5Play          int `json:"only_h5_play"`
 	VideoPlayerType     int `json:"video_player_type"` // 0-默认播放器 1-自研播放器 (默认0)
+	EnableWebRtc        int `json:"enable_web_rtc"`    // 店铺快直播开关
 	// profit
 	Profit map[string]interface{} `json:"profit"`
 	// pc

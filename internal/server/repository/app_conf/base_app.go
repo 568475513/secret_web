@@ -183,7 +183,7 @@ func (a *AppInfo) GetConfHubInfo() (baseConf *service.AppBaseConf, err error) {
 
 	// 获取配置服务
 	conInfo := service.ConfHubServer{AppId: a.AppId, WxAppType: 1}
-	result, err := conInfo.GetConf([]string{"base", "version", "profit", "switches", "extra", "h5_custom", "safe", "pc", "domain"})
+	result, err := conInfo.GetConf([]string{"base", "version", "profit", "switches", "extra", "h5_custom", "safe", "pc", "domain", "live"})
 	if err != nil {
 		return
 	}
@@ -223,6 +223,7 @@ func (a *AppInfo) handleConfResult(result service.ConfHubInfo) *service.AppBaseC
 		// 新增在这里加
 		PcCustomDomain: result.Domain["pc_custom_domain"].(string),
 		IsEnable:       int(result.Pc["is_enable"].(float64)),
+		EnableWebRtc:   int(result.Live["enable_web_rtc"].(float64)),
 		// 是否只有H5观看
 		OnlyH5Play: int(result.Safe["only_h5_play"].(float64)),
 		// Profit数据
