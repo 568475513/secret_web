@@ -466,8 +466,7 @@ func (a *AliveInfo) GetAliveLiveUrl(aliveType uint8, agentType int, UserId, play
 				"encrypt":         "",
 			}
 		}
-		fmt.Println(redis_gray.InGrayShop("fast_alive_switch", a.AppId))
-		fmt.Println(util.Substr(playUrls[0], 0, 4) == "rtmp")
+		
 		// 快直播O端名单目录
 		if redis_gray.InGrayShop("fast_alive_switch", a.AppId) && isUserWebRtc && enableWebRtc == 1 && util.Substr(playUrls[0], 0, 4) == "rtmp" {
 			liveUrl.AliveFastWebrtcurl = "webrtc" + util.Substr(playUrls[0], 4, len(playUrls[0]))
