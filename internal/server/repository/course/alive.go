@@ -496,16 +496,12 @@ func (a *AliveInfo) GetAliveLiveUrl(aliveType uint8, agentType int, UserId, play
 		// play_url不为空--不为小程序--不在O端名单内
 		grayBool := redis_gray.InGrayShop("video_alive_not_use_cos", a.AppId)
 		if !grayBool && playUrl != "" && agentType != 14 {
-			// logging.Info("新录播方式log")
-			// logging.Info(!grayBool)
-			// logging.Info(playUrl)
-			// logging.Info(agentType)
-			logging.LogToEs("新录播方式log", map[string]interface{}{
-				"app_id": a.AppId,
-				"redis_gray": grayBool,
-				"playUrl": playUrl,
-				"agentType": agentType,
-			})
+			// logging.LogToEs("新录播方式log", map[string]interface{}{
+			// 	"app_id": a.AppId,
+			// 	"redis_gray": grayBool,
+			// 	"playUrl": playUrl,
+			// 	"agentType": agentType,
+			// })
 			// 置为使用cos录播方式
 			liveUrl.VideoAliveUseCos = true
 			if len(playUrls) != 0 {
