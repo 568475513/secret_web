@@ -34,6 +34,7 @@ func (s *Svip) GetResourceSvipRedirect() (redirect string) {
 			}
 			for _, v := range svips {
 				if v.EffactiveRange == 1 {
+					contentParam.ProductId = v.Id
 					redirect = util.ContentUrl(contentParam)
 					break
 				}
