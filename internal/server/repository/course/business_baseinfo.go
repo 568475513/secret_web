@@ -263,8 +263,8 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId string) (liveUrl LiveUrl) {
 	timeStamp := time.Now().Unix()
 	supportSharpness := map[string]interface{}{
-		"fluent":  "流畅", //流畅（480P）
 		"default": "原画", //默认原画
+		"fluent":  "流畅", //流畅（480P）
 	}
 	var (
 		playUrls       []string
@@ -295,9 +295,9 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		for k, v := range supportSharpness {
 			switch k {
 			case "fluent":
-				i = 0
-			case "default":
 				i = 1
+			case "default":
+				i = 0
 			}
 			liveUrl.AliveVideoMoreSharpness[i] = map[string]interface{}{
 				"definition_name": v,
@@ -324,9 +324,9 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			for k, v := range supportSharpness {
 				switch k {
 				case "fluent":
-					i = 0
-				case "default":
 					i = 1
+				case "default":
+					i = 0
 				}
 				liveUrl.AliveFastMoreSharpness[i] = map[string]interface{}{
 					"definition_name": v,
