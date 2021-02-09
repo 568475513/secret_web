@@ -385,7 +385,7 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 	req validator.BaseInfoRuleV2) (url string, code int, msg string) {
 	// 当无自身与属于专栏/会员售卖形式时，将超级会员加入进来
 	if len(products) == 0 && b.Alive.PaymentType == e.PaymentTypeProduct && !available {
-		svipReq := Svip{AppId: b.Alive.AppId, ResourceId: b.Alive.Id}
+		svipReq := Svip{AppId: b.Alive.AppId, ResourceId: b.Alive.Id, ResourceType: e.ResourceTypeLive}
 		if redirect := svipReq.GetResourceSvipRedirect(); redirect != "" {
 			url = redirect
 			// 是否更多来源

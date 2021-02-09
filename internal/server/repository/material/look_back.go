@@ -44,13 +44,9 @@ type lookBackTime struct {
 	ExpireType int    `json:"expire_type"`
 }
 
-/**
- * 获取直播结束后的回放视频链接等内容
- */
+// 获取直播结束后的回放视频链接等内容
 func (lb *LookBack) GetLookBackUrl(aliveInfo *alive.Alive, aliveState, appType int) map[string]string {
-
 	data := make(map[string]string)
-
 	aliveVideoUrl := ""
 	miniAliveVideoUrl := ""
 	aliveReviewUrl := "/" + lb.AliveId + ".m3u8"
@@ -63,7 +59,7 @@ func (lb *LookBack) GetLookBackUrl(aliveInfo *alive.Alive, aliveState, appType i
 			aliveVideoUrl = ""
 			miniAliveVideoUrl = ""
 		} else {
-			if aliveInfo.AliveType == 1 { //语音直播
+			if aliveInfo.AliveType == e.AliveTypeVideo { //语音直播
 				videoMiddleTranscode, err := business.GetVideoMiddleTranscode(aliveInfo.FileId)
 				if err != nil {
 					aliveVideoUrl, miniAliveVideoUrl = "", ""
@@ -72,7 +68,7 @@ func (lb *LookBack) GetLookBackUrl(aliveInfo *alive.Alive, aliveState, appType i
 					aliveVideoUrl = videoMiddleTranscode.VideoHls
 					miniAliveVideoUrl = videoMiddleTranscode.VideoHls
 				}
-			} else if aliveInfo.AliveType == 2 || aliveInfo.AliveType == 4 { //视频直播
+			} else if aliveInfo.AliveType == e.AliveTypePush || aliveInfo.AliveType == e.AliveOldTypePush { //视频直播
 				lookBackFile, _ := lb.GetLookBackFile(lb.AppId, lb.AliveId)
 				if aliveInfo.CreateMode == 1 { //转播课程，判断直播方的回放权限
 					originAliveInfo, _ := alive.GetAliveInfoByChannelId(aliveInfo.ChannelId, []string{"app_id", "id", "is_lookback"})
@@ -82,7 +78,8 @@ func (lb *LookBack) GetLookBackUrl(aliveInfo *alive.Alive, aliveState, appType i
 					}
 				}
 
-				if lookBackFile != nil && lookBackFile.AliveId != "" { //如果存在回看文件的记录 直播推流才有数据并且转码拼接成功
+				// 如果存在回看文件的记录 直播推流才有数据并且转码拼接成功
+				if lookBackFile != nil && lookBackFile.AliveId != "" {
 					aliveVideoUrl = lookBackFile.LookbackM3u8
 					miniAliveVideoUrl = lookBackFile.LookbackM3u8
 				} else { //没有走原逻辑
@@ -98,12 +95,10 @@ func (lb *LookBack) GetLookBackUrl(aliveInfo *alive.Alive, aliveState, appType i
 		}
 
 		chanceMp4 := redis_gray.InGrayShop(aliveOnlyDrmMp4Key, lb.AppId)
-
 		if chanceMp4 {
 			if strings.Index(aliveVideoUrl, "/drm/") == -1 {
 				aliveVideoUrl = ""
 			}
-
 			if strings.Index(miniAliveVideoUrl, "/drm/") == -1 {
 				miniAliveVideoUrl = ""
 			}
