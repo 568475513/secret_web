@@ -278,8 +278,9 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		// isEnableWebRtc bool
 	)
 	if err = util.JsonDecode([]byte(b.Alive.PlayUrl), &playUrls); err != nil {
-		logging.Error(fmt.Sprintf("获取直播间播放链接JsonDecode错误：%s", err.Error()))
-		return
+		logging.Error(fmt.Sprintf("获取直播间播放链接JsonDecode有错误【非致命，不慌】：%s", err.Error()))
+		// 不能返回，有特殊的PlayUrl
+		// return
 	}
 	if len(playUrls) >= 3 && (b.Alive.AliveType == e.AliveTypePush || b.Alive.AliveType == e.AliveOldTypePush) {
 		liveUrl.PcAliveVideoUrl = playUrls[1]
