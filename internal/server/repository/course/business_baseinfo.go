@@ -241,9 +241,14 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	}
 
 	// 获取直播配置表相关配置
+	// 邀请达人榜需要灰度控制
+	if redis_gray.InGrayShopNew("invite_forbid", b.AliveRep.AppId) {
+		aliveConf["is_invite_on"] = 0
+	} else {
+		aliveConf["is_invite_on"] = aliveModule.IsInviteOn
+	}
 	aliveConf["is_message_on"] = aliveModule.IsMessageOn
 	aliveConf["alive_mode"] = aliveModule.AliveMode
-	aliveConf["is_invite_on"] = aliveModule.IsInviteOn
 	aliveConf["is_coupon_on"] = aliveModule.IsCouponOn
 	aliveConf["is_card_on"] = aliveModule.IsCardOn
 	aliveConf["is_prize_on"] = aliveModule.IsPrizeOn
