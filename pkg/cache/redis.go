@@ -52,9 +52,9 @@ func Init() {
 	}
 	// 不知道新旧的请问abner!!!
 	// 灰度控制【新】
-	// if err := redis_gray.Init(); err != nil {
-	// 	log.Fatal(err)
-	// }
+	if err := redis_gray.Init(); err != nil {
+		log.Fatal(err)
+	}
 	// 灰度控制【旧】
 	if err := redis_gray.InitOldGary(); err != nil {
 		log.Fatal(err)
