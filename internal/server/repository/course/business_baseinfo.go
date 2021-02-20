@@ -241,9 +241,14 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	}
 
 	// 获取直播配置表相关配置
+	// 邀请达人榜需要灰度控制
+	if redis_gray.InGrayShopNew("invite_forbid", b.AliveRep.AppId) {
+		aliveConf["is_invite_on"] = 0
+	} else {
+		aliveConf["is_invite_on"] = aliveModule.IsInviteOn
+	}
 	aliveConf["is_message_on"] = aliveModule.IsMessageOn
 	aliveConf["alive_mode"] = aliveModule.AliveMode
-	aliveConf["is_invite_on"] = aliveModule.IsInviteOn
 	aliveConf["is_coupon_on"] = aliveModule.IsCouponOn
 	aliveConf["is_card_on"] = aliveModule.IsCardOn
 	aliveConf["is_prize_on"] = aliveModule.IsPrizeOn
@@ -273,8 +278,9 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		// isEnableWebRtc bool
 	)
 	if err = util.JsonDecode([]byte(b.Alive.PlayUrl), &playUrls); err != nil {
-		logging.Error(fmt.Sprintf("获取直播间播放链接JsonDecode错误：%s", err.Error()))
-		return
+		logging.Error(fmt.Sprintf("获取直播间播放链接JsonDecode有错误【非致命，不慌】：%s", err.Error()))
+		// 不能返回，有特殊的PlayUrl
+		// return
 	}
 	if len(playUrls) >= 3 && (b.Alive.AliveType == e.AliveTypePush || b.Alive.AliveType == e.AliveOldTypePush) {
 		liveUrl.PcAliveVideoUrl = playUrls[1]
