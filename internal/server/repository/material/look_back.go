@@ -269,7 +269,7 @@ func (lb *LookBack) GetLookbackExpire(isLookback int, lookbackTime string) (map[
 		} else {
 			expireTime, _ := time.Parse("2006-01-02", midd.Expire)
 			// defaultTime["expire"] = expireTime.Unix() + 86399 // 当天最后一秒（老PHP写法）
-			defaultTime["expire"] = time.Date(expireTime.Year(), expireTime.Month(), expireTime.Day(), 23, 59, 59, 0, expireTime.Location()).Unix()
+			defaultTime["expire"] = time.Date(expireTime.Year(), expireTime.Month(), expireTime.Day(), 23, 59, 59, 0, expireTime.Location()).Unix() - 28800 // UTC -> CST
 			defaultTime["expire_type"] = midd.ExpireType
 			redisLookbackInfo["lookback_time"] = defaultTime
 		}
