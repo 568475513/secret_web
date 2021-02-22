@@ -4,12 +4,6 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-const (
-	// 字段状态值类型
-	SVIP_STATE_NORMAL = 0
-	SVIP_STATE_HIDE   = 1
-)
-
 type SvipResRelation struct {
 	Id           int
 	AppId        string
@@ -27,7 +21,7 @@ func (SvipResRelation) TableName() string {
 }
 
 type Svip struct {
-	Id             int
+	Id             string
 	AppId          string
 	EffactiveRange uint8
 }
@@ -55,7 +49,7 @@ func GetResourceSvipRelation(appId string, resourceId string, resourceType int) 
 func GetSvipList(appId string) ([]*Svip, error) {
 	var s []*Svip
 	err := db.Select("id,app_id,effactive_range").
-		Where("app_id=? and state in (?)", appId, [2]int{SVIP_STATE_NORMAL, SVIP_STATE_HIDE}).
+		Where("app_id=? and state in (0,1)", appId).
 		Find(&s).Error
 
 	if err != nil && err != gorm.ErrRecordNotFound {
