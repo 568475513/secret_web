@@ -64,7 +64,7 @@ if [ $1 == "start" ]; then
     echo "restart job..."
     cd ${dir}
     rm -f ./absGoDev
-    go build job -tags=jsoniter -o absGoDev -ldflags "-w -s"
+    go build -tags=jsoniter -o absGoDev -ldflags "-w -s"
     ps aux | grep "absGoDev job" | grep -v grep | awk '{print $2}' | xargs kill -9
     if [ $# -eq 2 ] && [ $2 == "-d" ]; then
         nohup ./absGoDev job > ./runtime/runjob.log 2>&1 &
