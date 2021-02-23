@@ -3,6 +3,7 @@ package data
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"time"
 
@@ -20,10 +21,10 @@ import (
 var bLogger *bussinessLogger
 
 type BuryingPoint struct {
-	AppId       string
-	UserId      string
-	ResourceId  string
-	ProductId   string
+	AppId      string
+	UserId     string
+	ResourceId string
+	ProductId  string
 }
 
 type UserPurchaseData struct {
@@ -102,9 +103,9 @@ func (b *BuryingPoint) InsertUserPurchaseLog(field *UserPurchaseData) {
 		UserPurchaseData: field,
 	}
 	jsonLog, _ := json.Marshal(logData)
-	b.initBussinessLogger(1, 3, 1024*1024, func() string {
+	b.initBussinessLogger(3, 1, 1024*1024, func() string {
 		return fmt.Sprintf("user_purchase_log_%s.log", time.Now().Format("2006_01_02"))
-	}, util.GetRuntimeDir())
+	}, os.Getenv("PURCHASE_LOG_PATH"))
 	bLogger.SuperInfo(string(jsonLog))
 }
 
@@ -121,7 +122,7 @@ func (b *BuryingPoint) initBussinessLogger(maxAge int, maxBackup int, maxSize in
 	bLogger.Path = path
 	bLogger.rule = rule
 	bLogger.FileName = BornFileName(rule)
-	bLogger.Logger = initZapLogeer(bLogger.MaxSize, bLogger.MaxBackup, bLogger.MaxAge, path + "/" + bLogger.FileName)
+	bLogger.Logger = initZapLogeer(bLogger.MaxSize, bLogger.MaxBackup, bLogger.MaxAge, path+"/"+bLogger.FileName)
 }
 
 func (*bussinessLogger) SuperInfo(msg string) {
