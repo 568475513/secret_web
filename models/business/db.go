@@ -104,7 +104,7 @@ func updateTimeStampForUpdateCallback(scope *gorm.Scope) {
 func updateTimeStampForCreateCallback(scope *gorm.Scope) {
 	if !scope.HasError() {
 		nowTime := time.Now().Unix()
-		if createTimeField, ok := scope.FieldByName("CreatedAT"); ok {
+		if createTimeField, ok := scope.FieldByName("CreatedAt"); ok {
 			if createTimeField.IsBlank {
 				createTimeField.Set(nowTime)
 			}
