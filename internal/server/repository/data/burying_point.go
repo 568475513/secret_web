@@ -128,7 +128,6 @@ func (b *BuryingPoint) initBussinessLogger(maxAge int, maxBackup int, maxSize in
 func (*bussinessLogger) SuperInfo(msg string) {
 	currentFileName := BornFileName(bLogger.rule)
 	if bLogger.FileName != currentFileName {
-		fmt.Println("生成了新的实例.....", currentFileName)
 		bLogger.Logger = initZapLogeer(bLogger.MaxSize, bLogger.MaxBackup, bLogger.MaxAge, bLogger.Path+"/"+currentFileName)
 		bLogger.FileName = currentFileName
 	}
