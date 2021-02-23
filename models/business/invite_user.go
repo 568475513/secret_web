@@ -90,7 +90,7 @@ func GetInviteUserByShareUser(inviteUser InviteUser) ([]*InviteUser, error) {
 // 添加一条InviteUser的数据
 func SetInviteUser(insert InviteUser) error {
 	if dbRw.NewRecord(insert) {
-		return db.Create(&insert).Error
+		return dbRw.Create(&insert).Error
 	} else {
 		return nil
 	}
@@ -99,7 +99,7 @@ func SetInviteUser(insert InviteUser) error {
 // 添加一条InviteRelation的数据
 func SetInviteRelation(insert InviteRelation) error {
 	if dbRw.NewRecord(insert) {
-		return db.Create(&insert).Error
+		return dbRw.Create(&insert).Error
 	} else {
 		return nil
 	}
@@ -108,7 +108,7 @@ func SetInviteRelation(insert InviteRelation) error {
 // 修改一条记录的邀请数
 func UpdateInviteUserByInviteCount(insert InviteUser) int64 {
 	// todo 错误一会抛出来
-	return db.Table("t_invite_user"). // .Model(&insert)
+	return dbRw.Table("t_invite_user"). // .Model(&insert)
 						Where(
 			"app_id=? and share_user_id = ? and payment_type=? and resource_id=? and resource_type=? and product_id=?",
 			insert.AppId,
