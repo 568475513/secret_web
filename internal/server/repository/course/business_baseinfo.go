@@ -3,7 +3,6 @@ package course
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -413,11 +412,11 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 	// 判断是否购买,如果未购买则跳专栏
 	if b.Alive.ProductId.String != "" {
 		urlParams := util.ContentParam{
-			Type:        strconv.Itoa(e.PaymentTypeProduct),
+			Type:        e.PaymentTypeProduct,
 			ProductId:   b.Alive.ProductId.String,
 			ChannelId:   req.ChannelId,
 			ShareUserId: req.ShareUserId,
-			ShareType:   strconv.Itoa(req.ShareType),
+			ShareType:   req.ShareType,
 		}
 		url = util.ContentUrl(urlParams)
 		// 页面跳转（未购买且属于多专栏/会员）
@@ -431,14 +430,14 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 			}
 			if len(products) > 1 {
 				urlColumParams.ResourceId = b.Alive.Id
-				urlColumParams.ResourceType = strconv.Itoa(e.ResourceTypeLive)
+				urlColumParams.ResourceType = e.ResourceTypeLive
 				urlColumParams.ShareUserId = req.ShareUserId
-				urlColumParams.ShareType = strconv.Itoa(req.ShareType)
+				urlColumParams.ShareType = req.ShareType
 				url = util.ParentColumnsUrl(urlColumParams)
 			} else if len(products) == 1 {
-				urlColumParams.Type = strconv.Itoa(e.PaymentTypeProduct)
-				urlColumParams.ResourceId = ""
-				urlColumParams.ResourceType = ""
+				urlColumParams.Type = e.PaymentTypeProduct
+				// urlColumParams.ResourceId = ""
+				// urlColumParams.ResourceType = ""
 				urlColumParams.ProductId = products[0].Id
 				if req.ContentAppId != "" {
 					urlColumParams.ContentAppId = req.ContentAppId
@@ -456,19 +455,19 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 // 获取旧直播间链接
 func (b *BaseInfo) GetAliveRoomUrl(req validator.BaseInfoRuleV2) string {
 	params := util.ContentParam{
-		Type: strconv.Itoa(e.PaymentTypeReward),
-		ResourceType: strconv.Itoa(e.ResourceTypeLive),
+		Type: e.PaymentTypeReward,
+		ResourceType: e.ResourceTypeLive,
 		ResourceId: req.ResourceId,
 		ProductId: req.ProductId,
-		PaymentType: strconv.Itoa(int(b.Alive.PaymentType)),
+		PaymentType: int(b.Alive.PaymentType),
 		ChannelId: req.ChannelId,
 		AppId: b.AliveRep.AppId,
 		ShareUserId: req.ShareUserId,
-		ShareType: strconv.Itoa(req.ShareType),
+		ShareType: req.ShareType,
 		ShareAgent: req.ShareAgent,
 		ShareFrom: req.ShareFrom,
 		Scene: req.Scene,
-		ExtraData: strconv.Itoa(e.AliveRoomPage),
+		ExtraData: e.AliveRoomPage,
 	}
 	return util.ContentUrl(params)
 }
