@@ -453,6 +453,26 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 	return
 }
 
+// 获取旧直播间链接
+func (b *BaseInfo) GetAliveRoomUrl(req validator.BaseInfoRuleV2) string {
+	params := util.ContentParam{
+		Type: strconv.Itoa(e.PaymentTypeReward),
+		ResourceType: strconv.Itoa(e.ResourceTypeLive),
+		ResourceId: req.ResourceId,
+		ProductId: req.ProductId,
+		PaymentType: strconv.Itoa(int(b.Alive.PaymentType)),
+		ChannelId: req.ChannelId,
+		AppId: b.AliveRep.AppId,
+		ShareUserId: req.ShareUserId,
+		ShareType: strconv.Itoa(req.ShareType),
+		ShareAgent: req.ShareAgent,
+		ShareFrom: req.ShareFrom,
+		Scene: req.Scene,
+		ExtraData: strconv.Itoa(e.AliveRoomPage),
+	}
+	return util.ContentUrl(params)
+}
+
 // 获取直播自定义文案内容
 func (b *BaseInfo) GetCaptionDefine(captionDefineJson string) map[string]string {
 	captionDefine := make(map[string]string)
