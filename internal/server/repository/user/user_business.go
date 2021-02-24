@@ -26,8 +26,8 @@ type userBusiness struct {
 
 const (
 	// Redis key
-	cacheRedisUserInfoKey  = "alive_user_info_%s_%s"
-	cacheRedisUserRoleKey  = "alive_user_role_%s_%s"
+	cacheRedisUserInfoKey  = "alive_user_info:%s_%s"
+	cacheRedisUserRoleKey  = "alive_user_role:%s_%s"
 	cacheRedisUserCrowdKey = "alive_user_crowd:%s_%s"
 
 	// 缓存时间
