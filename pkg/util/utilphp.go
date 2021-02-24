@@ -55,11 +55,13 @@ type ContentParam struct {
 	ChannelId    string `json:"channel_id"`
 	AppId        string `json:"app_id"`
 	Source       string `json:"source"`
+	Scene        string `json:"scene"`
 	ContentAppId string `json:"content_app_id"`
 	ShareUserId  string `json:"share_user_id"`
 	ShareType    string `json:"share_type"`
 	ShareAgent   string `json:"share_agent"`
 	ShareFrom    string `json:"share_from"`
+	ExtraData    string `json:"extra_data"`
 }
 
 // 老的跳转拼接方法
