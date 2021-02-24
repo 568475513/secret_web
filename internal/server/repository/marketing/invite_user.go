@@ -2,7 +2,6 @@ package marketing
 
 import (
 	"database/sql"
-
 	"github.com/jinzhu/gorm"
 
 	"abs/models/business"
@@ -49,7 +48,11 @@ func (businesss *InviteBusiness) AddInviteCountUtilsNew(inviteUserInfo InviteUse
 		inviteRelation := InviteRelation{ShareType: NotKnow, InviteUserInfo: inviteUserInfo}
 		inviteRelationPo := businesss.transformInviteRelationPo(inviteRelation)
 		_, err := business.GetInviteUserByInvitedUser(inviteRelationPo)
-		if err == nil && err != gorm.ErrRecordNotFound {
+		if err == nil {
+			return
+		}
+		if err != gorm.ErrRecordNotFound {
+			logging.Error(err)
 			return
 		}
 		count := business.UpdateInviteUserByInviteCount(inviteUserInfoPo)
