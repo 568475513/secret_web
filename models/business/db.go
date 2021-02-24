@@ -77,14 +77,16 @@ func InitRw() {
 	}
 
 	dbRw.SingularTable(true)
+	// 这个有问题，会不生效的
+	// dbRw.Callback().Create().Replace("gorm:update_time_stamp", updateTimeStampForCreateCallback)
 	dbRw.Callback().Update().Replace("gorm:update_time_stamp", updateTimeStampForUpdateCallback)
-	dbRw.Callback().Create().Replace("gorm:update_time_stamp", updateTimeStampForCreateCallback)
 	dbRw.DB().SetMaxIdleConns(maxIdleConns)
 	dbRw.DB().SetMaxOpenConns(maxOpenConns)
+	dbRw.DB().SetConnMaxLifetime(time.Second * maxLifetime)
 
 	// 日志[生产必须关闭！]
 	if os.Getenv("RUNMODE") == "debug" {
-		db.LogMode(true)
+		dbRw.LogMode(true)
 	}
 }
 
