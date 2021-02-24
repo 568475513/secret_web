@@ -47,21 +47,21 @@ func ErrorReplace(val string) string {
 }
 
 type ContentParam struct {
-	Type         string `json:"type"`
-	ResourceType string `json:"resource_type"`
+	Type         int    `json:"type"`
+	ResourceType int    `json:"resource_type"`
 	ResourceId   string `json:"resource_id"`
 	ProductId    string `json:"product_id"`
-	PaymentType  string `json:"payment_type"`
+	PaymentType  int    `json:"payment_type"`
 	ChannelId    string `json:"channel_id"`
 	AppId        string `json:"app_id"`
 	Source       string `json:"source"`
 	Scene        string `json:"scene"`
 	ContentAppId string `json:"content_app_id"`
 	ShareUserId  string `json:"share_user_id"`
-	ShareType    string `json:"share_type"`
+	ShareType    int    `json:"share_type"`
 	ShareAgent   string `json:"share_agent"`
 	ShareFrom    string `json:"share_from"`
-	ExtraData    string `json:"extra_data"`
+	ExtraData    int    `json:"extra_data"`
 }
 
 // 老的跳转拼接方法
