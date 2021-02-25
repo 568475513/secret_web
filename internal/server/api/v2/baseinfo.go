@@ -186,7 +186,7 @@ func GetBaseInfo(c *gin.Context) {
 		val.IsShowResourceCount = baseConf.IsShowResourcecount
 	}
 	// 给专栏添加活动标签
-	products = marketing.GetActivityTags(products, 2, c.GetString("client"), c.GetString("app_version"))
+	// products = marketing.GetActivityTags(products, 2, c.GetString("client"), c.GetString("app_version"))
 	products = append(products, termList...)
 	// 邀请好友免费听逻辑 免费 非加密
 	shareRes := marketing.Share{AppId: req.AppId, UserId: userId, ProductId: req.ProductId, Alive: aliveInfo}
@@ -241,7 +241,7 @@ func GetBaseInfo(c *gin.Context) {
 	// 开始组装数据
 	data := make(map[string]interface{})
 	// 父级专栏信息列表
-	data["parent_columns"] = products
+	// data["parent_columns"] = products
 	// 直播权益信息
 	data["available_info"] = availableInfo
 	// 直播基本信息
