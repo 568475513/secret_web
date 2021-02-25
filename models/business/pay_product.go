@@ -24,8 +24,8 @@ type PayProducts struct {
 	Summary                json.JSONNullString `json:"summary"`
 	PurchaseCount          int                 `json:"purchase_count"` // purchase_count
 	Price                  int                 `json:"price"`
-	DistributePercent      float64             `json:"distribute_percent"`       // distribute_percent
-	FirstDistributePercent float64             `json:"first_distribute_percent"` // first_distribute_percent
+	DistributePercent      float64             `json:"-"`       // distribute_percent
+	FirstDistributePercent float64             `json:"-"` // first_distribute_percent
 	IsMember               uint8               `json:"is_member"`                // is_member
 	MemberType             uint8               `json:"member_type"`              // member_type
 	MemberIconDefault      json.JSONNullString `json:"member_icon_default"`      // member_icon_default
