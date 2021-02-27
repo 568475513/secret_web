@@ -187,6 +187,7 @@ func GetBaseInfo(c *gin.Context) {
 	}
 	// 给专栏添加活动标签
 	// products = marketing.GetActivityTags(products, 2, c.GetString("client"), c.GetString("app_version"))
+	// 组合营期内容
 	products = append(products, termList...)
 	// 邀请好友免费听逻辑 免费 非加密
 	shareRes := marketing.Share{AppId: req.AppId, UserId: userId, ProductId: req.ProductId, Alive: aliveInfo}
