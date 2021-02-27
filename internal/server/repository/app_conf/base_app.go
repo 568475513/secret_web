@@ -253,10 +253,15 @@ func (a *AppInfo) canUseFastLive(versionType int) int {
 	//允许开快直播的版本
 	switch versionType {
 	case enums.VERSION_TYPE_PROBATION:
+		return 1
 	case enums.VERSION_TYPE_ONLINE_EDUCATION:
+		return 1
 	case enums.VERSION_TYPE_ADVANCED:
+		return 1
 	case enums.VERSION_TYPE_STANDARD:
+		return 1
 	case enums.VERSION_TYPE_TRAINING_STD:
+		return 1
 	case enums.VERSION_TYPE_TRAINING_TRY:
 		return 1
 	}
