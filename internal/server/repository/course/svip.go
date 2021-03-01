@@ -19,8 +19,8 @@ func (s *Svip) GetResourceSvipRedirect() (redirect string) {
 		logging.Error(err)
 	} else {
 		contentParam := util.ContentParam{
-			Type:         "15",
-			ResourceType: "23",
+			Type:         15,
+			ResourceType: 23,
 			ResourceId:   "",
 			ProductId:    relation.SvipId,
 			AppId:        s.AppId,
