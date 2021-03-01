@@ -255,6 +255,9 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	aliveConf["complete_time"] = aliveModule.CompleteTime
 	// 是否开启打赏， 0-关闭 1-开启
 	aliveConf["is_show_reward_on"] = aliveModule.IsShowRewardOn
+	//是否开启签到，0-未开启，1-开启
+	aliveConf["is_sign_in_on"] = aliveModule.IsSignInOn
+
 	if aliveModule.CompleteTime == 0 {
 		aliveConf["is_open_complete_time"] = 0
 	} else {
@@ -272,9 +275,9 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		"fluent":  "流畅", //流畅（480P）
 	}
 	var (
-		playUrls       []string
-		err            error
-		isUserWebRtc   bool
+		playUrls     []string
+		err          error
+		isUserWebRtc bool
 		// isEnableWebRtc bool
 	)
 	if err = util.JsonDecode([]byte(b.Alive.PlayUrl), &playUrls); err != nil {
@@ -318,7 +321,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 				"encrypt":         "",
 			}
 		}
-		
+
 		// 快直播O端名单目录
 		isGray := redis_gray.InGrayShop("fast_alive_switch", b.AliveRep.AppId)
 		if isGray && isUserWebRtc && enableWebRtc == 1 && util.Substr(playUrls[0], 0, 4) == "rtmp" {
@@ -456,19 +459,19 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 // 获取旧直播间链接
 func (b *BaseInfo) GetAliveRoomUrl(req validator.BaseInfoRuleV2) string {
 	params := util.ContentParam{
-		Type: strconv.Itoa(e.PaymentTypeReward),
+		Type:         strconv.Itoa(e.PaymentTypeReward),
 		ResourceType: strconv.Itoa(e.ResourceTypeLive),
-		ResourceId: req.ResourceId,
-		ProductId: req.ProductId,
-		PaymentType: strconv.Itoa(int(b.Alive.PaymentType)),
-		ChannelId: req.ChannelId,
-		AppId: b.AliveRep.AppId,
-		ShareUserId: req.ShareUserId,
-		ShareType: strconv.Itoa(req.ShareType),
-		ShareAgent: req.ShareAgent,
-		ShareFrom: req.ShareFrom,
-		Scene: req.Scene,
-		ExtraData: strconv.Itoa(e.AliveRoomPage),
+		ResourceId:   req.ResourceId,
+		ProductId:    req.ProductId,
+		PaymentType:  strconv.Itoa(int(b.Alive.PaymentType)),
+		ChannelId:    req.ChannelId,
+		AppId:        b.AliveRep.AppId,
+		ShareUserId:  req.ShareUserId,
+		ShareType:    strconv.Itoa(req.ShareType),
+		ShareAgent:   req.ShareAgent,
+		ShareFrom:    req.ShareFrom,
+		Scene:        req.Scene,
+		ExtraData:    strconv.Itoa(e.AliveRoomPage),
 	}
 	return util.ContentUrl(params)
 }
