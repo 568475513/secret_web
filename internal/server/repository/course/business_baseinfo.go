@@ -291,7 +291,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		if isUserWebRtc, err = b.isUseFastLive(UserId); err != nil {
 			logging.Error(fmt.Sprintf("获取用户是否可用快直播错误：%s", err.Error()))
 			// 这里需要返回吗？
-			return
+			// return
 		}
 		// 普通直播多清晰度
 		liveUrl.AliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
@@ -517,13 +517,13 @@ func (b *BaseInfo) GetCaptionDefine(captionDefineJson string) map[string]string 
 func (b *BaseInfo) isUseFastLive(userId string) (bool, error) {
 	conn, err := redis_alive.GetLiveInteractConn()
 	if err != nil {
-		return false, err
+		return true, err
 	}
 	defer conn.Close()
 
 	flag, err := redis.Bool(conn.Do("SISMEMBER", notUseFastLiveKey, b.AliveRep.AppId+userId))
 	if err != nil {
-		return false, err
+		return true, err
 	}
 	return !flag, nil
 }
