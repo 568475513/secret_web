@@ -3,7 +3,6 @@ package course
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -295,7 +294,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		if isUserWebRtc, err = b.isUseFastLive(UserId); err != nil {
 			logging.Error(fmt.Sprintf("获取用户是否可用快直播错误：%s", err.Error()))
 			// 这里需要返回吗？
-			return
+			// return
 		}
 		// 普通直播多清晰度
 		liveUrl.AliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
@@ -416,11 +415,11 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 	// 判断是否购买,如果未购买则跳专栏
 	if b.Alive.ProductId.String != "" {
 		urlParams := util.ContentParam{
-			Type:        strconv.Itoa(e.PaymentTypeProduct),
+			Type:        e.PaymentTypeProduct,
 			ProductId:   b.Alive.ProductId.String,
 			ChannelId:   req.ChannelId,
 			ShareUserId: req.ShareUserId,
-			ShareType:   strconv.Itoa(req.ShareType),
+			ShareType:   req.ShareType,
 		}
 		url = util.ContentUrl(urlParams)
 		// 页面跳转（未购买且属于多专栏/会员）
@@ -434,14 +433,14 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 			}
 			if len(products) > 1 {
 				urlColumParams.ResourceId = b.Alive.Id
-				urlColumParams.ResourceType = strconv.Itoa(e.ResourceTypeLive)
+				urlColumParams.ResourceType = e.ResourceTypeLive
 				urlColumParams.ShareUserId = req.ShareUserId
-				urlColumParams.ShareType = strconv.Itoa(req.ShareType)
+				urlColumParams.ShareType = req.ShareType
 				url = util.ParentColumnsUrl(urlColumParams)
 			} else if len(products) == 1 {
-				urlColumParams.Type = strconv.Itoa(e.PaymentTypeProduct)
-				urlColumParams.ResourceId = ""
-				urlColumParams.ResourceType = ""
+				urlColumParams.Type = e.PaymentTypeProduct
+				// urlColumParams.ResourceId = ""
+				// urlColumParams.ResourceType = ""
 				urlColumParams.ProductId = products[0].Id
 				if req.ContentAppId != "" {
 					urlColumParams.ContentAppId = req.ContentAppId
@@ -459,19 +458,19 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 // 获取旧直播间链接
 func (b *BaseInfo) GetAliveRoomUrl(req validator.BaseInfoRuleV2) string {
 	params := util.ContentParam{
-		Type:         strconv.Itoa(e.PaymentTypeReward),
-		ResourceType: strconv.Itoa(e.ResourceTypeLive),
-		ResourceId:   req.ResourceId,
-		ProductId:    req.ProductId,
-		PaymentType:  strconv.Itoa(int(b.Alive.PaymentType)),
-		ChannelId:    req.ChannelId,
-		AppId:        b.AliveRep.AppId,
-		ShareUserId:  req.ShareUserId,
-		ShareType:    strconv.Itoa(req.ShareType),
-		ShareAgent:   req.ShareAgent,
-		ShareFrom:    req.ShareFrom,
-		Scene:        req.Scene,
-		ExtraData:    strconv.Itoa(e.AliveRoomPage),
+		Type: e.PaymentTypeReward,
+		ResourceType: e.ResourceTypeLive,
+		ResourceId: req.ResourceId,
+		ProductId: req.ProductId,
+		PaymentType: int(b.Alive.PaymentType),
+		ChannelId: req.ChannelId,
+		AppId: b.AliveRep.AppId,
+		ShareUserId: req.ShareUserId,
+		ShareType: req.ShareType,
+		ShareAgent: req.ShareAgent,
+		ShareFrom: req.ShareFrom,
+		Scene: req.Scene,
+		ExtraData: e.AliveRoomPage,
 	}
 	return util.ContentUrl(params)
 }
@@ -521,13 +520,13 @@ func (b *BaseInfo) GetCaptionDefine(captionDefineJson string) map[string]string 
 func (b *BaseInfo) isUseFastLive(userId string) (bool, error) {
 	conn, err := redis_alive.GetLiveInteractConn()
 	if err != nil {
-		return false, err
+		return true, err
 	}
 	defer conn.Close()
 
 	flag, err := redis.Bool(conn.Do("SISMEMBER", notUseFastLiveKey, b.AliveRep.AppId+userId))
 	if err != nil {
-		return false, err
+		return true, err
 	}
 	return !flag, nil
 }

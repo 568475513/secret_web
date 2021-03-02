@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"os"
 	"sync"
-	// "time"
 
 	"github.com/gomodule/redigo/redis"
 
 	"abs/models/business"
 	"abs/models/sub_business"
 	"abs/pkg/cache/redis_alive"
+	"abs/pkg/enums"
 	"abs/pkg/logging"
 	"abs/pkg/util"
 	"abs/service"
@@ -223,11 +223,18 @@ func (a *AppInfo) handleConfResult(result service.ConfHubInfo) *service.AppBaseC
 		// 新增在这里加
 		PcCustomDomain: result.Domain["pc_custom_domain"].(string),
 		IsEnable:       int(result.Pc["is_enable"].(float64)),
-		EnableWebRtc:   int(result.Live["enable_web_rtc"].(float64)),
+		// EnableWebRtc:   int(result.Live["enable_web_rtc"].(float64)), //暂时不能这么用，有的店铺没有这个开关，或者开关=nil（就很智障）
 		// 是否只有H5观看
 		OnlyH5Play: int(result.Safe["only_h5_play"].(float64)),
 		// Profit数据
 		Profit: result.Profit,
+	}
+
+	// 快直播配置
+	if v, ok := result.Live["enable_web_rtc"]; ok && v != nil {
+		baseConf.EnableWebRtc = int(v.(float64))
+	} else {
+		baseConf.EnableWebRtc = a.canUseFastLive(baseConf.VersionType)
 	}
 
 	// 特殊的恶心返回兼容
@@ -239,6 +246,26 @@ func (a *AppInfo) handleConfResult(result service.ConfHubInfo) *service.AppBaseC
 	}
 
 	return baseConf
+}
+
+// 店铺版本决定默认是否开启快直播，老版本默认关闭，其余开启
+func (a *AppInfo) canUseFastLive(versionType int) int {
+	//允许开快直播的版本
+	switch versionType {
+	case enums.VERSION_TYPE_PROBATION:
+		return 1
+	case enums.VERSION_TYPE_ONLINE_EDUCATION:
+		return 1
+	case enums.VERSION_TYPE_ADVANCED:
+		return 1
+	case enums.VERSION_TYPE_STANDARD:
+		return 1
+	case enums.VERSION_TYPE_TRAINING_STD:
+		return 1
+	case enums.VERSION_TYPE_TRAINING_TRY:
+		return 1
+	}
+	return 0
 }
 
 // 获取云通信配置
