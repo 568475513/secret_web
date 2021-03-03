@@ -296,7 +296,13 @@ func (x *XiaoeHttpRequest) Bytes() ([]byte, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	// Http状态码错误
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(fmt.Sprintf("请求[%s]Url: %s，返回错误的状态码[%d]", x.req.Method, x.req.URL, resp.StatusCode))
+		msg := fmt.Sprintf("请求[%s]Url: %s，返回错误的状态码[%d]", x.req.Method, x.req.URL, resp.StatusCode)
+		if err != nil {
+			msg = fmt.Sprintf("%s, Error: %s", msg, err.Error())
+		} else {
+			msg = fmt.Sprintf("%s, Resp: %s", msg, string(body))
+		}
+		return nil, errors.New(msg)
 	}
 	if x.debug() {
 		eT := time.Since(bT)
