@@ -128,10 +128,6 @@ func (b *BaseInfo) GetAvailableInfo(available, availableProduct bool, expireAt s
 	availableInfo["have_password"] = b.Alive.HavePassword
 	availableInfo["is_try"] = b.Alive.IsTry
 	availableInfo["is_public"] = b.Alive.IsPublic
-	// 判断是否是讲师,讲师不用付费
-	if !available && b.UserType == 1 {
-		availableInfo["available"] = true
-	}
 	return availableInfo
 }
 
