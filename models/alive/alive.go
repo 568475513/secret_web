@@ -50,7 +50,7 @@ type Alive struct {
 	IsPublic               uint8               `json:"is_public"`
 	PiecePrice             *uint               `json:"piece_price"`
 	LinePrice              uint                `json:"line_price"`
-	CommentCount           uint                `json:"comment_count"`
+	CommentCount           int                 `json:"comment_count"`
 	ViewCount              int                 `json:"view_count"`
 	ChannelId              string              `json:"channel_id"`
 	PushState              uint8               `json:"push_state"`
