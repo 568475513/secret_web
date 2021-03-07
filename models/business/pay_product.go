@@ -24,17 +24,17 @@ type PayProducts struct {
 	Summary                json.JSONNullString `json:"summary"`
 	PurchaseCount          int                 `json:"purchase_count"` // purchase_count
 	Price                  int                 `json:"price"`
-	DistributePercent      float64             `json:"-"`       // distribute_percent
-	FirstDistributePercent float64             `json:"-"`       // first_distribute_percent
-	IsMember               uint8               `json:"is_member"`                // is_member
-	MemberType             uint8               `json:"member_type"`              // member_type
-	MemberIconDefault      json.JSONNullString `json:"member_icon_default"`      // member_icon_default
-	Period                 int                 `json:"period"`                   // period
+	DistributePercent      float64             `json:"-"`                   // distribute_percent
+	FirstDistributePercent float64             `json:"-"`                   // first_distribute_percent
+	IsMember               uint8               `json:"is_member"`           // is_member
+	MemberType             uint8               `json:"member_type"`         // member_type
+	MemberIconDefault      json.JSONNullString `json:"member_icon_default"` // member_icon_default
+	Period                 int                 `json:"period"`              // period
 	IsShowResourceCount    int                 `json:"is_show_resourcecount"`
 	IsShareListen          uint8               `json:"is_share_listen"`       // is_share_listen
 	ShareListenResource    int                 `json:"share_listen_resource"` // share_listen_resource
 	ShareListenCount       int                 `json:"share_listen_count"`    // share_listen_count
-	ResourceCount          uint                `json:"resource_count"`
+	ResourceCount          int                 `json:"resource_count"`
 	RecycleBinState        uint8               `json:"recycle_bin_state"` // recycle_bin_state
 	State                  uint8               `json:"state"`
 
