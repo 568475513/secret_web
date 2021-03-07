@@ -179,7 +179,12 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 		versionUse = 0
 	}
 	//开启PC网校 0为关闭 1为开启
-	aliveConf["open_pc_network_school"] = baseConf.IsEnable
+	if baseConf.IsEnable == 1 && baseConf.IsValid == 1 {
+		aliveConf["open_pc_network_school"] = 1
+	} else {
+		aliveConf["open_pc_network_school"] = 0
+	}
+
 	//PC网校自定义域名
 	aliveConf["pc_network_school_index_url"] = baseConf.PcCustomDomain
 
@@ -267,9 +272,9 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		"fluent":  "流畅", //流畅（480P）
 	}
 	var (
-		playUrls       []string
-		err            error
-		isUserWebRtc   bool
+		playUrls     []string
+		err          error
+		isUserWebRtc bool
 		// isEnableWebRtc bool
 	)
 	if err = util.JsonDecode([]byte(b.Alive.PlayUrl), &playUrls); err != nil {
@@ -313,7 +318,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 				"encrypt":         "",
 			}
 		}
-		
+
 		// 快直播O端名单目录
 		isGray := redis_gray.InGrayShop("fast_alive_switch", b.AliveRep.AppId)
 		if isGray && isUserWebRtc && enableWebRtc == 1 && util.Substr(playUrls[0], 0, 4) == "rtmp" {
@@ -451,19 +456,19 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 // 获取旧直播间链接
 func (b *BaseInfo) GetAliveRoomUrl(req validator.BaseInfoRuleV2) string {
 	params := util.ContentParam{
-		Type: e.PaymentTypeReward,
+		Type:         e.PaymentTypeReward,
 		ResourceType: e.ResourceTypeLive,
-		ResourceId: req.ResourceId,
-		ProductId: req.ProductId,
-		PaymentType: int(b.Alive.PaymentType),
-		ChannelId: req.ChannelId,
-		AppId: b.AliveRep.AppId,
-		ShareUserId: req.ShareUserId,
-		ShareType: req.ShareType,
-		ShareAgent: req.ShareAgent,
-		ShareFrom: req.ShareFrom,
-		Scene: req.Scene,
-		ExtraData: e.AliveRoomPage,
+		ResourceId:   req.ResourceId,
+		ProductId:    req.ProductId,
+		PaymentType:  int(b.Alive.PaymentType),
+		ChannelId:    req.ChannelId,
+		AppId:        b.AliveRep.AppId,
+		ShareUserId:  req.ShareUserId,
+		ShareType:    req.ShareType,
+		ShareAgent:   req.ShareAgent,
+		ShareFrom:    req.ShareFrom,
+		Scene:        req.Scene,
+		ExtraData:    e.AliveRoomPage,
 	}
 	return util.ContentUrl(params)
 }

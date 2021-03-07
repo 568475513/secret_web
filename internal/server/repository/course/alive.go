@@ -153,7 +153,7 @@ func (a *AliveInfo) GetAliveViewCountFromCache() (viewCount int, err error) {
 
 	viewCount, err = redis.Int(conn.Do("GET", fmt.Sprintf(aliveViewCountNewKey, a.AppId, a.AliveId)))
 	if err != nil {
-		logging.Error(fmt.Sprintf("获取缓存里面的直播评论ViewCount失败：%s", err.Error()))
+		logging.Warn(fmt.Sprintf("获取缓存里面的直播评论ViewCount失败：%s", err.Error()))
 		return
 	}
 	return
@@ -598,7 +598,7 @@ func (a *AliveInfo) updatePv(resourceId string, resourceType int) {
 // 				"encrypt":         "",
 // 			}
 // 		}
-		
+
 // 		// 快直播O端名单目录
 // 		if redis_gray.InGrayShop("fast_alive_switch", a.AppId) && isUserWebRtc && enableWebRtc == 1 && util.Substr(playUrls[0], 0, 4) == "rtmp" {
 // 			liveUrl.AliveFastWebrtcurl = "webrtc" + util.Substr(playUrls[0], 4, len(playUrls[0]))
