@@ -443,9 +443,10 @@ func (a *AliveInfo) UpdateViewCountToCache(viewCount int) (int, error) {
 		}
 	} else {
 		// 写入redis
+		viewCount = viewCount + 1
 		redisConn.Do("sadd", viewCountSetKey, key)
 		redisConn.Do("set", setTimeKey, time.Now().Unix())
-		redisConn.Do("set", viewCountKey, viewCount+1)
+		redisConn.Do("set", viewCountKey, viewCount)
 	}
 
 	return viewCount - 1, nil

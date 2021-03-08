@@ -165,7 +165,8 @@ func GetAliveModuleConf(appId string, aliveId string, s []string) (*AliveModuleC
 
 // 更新直播观看人数
 func UpdateViewCount(appId, aliveId string, viewCount int) error {
-	return db.Where("app_id=? and id=? and view_count<?", appId, aliveId, viewCount).
+	var a Alive
+	return db.Model(&a).Where("app_id=? and id=? and view_count<?", appId, aliveId, viewCount).
 		Update("view_count", viewCount).
 		Limit(1).Error
 }
