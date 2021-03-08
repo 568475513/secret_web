@@ -403,13 +403,11 @@ func (a *AliveInfo) GetAliveStateForOthers(start time.Time, mst time.Time, stop 
 // 直播次数加一，PV+1
 func (a *AliveInfo) UpdateViewCountToCache(viewCount int) (int, error) {
 	redisConn, err := redis_alive.GetLiveInteractConn()
+	// 直接数据库写入
 	if err != nil {
-		//直接数据库写入
 		err = alive.UpdateViewCount(a.AppId, a.AliveId, viewCount+1)
-		if err != nil {
-			return 0, err
-		}
-		return viewCount, nil
+		logging.Error(err)
+		return viewCount, err
 	}
 	defer redisConn.Close()
 
@@ -427,30 +425,30 @@ func (a *AliveInfo) UpdateViewCountToCache(viewCount int) (int, error) {
 	if err != nil {
 		setTime = 0
 	}
-	viewCountByRedis, err := redis.Int(redisConn.Do("get", viewCountKey))
+	viewCountByRedis, err := redis.Bool(redisConn.Do("exists", viewCountKey))
 	if err != nil {
-		viewCountByRedis = 0
+		viewCountByRedis = false
 	}
 
-	if isExist != 0 && setTime != 0 && viewCountByRedis != 0 {
+	if isExist != 0 && setTime != 0 && viewCountByRedis != false {
 		// redis有值，判断是否到更新周期时间，到更新时间则更新到数据库，并重置key，没到更新周期则更新缓存
 		viewCount, _ = redis.Int(redisConn.Do("incr", viewCountKey))
-		if time.Now().Second()-setTime >= updateTime {
-			redisConn.Do("set", setTimeKey, time.Now().Second())
+		if int(time.Now().Unix()) - setTime >= updateTime {
+			redisConn.Do("set", setTimeKey, time.Now().Unix())
 			// 直接数据库写入
 			err = alive.UpdateViewCount(a.AppId, a.AliveId, viewCount)
 			if err != nil {
-				return viewCount - 1, err
+				logging.Error(err)
 			}
 		}
 	} else {
 		// 写入redis
 		redisConn.Do("sadd", viewCountSetKey, key)
-		redisConn.Do("set", setTimeKey, time.Now().Second())
+		redisConn.Do("set", setTimeKey, time.Now().Unix())
 		redisConn.Do("set", viewCountKey, viewCount+1)
 	}
 
-	return viewCount, nil
+	return viewCount - 1, nil
 }
 
 // 直播带货商品PV+1

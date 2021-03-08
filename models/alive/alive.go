@@ -106,80 +106,6 @@ type AliveModuleConf struct {
 	LookbackTime    string `json:"lookback_time"`
 }
 
-// type AliveLookBack struct {
-// 	Id             int    `json:"id"`
-// 	AppId          string `json:"app_id"`
-// 	AliveId        string `json:"alive_id"`
-// 	LookbackFileId string `json:"lookback_file_id"`
-// 	RegionFileId   string `json:"region_file_id"`
-// 	LookbackMp4    string `json:"lookback_mp4"`
-// 	LookbackM3u8   string `json:"lookback_m3u8"`
-// 	FileName       string `json:"file_name"`
-// 	TranscodeState uint8  `json:"transcode_state"`
-// 	State          uint8  `json:"state"`
-// 	OriginType     uint8  `json:"origin_type"`
-// }
-
-// type AliveConcatHlsResult struct {
-// 	ChannelId                string `json:"channel_id"`
-// 	LatestM3u8FileId         string `json:"latest_m3u8_file_id"`
-// 	ConcatLatestFileId       string `json:"concat_latest_file_id"`
-// 	ConcatM3u8Url            string `json:"concat_m3u8_url"`
-// 	TranscodeState           uint8  `json:"transcode_state"`
-// 	TranscodeSuccessLastTime string `json:"transcode_success_last_time"`
-// 	ConcatSuccessLastTime    string `json:"concat_success_last_time"`
-// 	TranscodeM3u8Url         string `json:"transcode_m3u8_url"`
-// 	ConcatTimes              uint8  `json:"concat_times"`
-// 	TranscodeTimes           uint8  `json:"transcode_times"`
-// 	ComposeLatestFileId      string `json:"compose_latest_file_id"`
-// 	ConcatMp4Url             string `json:"concat_mp4_url"`
-// 	IsUseConcatMp4           uint8  `json:"is_use_concat_mp4"`
-// 	IsDrm                    uint8  `json:"is_drm"`
-// 	DrmM3u8Url               string `json:"drm_m3u8_url"`
-// }
-
-// type TaskGoodsDetail struct {
-// 	Model
-
-// 	AppId        string `json:"app_id"`
-// 	AliveId      string `json:"alive_id"`
-// 	ResourceId   string `json:"resource_id"`
-// 	ResourceType int    `json:"resource_type"`
-// 	ViewCount    int    `json:"view_count"`
-// 	State        int    `json:"state"`
-// }
-
-// type CourseWareRecords struct {
-// 	AppId              string              `json:"app_id"`
-// 	AliveId            string              `json:"alive_id"`
-// 	AliveTime          int                 `json:"alive_time"`
-// 	CourseUseTime      int                 `json:"course_use_time"`
-// 	UserId             json.JSONNullString `json:"user_id"`
-// 	CoursewareId       json.JSONNullString `json:"courseware_id"`
-// 	CurrentPreviewPage int                 `json:"current_preview_page"`
-// 	CurrentImageUrl    json.JSONNullString `json:"current_image_url"`
-// 	CutFileId          int                 `json:"cut_file_id"`
-// 	IsShow             uint8               `json:"is_show"`
-// 	CreatedAt          json.JSONTime       `json:"created_at"`
-// 	UpdatedAt          json.JSONTime       `json:"updated_at"`
-// }
-
-// type CourseWare struct {
-// 	Id                 json.JSONNullString `json:"id"`
-// 	AppId              string              `json:"app_id"`
-// 	AliveId            string              `json:"alive_id"`
-// 	FileName           string              `json:"filename"`
-// 	FileUrl            string              `json:"file_url"`
-// 	FileType           uint8               `json:"file_type"`
-// 	UseState           uint8               `json:"use_state"`
-// 	ChangeToImageState uint8               `json:"change_to_image_state"`
-// 	PageCount          int                 `json:"page_count"`
-// 	State              int                 `json:"state"`
-// 	CurrentPreviewPage int                 `json:"current_preview_page"`
-// 	CoursewareImage    string              `json:"courseware_image"`
-// 	CourseImageArray   []map[string]interface{}
-// }
-
 // 获取直播详情
 func GetAliveInfo(appId string, aliveId string, s []string) (*Alive, error) {
 	var a Alive
@@ -239,18 +165,7 @@ func GetAliveModuleConf(appId string, aliveId string, s []string) (*AliveModuleC
 
 // 更新直播观看人数
 func UpdateViewCount(appId, aliveId string, viewCount int) error {
-	// Todo:暂时没有用@AllenWang
-	// _, err := GetAliveInfo(appId, aliveId, []string{"view_count"})
-	// if err != nil {
-	// 	return err
-	// }
-	//todo 上报ES
-
-	err := db.Where("app_id=? and id=?", appId, aliveId).Update("view_count", viewCount).Limit(1).Error
-	if err != nil {
-		return err
-	}
-	//todo 上报ES
-
-	return nil
+	return db.Where("app_id=? and id=? and view_count<?", appId, aliveId, viewCount).
+		Update("view_count", viewCount).
+		Limit(1).Error
 }
