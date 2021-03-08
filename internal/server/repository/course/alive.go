@@ -405,22 +405,22 @@ func (a *AliveInfo) UpdateViewCountToCache(viewCount int) (int, error) {
 	redisConn, err := redis_alive.GetLiveInteractConn()
 	// 直接数据库写入
 	if err != nil {
-		err = alive.UpdateViewCount(a.AppId, a.AliveId, viewCount+1)
+		err = alive.UpdateViewCount(a.AppId, a.AliveId, viewCount + 1)
 		logging.Error(err)
 		return viewCount, err
 	}
 	defer redisConn.Close()
 
-	// 1.优先查询set里面有没有该直播, 如果有，则走新逻辑新key
+	// 更新周期，先设置时间为5分钟
+	updateTime := 300
+	// 优先查询set里面有没有该直播, 如果有，则走新逻辑新key
 	key := fmt.Sprintf("%s:%s", a.AppId, a.AliveId)
-	isExist, err := redis.Int(redisConn.Do("sismember", viewCountSetKey, key))
-	if err != nil {
-		isExist = 0
-	}
-
 	setTimeKey := fmt.Sprintf(viewCountTimeKeyNew, a.AppId, a.AliveId)
 	viewCountKey := fmt.Sprintf(aliveViewCountNew, a.AppId, a.AliveId)
-	updateTime := 300 // 更新周期，先设置时间为5分钟
+	isExist, err := redis.Bool(redisConn.Do("sismember", viewCountSetKey, key))
+	if err != nil {
+		isExist = false
+	}
 	setTime, err := redis.Int(redisConn.Do("get", setTimeKey))
 	if err != nil {
 		setTime = 0
@@ -430,9 +430,9 @@ func (a *AliveInfo) UpdateViewCountToCache(viewCount int) (int, error) {
 		viewCountByRedis = false
 	}
 
-	if isExist != 0 && setTime != 0 && viewCountByRedis != false {
+	if isExist != false && setTime != 0 && viewCountByRedis != false {
 		// redis有值，判断是否到更新周期时间，到更新时间则更新到数据库，并重置key，没到更新周期则更新缓存
-		viewCount, _ = redis.Int(redisConn.Do("incr", viewCountKey))
+		viewCount, err = redis.Int(redisConn.Do("incr", viewCountKey))
 		if int(time.Now().Unix()) - setTime >= updateTime {
 			redisConn.Do("set", setTimeKey, time.Now().Unix())
 			// 直接数据库写入
@@ -449,7 +449,7 @@ func (a *AliveInfo) UpdateViewCountToCache(viewCount int) (int, error) {
 		redisConn.Do("set", viewCountKey, viewCount)
 	}
 
-	return viewCount - 1, nil
+	return viewCount - 1, err
 }
 
 // 直播带货商品PV+1
