@@ -23,7 +23,6 @@ type AliveInfo struct {
 const (
 	// Redis key
 	aliveInfoKey         = "base_info_alive_info:%s:%s"
-	aliveViewCountNewKey = "alive_view_count_new:%s:%s"
 	aliveModuleConf      = "alive_module_conf:%s:%s"
 	aliveCircuitBreaker  = "alive:circuitBreaker"
 	// 直播静态相关
@@ -151,7 +150,7 @@ func (a *AliveInfo) GetAliveViewCountFromCache() (viewCount int, err error) {
 	}
 	defer conn.Close()
 
-	viewCount, err = redis.Int(conn.Do("GET", fmt.Sprintf(aliveViewCountNewKey, a.AppId, a.AliveId)))
+	viewCount, err = redis.Int(conn.Do("GET", fmt.Sprintf(aliveViewCountNew, a.AppId, a.AliveId)))
 	if err != nil {
 		logging.Warn(fmt.Sprintf("获取缓存里面的直播评论ViewCount失败：%s", err.Error()))
 		return
