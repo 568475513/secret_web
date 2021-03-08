@@ -45,7 +45,7 @@ const (
 	// 资源是否可用
 	cmdIsResourceAvailable = "/isResourceAvailable"
 	// 权益超时设置ms[time.Millisecond]
-	availableTimeout = 700
+	availableTimeout = 1000
 )
 
 // 用户权益请求

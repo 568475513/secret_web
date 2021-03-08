@@ -149,7 +149,7 @@ func GetBaseInfo(c *gin.Context) {
 		goSpan := tracer.StartSpan("直播异步操作", opentracing.ChildOf(childSpan.Context()))
 		defer goSpan.Finish()
 		// 直播Pv数加一
-		aliveRep.UpdateViewCountToCache(aliveInfo.ViewCount)
+		aliveInfo.ViewCount, _ = aliveRep.UpdateViewCountToCache(aliveInfo.ViewCount)
 		// 直播带货商品PV加一
 		aliveRep.IncreasePv(c.Request.Referer(), aliveInfo.Id, int(aliveInfo.AliveType))
 		return nil
@@ -169,9 +169,10 @@ func GetBaseInfo(c *gin.Context) {
 	// 数据组装阶段
 	childSpan = tracer.StartSpan("数据组装阶段", opentracing.ChildOf(span.Context()))
 	// 替换Redis里面的真实ViewCount
-	if viewCount, err := aliveRep.GetAliveViewCountFromCache(); err == nil {
-		aliveInfo.ViewCount = viewCount
-	}
+	// Todo: 0308发现跟老abs逻辑不符合，注释了
+	// if viewCount, err := aliveRep.GetAliveViewCountFromCache(); err == nil {
+	// 	aliveInfo.ViewCount = viewCount
+	// }
 	// 替换第一个专栏内容【显示用】
 	if len(aliveRelations) > 0 {
 		aliveInfo.ProductId.String = aliveRelations[0].ProductId
