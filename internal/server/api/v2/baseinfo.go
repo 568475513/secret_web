@@ -190,13 +190,13 @@ func GetBaseInfo(c *gin.Context) {
 	// products = marketing.GetActivityTags(products, 2, c.GetString("client"), c.GetString("app_version"))
 	// 组合营期内容
 	products = append(products, termList...)
-	// 邀请好友免费听逻辑 免费 非加密
-	shareRes := marketing.Share{AppId: req.AppId, UserId: userId, ProductId: req.ProductId, Alive: aliveInfo}
-	shareInfo := shareRes.GetShareInfoInit(products)
 	// 判断是否是讲师,讲师不用付费
 	if available == false && userType == 1 {
 		available = true
 	}
+	// 邀请好友免费听逻辑 免费 非加密
+	shareRes := marketing.Share{AppId: req.AppId, UserId: userId, ProductId: req.ProductId, Alive: aliveInfo}
+	shareInfo := shareRes.GetShareInfoInit(products)
 	// 邀请好友免费听：如果领取了免费听 则将该资源置位可用！
 	if aliveInfo.PaymentType != enums.PaymentTypeFree || aliveInfo.HavePassword == 1 {
 		shareInfo = shareRes.GetShareInfo(available, availableProduct, shareInfo)
