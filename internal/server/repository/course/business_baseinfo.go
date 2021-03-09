@@ -260,6 +260,7 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	} else {
 		aliveConf["is_open_complete_time"] = 1
 	}
+	aliveConf["is_round_table_on"] = aliveModule.IsShowRewardOn
 
 	return aliveConf
 }
