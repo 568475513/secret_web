@@ -21,10 +21,7 @@ func AliveBaseRouter(Router *gin.RouterGroup) {
 		apiRouterV2.GET("get_courseware_records", v2.GetCourseWareRecords)
 		// 获取课件列表数据接口
 		apiRouterV2.GET("get_courseware_info", v2.GetCourseWareInfo)
-		// 数据上报接口
-		apiRouterV2.GET("data_reported", v2.DataReported)
-
-		// 压测调试接口
-		// apiRouterV2.GET("base_info_test", v2.GetBaseInfoTest)
+		// 数据上报接口 @allen，问题太多重新启用要检查下
+		// apiRouterV2.GET("data_reported", v2.DataReported)
 	}
 }
