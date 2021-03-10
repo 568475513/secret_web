@@ -165,7 +165,10 @@ func (ava *AvailableService) IsResourceAccess(resourceId string, filterFree bool
 	if responseMap.Code != e.SUCCESS {
 		return false, errors.New(fmt.Sprintf("请求权益【内部课程和加密】信息错误：%s", responseMap.Msg))
 	}
-	data := responseMap.Data.(map[string]interface{})
+	data, ok := responseMap.Data.(map[string]interface{})
+	if !ok {
+		logging.Error(fmt.Sprintf("请求权益断言错误：%+v", responseMap))
+	}
 	AuthState, _ := data["auth_state"].(float64)
 	return AuthState == 1, nil
 }
