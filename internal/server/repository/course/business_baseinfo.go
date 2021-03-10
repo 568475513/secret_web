@@ -260,7 +260,8 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	} else {
 		aliveConf["is_open_complete_time"] = 1
 	}
-	aliveConf["is_round_table_on"] = aliveModule.IsShowRewardOn
+	//该直播是否开启圆桌会议模式，0关闭，1开启
+	aliveConf["is_round_table_on"] = aliveModule.IsRoundTableOn
 
 	return aliveConf
 }
