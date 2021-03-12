@@ -167,7 +167,10 @@ func (a *AliveInfo) GetAliveModuleConf() (*alive.AliveModuleConf, error) {
 	cacheKey := fmt.Sprintf(aliveModuleConf, a.AppId, a.AliveId)
 	info, err := redis.Bytes(conn.Do("GET", cacheKey))
 	if err == nil {
-		util.JsonDecode(info, &cacheAliveModuleConf)
+		if err = util.JsonDecode(info, &cacheAliveModuleConf); err != nil {
+			logging.Error(err)
+			logging.LogToEs("GetAliveModuleConf", cacheAliveModuleConf)
+		}
 		return cacheAliveModuleConf, nil
 	}
 

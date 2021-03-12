@@ -99,7 +99,7 @@ type AliveModuleConf struct {
 	IsMessageOn     uint8  `json:"is_message_on"`
 	IsMessageVerify uint8  `json:"is_message_verify"`
 	IsPrizeOn       uint8  `json:"is_prize_on"`
-	MessageAhead    uint8  `json:"message_ahead"`
+	MessageAhead    int    `json:"message_ahead"`
 	AliveMode       uint8  `json:"alive_mode"`
 	CompleteTime    uint8  `json:"complete_time"`
 	LookbackName    string `json:"lookback_name"`
