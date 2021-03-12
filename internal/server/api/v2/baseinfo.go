@@ -59,6 +59,13 @@ func GetBaseInfo(c *gin.Context) {
 		return
 	}
 
+	// 直播静态化查询操作
+	aliveStaticRep := course.AliveStatic{AppId: req.AppId, AliveId: req.ResourceId, UserId: userId, Type: req.Type}
+	aliveStaticData, err := aliveStaticRep.AliveStaticMain()
+	if len(aliveStaticData) > 0 {
+		app.OkWithData(aliveStaticData, c)
+		return
+	}
 	// 直播专栏关联信息
 	childSpan = tracer.StartSpan("获取直播专栏关联信息", opentracing.ChildOf(span.Context()))
 	proRep := course.Product{AppId: req.AppId, ResourceId: req.ResourceId}
@@ -224,10 +231,10 @@ func GetBaseInfo(c *gin.Context) {
 	aliveInfoDetail["old_live_room_url"] = baseInfoRep.GetAliveRoomUrl(req)
 	// 获取播放连接【错误处理需要仓库层打印】
 	alivePlayInfo := baseInfoRep.GetAliveLiveUrl(c.GetInt("agent_type"), baseConf.VersionType, baseConf.EnableWebRtc, userId)
-	// 直播静态操作
-	if available && (aliveInfoDetail["alive_state"].(int) == 1 || aliveInfo.ZbStartAt.Equal(time.Now())) {
+	// 直播静态化写入操作
+	if available && (aliveInfoDetail["alive_state"].(int) == 1 || aliveInfo.ZbStartAt.Format("2006-01-02") == time.Now().Format("2006-01-02")) {
 		baseInfoRep.SetAliveIdToStaticRedis()
-		if aliveInfo.PaymentType == 1 {
+		if aliveInfo.PaymentType != 1 {
 			baseInfoRep.SetAliveUserToStaticRedis(userId)
 		}
 	}

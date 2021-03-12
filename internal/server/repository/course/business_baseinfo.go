@@ -369,7 +369,8 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 
 // 直播静态页的信息采集【用户】
 func (b *BaseInfo) SetAliveUserToStaticRedis(userId string) {
-	err := alive_static.HsetNxString(staticAliveHashUser, b.Alive.Id+userId, 1, 3600*24)
+
+	err := alive_static.HsetNxString(fmt.Sprintf(staticAliveHashUser, time.Now().Format("2006-01-02")), b.Alive.Id+userId, 1, 3600*24)
 	if err != nil {
 		logging.Error(err)
 	}
@@ -377,7 +378,7 @@ func (b *BaseInfo) SetAliveUserToStaticRedis(userId string) {
 
 // 直播静态页的信息采集【ID】
 func (b *BaseInfo) SetAliveIdToStaticRedis() {
-	err := alive_static.HsetNxString(staticAliveHashId, b.Alive.Id, b.Alive.Id, 3600*24)
+	err := alive_static.HsetNxString(fmt.Sprintf(staticAliveHashId, time.Now().Format("2006-01-02")), b.Alive.Id, b.Alive.Id, 3600*24)
 	if err != nil {
 		logging.Error(err)
 	}
