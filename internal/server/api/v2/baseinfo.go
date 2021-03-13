@@ -77,6 +77,7 @@ func GetBaseInfo(c *gin.Context) {
 	}
 
 	// 协程组查询数据包
+	// 标准来说请尽量不要用共享内存来实现协程通信（GC压力高等），少量服务查询请用channel通信，此处为了代码可读性
 	childSpan = tracer.StartSpan("协程组查询数据包", opentracing.ChildOf(span.Context()))
 	bT := time.Now()
 	var (
