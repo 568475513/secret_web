@@ -1,15 +1,17 @@
 package course
 
 import (
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/gomodule/redigo/redis"
+
 	"abs/internal/server/repository/app_conf"
 	ruser "abs/internal/server/repository/user"
 	muser "abs/models/user"
 	"abs/pkg/cache/alive_static"
 	"abs/pkg/logging"
-	"fmt"
-	"github.com/gomodule/redigo/redis"
-	"strings"
-	"time"
 )
 
 type AliveStatic struct {
