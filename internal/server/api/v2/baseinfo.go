@@ -292,6 +292,16 @@ func GetSecondaryInfo(c *gin.Context) {
 	if err := app.ParseRequest(c, &req); err != nil {
 		return
 	}
+	// 初始化店铺配置相关
+	appRep := app_conf.AppInfo{AppId: appId}
+	// 直播静态化查询操作
+	aliveStaticRep := course.AliveStatic{AppId: appId, UserId: userId}
+	if req.StaticIsStart != "" { //如果携带固定参数则走静态页
+		StaticData := aliveStaticRep.SecondaryInfoStaticData()
+		app.OkWithData(StaticData, c)
+		return
+	}
+	//直播间信息初始化
 	aliveRep := course.AliveInfo{AppId: appId, AliveId: req.ResourceId}
 	aliveInfo, err := aliveRep.GetAliveInfo()
 	if err != nil {
@@ -310,8 +320,6 @@ func GetSecondaryInfo(c *gin.Context) {
 	data := map[string]interface{}{"alive_id": aliveInfo.Id}
 	// 初始化用户实例
 	userRep, userInfoMap := ruser.UserBusinessConstrct(appId, userId), make(map[string]interface{})
-	// 初始化店铺配置相关
-	appRep := app_conf.AppInfo{AppId: appId}
 	err = app.GoroutineNotPanic(func() (err error) {
 		// 获取用户的基本信息
 		userInfo, err = userRep.GetUserInfo()
