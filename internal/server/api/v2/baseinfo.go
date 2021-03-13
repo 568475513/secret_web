@@ -295,8 +295,8 @@ func GetSecondaryInfo(c *gin.Context) {
 	// 初始化店铺配置相关
 	appRep := app_conf.AppInfo{AppId: appId}
 	// 直播静态化查询操作
-	aliveStaticRep := course.AliveStatic{AppId: appId, UserId: userId}
 	if req.StaticIsStart != "" { //如果携带固定参数则走静态页
+		aliveStaticRep := course.AliveStatic{AppId: appId, UserId: userId}
 		StaticData := aliveStaticRep.SecondaryInfoStaticData()
 		app.OkWithData(StaticData, c)
 		return
