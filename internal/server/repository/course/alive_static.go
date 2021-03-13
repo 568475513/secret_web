@@ -1,16 +1,43 @@
 package course
 
 import (
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/gomodule/redigo/redis"
+
 	"abs/internal/server/repository/app_conf"
 	ruser "abs/internal/server/repository/user"
 	muser "abs/models/user"
 	"abs/pkg/cache/alive_static"
 	"abs/pkg/logging"
-	"fmt"
-	"github.com/gomodule/redigo/redis"
-	"strings"
-	"time"
 )
+
+type StaticData struct {
+	IsFree           int    `redis:"is_free"`
+	Title            string `redis:"title"`
+	RoomId           string `redis:"room_id"`
+	ImgUrl           string `redis:"img_url"`
+	AliveType        int    `redis:"alive_type"`
+	ForbidTalk       int    `redis:"forbid_talk"`
+	Summary          string `redis:"summary"`
+	ZbStartAt        string `redis:"zb_start_at"`
+	RoomUrl          string `redis:"room_url"`
+	ImgUrlCompressed string `redis:"img_url_compressed"`
+	AliveVideoUrl    string `redis:"alive_video_url"`
+	CommentCount     int    `redis:"comment_count"`
+	PptImgs          string `redis:"ppt_imgs"`
+	OrgContent       string `redis:"org_content"`
+	AliveImgUrl      string `redis:"alive_img_url"`
+	ViewCount        int    `redis:"view_count"`
+	HavePassword     int    `redis:"have_password"`
+	ZbStopAt         string `redis:"zb_stop_at"`
+	AliveroomImgUrl  string `redis:"aliveroom_img_url"`
+	ManualStopAt     string `redis:"manual_stop_at"`
+	PaymentType      string `redis:"payment_type"`
+	Descrb           string `redis:"descrb"`
+}
 
 type AliveStatic struct {
 	AppId     string
@@ -40,7 +67,7 @@ func (c *AliveStatic) AliveStaticMain() (RoomData map[string]interface{}, err er
 
 	if c.CheckAliveStaticSwitch(StaticRedisCon) {
 		staticDataValues, err := redis.Values(StaticRedisCon.Do("HGETALL", fmt.Sprintf(Static_Data, c.AppId, c.AliveId))) //获取直播静态数据
-		staticData := &alive_static.StaticData{}
+		staticData := &StaticData{}
 		if err := redis.ScanStruct(staticDataValues, staticData); err != nil {
 			logging.Error(err)
 		}
