@@ -128,10 +128,6 @@ func (b *BaseInfo) GetAvailableInfo(available, availableProduct bool, expireAt s
 	availableInfo["have_password"] = b.Alive.HavePassword
 	availableInfo["is_try"] = b.Alive.IsTry
 	availableInfo["is_public"] = b.Alive.IsPublic
-	// 判断是否是讲师,讲师不用付费
-	if !available && b.UserType == 1 {
-		availableInfo["available"] = true
-	}
 	return availableInfo
 }
 
@@ -183,7 +179,12 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 		versionUse = 0
 	}
 	//开启PC网校 0为关闭 1为开启
-	aliveConf["open_pc_network_school"] = baseConf.IsEnable
+	if baseConf.IsEnable == 1 && baseConf.IsValid == 1 {
+		aliveConf["open_pc_network_school"] = 1
+	} else {
+		aliveConf["open_pc_network_school"] = 0
+	}
+
 	//PC网校自定义域名
 	aliveConf["pc_network_school_index_url"] = baseConf.PcCustomDomain
 
@@ -371,7 +372,8 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 
 // 直播静态页的信息采集【用户】
 func (b *BaseInfo) SetAliveUserToStaticRedis(userId string) {
-	err := alive_static.HsetNxString(staticAliveHashUser, b.Alive.Id+userId, 1, 3600*24)
+
+	err := alive_static.HsetNxString(fmt.Sprintf(staticAliveHashUser, time.Now().Format("2006-01-02")), b.Alive.Id+userId, 1, 3600*24)
 	if err != nil {
 		logging.Error(err)
 	}
@@ -379,7 +381,7 @@ func (b *BaseInfo) SetAliveUserToStaticRedis(userId string) {
 
 // 直播静态页的信息采集【ID】
 func (b *BaseInfo) SetAliveIdToStaticRedis() {
-	err := alive_static.HsetNxString(staticAliveHashId, b.Alive.Id, b.Alive.Id, 3600*24)
+	err := alive_static.HsetNxString(fmt.Sprintf(staticAliveHashId, time.Now().Format("2006-01-02")), b.Alive.Id, b.Alive.Id, 3600*24)
 	if err != nil {
 		logging.Error(err)
 	}
@@ -458,19 +460,19 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 // 获取旧直播间链接
 func (b *BaseInfo) GetAliveRoomUrl(req validator.BaseInfoRuleV2) string {
 	params := util.ContentParam{
-		Type: e.PaymentTypeReward,
+		Type:         e.PaymentTypeReward,
 		ResourceType: e.ResourceTypeLive,
-		ResourceId: req.ResourceId,
-		ProductId: req.ProductId,
-		PaymentType: int(b.Alive.PaymentType),
-		ChannelId: req.ChannelId,
-		AppId: b.AliveRep.AppId,
-		ShareUserId: req.ShareUserId,
-		ShareType: req.ShareType,
-		ShareAgent: req.ShareAgent,
-		ShareFrom: req.ShareFrom,
-		Scene: req.Scene,
-		ExtraData: e.AliveRoomPage,
+		ResourceId:   req.ResourceId,
+		ProductId:    req.ProductId,
+		PaymentType:  int(b.Alive.PaymentType),
+		ChannelId:    req.ChannelId,
+		AppId:        b.AliveRep.AppId,
+		ShareUserId:  req.ShareUserId,
+		ShareType:    req.ShareType,
+		ShareAgent:   req.ShareAgent,
+		ShareFrom:    req.ShareFrom,
+		Scene:        req.Scene,
+		ExtraData:    e.AliveRoomPage,
 	}
 	return util.ContentUrl(params)
 }

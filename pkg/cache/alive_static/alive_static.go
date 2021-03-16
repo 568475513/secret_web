@@ -2,8 +2,8 @@ package alive_static
 
 import (
 	"fmt"
-	"time"
 	"os"
+	"time"
 
 	"github.com/gomodule/redigo/redis"
 )
@@ -14,17 +14,42 @@ const (
 	// 表示连接池空闲连接列表的长度限制，空闲列表是一个栈式的结构，先进后出
 	maxIdle = 16
 	// 连接池的最大数据库连接数。设为0表示无限制。
-	maxActive = 50
+	maxActive = 200
 	// 空闲连接的超时设置，一旦超时，将会从空闲列表中摘除，该超时时间时间应该小于服务端的连接超时设置
 	idleTimeout = 180 * time.Second
 )
 
+type StaticData struct {
+	IsFree           int    `redis:"is_free"`
+	Title            string `redis:"title"`
+	RoomId           string `redis:"room_id"`
+	ImgUrl           string `redis:"img_url"`
+	AliveType        int    `redis:"alive_type"`
+	ForbidTalk       int    `redis:"forbid_talk"`
+	Summary          string `redis:"summary"`
+	ZbStartAt        string `redis:"zb_start_at"`
+	RoomUrl          string `redis:"room_url"`
+	ImgUrlCompressed string `redis:"img_url_compressed"`
+	AliveVideoUrl    string `redis:"alive_video_url"`
+	CommentCount     int    `redis:"comment_count"`
+	PptImgs          string `redis:"ppt_imgs"`
+	OrgContent       string `redis:"org_content"`
+	AliveImgUrl      string `redis:"alive_img_url"`
+	ViewCount        int    `redis:"view_count"`
+	HavePassword     int    `redis:"have_password"`
+	ZbStopAt         string `redis:"zb_stop_at"`
+	AliveroomImgUrl  string `redis:"aliveroom_img_url"`
+	ManualStopAt     string `redis:"manual_stop_at"`
+	PaymentType      string `redis:"payment_type"`
+	Descrb           string `redis:"descrb"`
+}
+
 // Setup Static Initialize the Redis instance
 func Init() error {
 	AliveStaticRedisConn = &redis.Pool{
-		MaxIdle: maxIdle,
-		MaxActive: maxActive,
-	    IdleTimeout: idleTimeout,
+		MaxIdle:     maxIdle,
+		MaxActive:   maxActive,
+		IdleTimeout: idleTimeout,
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", fmt.Sprintf("%s:%s", os.Getenv("REDIS_ALIVESTATIC_RW_HOST"), os.Getenv("REDIS_ALIVESTATIC_RW_PORT")))
 			if err != nil {
@@ -51,6 +76,16 @@ func Init() error {
 		},
 	}
 	return nil
+}
+
+func GetStaticRedisCon() (redis.Conn, error) {
+
+	conn := AliveStaticRedisConn.Get()
+	_, err := conn.Do("SELECT", 6)
+	if err != nil {
+		return conn, err
+	}
+	return conn, err
 }
 
 // HSetNx a key/value

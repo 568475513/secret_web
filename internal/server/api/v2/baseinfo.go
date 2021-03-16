@@ -59,6 +59,13 @@ func GetBaseInfo(c *gin.Context) {
 		return
 	}
 
+	// 直播静态化查询操作
+	aliveStaticRep := course.AliveStatic{AppId: req.AppId, AliveId: req.ResourceId, UserId: userId, Type: req.Type}
+	aliveStaticData, err := aliveStaticRep.AliveStaticMain()
+	if len(aliveStaticData) > 0 {
+		app.OkWithData(aliveStaticData, c)
+		return
+	}
 	// 直播专栏关联信息
 	childSpan = tracer.StartSpan("获取直播专栏关联信息", opentracing.ChildOf(span.Context()))
 	proRep := course.Product{AppId: req.AppId, ResourceId: req.ResourceId}
@@ -70,6 +77,7 @@ func GetBaseInfo(c *gin.Context) {
 	}
 
 	// 协程组查询数据包
+	// 标准来说请尽量不要用共享内存来实现协程通信（GC压力高等），少量服务查询请用channel通信，此处为了代码可读性
 	childSpan = tracer.StartSpan("协程组查询数据包", opentracing.ChildOf(span.Context()))
 	bT := time.Now()
 	var (
@@ -149,7 +157,7 @@ func GetBaseInfo(c *gin.Context) {
 		goSpan := tracer.StartSpan("直播异步操作", opentracing.ChildOf(childSpan.Context()))
 		defer goSpan.Finish()
 		// 直播Pv数加一
-		aliveRep.UpdateViewCountToCache(aliveInfo.ViewCount)
+		aliveInfo.ViewCount, _ = aliveRep.UpdateViewCountToCache(aliveInfo.ViewCount)
 		// 直播带货商品PV加一
 		aliveRep.IncreasePv(c.Request.Referer(), aliveInfo.Id, int(aliveInfo.AliveType))
 		return nil
@@ -169,9 +177,10 @@ func GetBaseInfo(c *gin.Context) {
 	// 数据组装阶段
 	childSpan = tracer.StartSpan("数据组装阶段", opentracing.ChildOf(span.Context()))
 	// 替换Redis里面的真实ViewCount
-	if viewCount, err := aliveRep.GetAliveViewCountFromCache(); err == nil {
-		aliveInfo.ViewCount = viewCount
-	}
+	// Todo: 0308发现跟老abs逻辑不符合，注释了
+	// if viewCount, err := aliveRep.GetAliveViewCountFromCache(); err == nil {
+	// 	aliveInfo.ViewCount = viewCount
+	// }
 	// 替换第一个专栏内容【显示用】
 	if len(aliveRelations) > 0 {
 		aliveInfo.ProductId.String = aliveRelations[0].ProductId
@@ -189,12 +198,16 @@ func GetBaseInfo(c *gin.Context) {
 	// products = marketing.GetActivityTags(products, 2, c.GetString("client"), c.GetString("app_version"))
 	// 组合营期内容
 	products = append(products, termList...)
+	// 判断是否是讲师,讲师不用付费
+	if available == false && userType == 1 {
+		available = true
+	}
 	// 邀请好友免费听逻辑 免费 非加密
 	shareRes := marketing.Share{AppId: req.AppId, UserId: userId, ProductId: req.ProductId, Alive: aliveInfo}
 	shareInfo := shareRes.GetShareInfoInit(products)
+	// 邀请好友免费听：如果领取了免费听 则将该资源置位可用！
 	if aliveInfo.PaymentType != enums.PaymentTypeFree || aliveInfo.HavePassword == 1 {
 		shareInfo = shareRes.GetShareInfo(available, availableProduct, shareInfo)
-		// 如果领取了免费听 则将该资源置位可用！
 		if shareInfo.ShareUserId != "" && shareInfo.Num > 0 {
 			available = true
 		}
@@ -219,10 +232,10 @@ func GetBaseInfo(c *gin.Context) {
 	aliveInfoDetail["old_live_room_url"] = baseInfoRep.GetAliveRoomUrl(req)
 	// 获取播放连接【错误处理需要仓库层打印】
 	alivePlayInfo := baseInfoRep.GetAliveLiveUrl(c.GetInt("agent_type"), baseConf.VersionType, baseConf.EnableWebRtc, userId)
-	// 直播静态操作
-	if available && (aliveInfoDetail["alive_state"].(int) == 1 || aliveInfo.ZbStartAt.Equal(time.Now())) {
+	// 直播静态化写入操作
+	if available && (aliveInfoDetail["alive_state"].(int) == 1 || aliveInfo.ZbStartAt.Format("2006-01-02") == time.Now().Format("2006-01-02")) {
 		baseInfoRep.SetAliveIdToStaticRedis()
-		if aliveInfo.PaymentType == 1 {
+		if aliveInfo.PaymentType != 1 {
 			baseInfoRep.SetAliveUserToStaticRedis(userId)
 		}
 	}
@@ -279,6 +292,16 @@ func GetSecondaryInfo(c *gin.Context) {
 	if err := app.ParseRequest(c, &req); err != nil {
 		return
 	}
+	// 初始化店铺配置相关
+	appRep := app_conf.AppInfo{AppId: appId}
+	// 直播静态化查询操作
+	if req.StaticIsStart != "" { //如果携带固定参数则走静态页
+		aliveStaticRep := course.AliveStatic{AppId: appId, UserId: userId}
+		StaticData := aliveStaticRep.SecondaryInfoStaticData()
+		app.OkWithData(StaticData, c)
+		return
+	}
+	//直播间信息初始化
 	aliveRep := course.AliveInfo{AppId: appId, AliveId: req.ResourceId}
 	aliveInfo, err := aliveRep.GetAliveInfo()
 	if err != nil {
@@ -297,8 +320,6 @@ func GetSecondaryInfo(c *gin.Context) {
 	data := map[string]interface{}{"alive_id": aliveInfo.Id}
 	// 初始化用户实例
 	userRep, userInfoMap := ruser.UserBusinessConstrct(appId, userId), make(map[string]interface{})
-	// 初始化店铺配置相关
-	appRep := app_conf.AppInfo{AppId: appId}
 	err = app.GoroutineNotPanic(func() (err error) {
 		// 获取用户的基本信息
 		userInfo, err = userRep.GetUserInfo()
@@ -365,101 +386,101 @@ func GetSecondaryInfo(c *gin.Context) {
 
 // @Todo 备份使用中
 // @Summary 直播间数据上报接口
-func DataReported(c *gin.Context) {
-	var (
-		err error
-		req validator.DataReportedV2
-	)
-	//参数校验
-	if err = app.ParseRequest(c, &req); err != nil {
-		return
-	}
+// func DataReported(c *gin.Context) {
+// 	var (
+// 		err error
+// 		req validator.DataReportedV2
+// 	)
+// 	//参数校验
+// 	if err = app.ParseRequest(c, &req); err != nil {
+// 		return
+// 	}
 
-	//获取直播详情
-	aliveRep := course.AliveInfo{AppId: req.AppId, AliveId: req.ResourceId}
-	aliveInfo, err := aliveRep.GetAliveInfo()
-	if err != nil {
-		app.FailWithMessage(fmt.Sprintf("获取直播基础信息错误:%s", err.Error()), enums.ERROR, c)
-		return
-	}
+// 	//获取直播详情
+// 	aliveRep := course.AliveInfo{AppId: req.AppId, AliveId: req.ResourceId}
+// 	aliveInfo, err := aliveRep.GetAliveInfo()
+// 	if err != nil {
+// 		app.FailWithMessage(fmt.Sprintf("获取直播基础信息错误:%s", err.Error()), enums.ERROR, c)
+// 		return
+// 	}
 
-	//用户ID
-	userId := app.GetUserId(c)
-	//初始化权益实例
-	ap := ruser.UserPowerBusiness(req.AppId, userId, c.GetInt("agent_type"))
-	//渠道上报实例
-	channelRepository := &data.Channels{
-		AppId:       req.AppId,
-		ChannelId:   req.ChannelId,
-		ResourceId:  req.ResourceId,
-		PaymentType: req.PaymentType,
-		ProductId:   req.ProductId,
-	}
-	//流量上报实例
-	dataUageBusiness := &data.DataUageBusiness{}
-	//流量上报处理
-	//流量上报结构体
-	flowReportData := data.FlowReportData{
-		AppId:             req.AppId,
-		UserId:            app.GetUserId(c),
-		ResourceType:      3,
-		AliveId:           req.ResourceId,
-		Title:             aliveInfo.Title.String,
-		VidioSize:         aliveInfo.VideoSize,
-		AliveM3u8HighSize: aliveInfo.AliveM3u8HighSize,
-		ImgSizeTotal:      float64(0),
-		WxAppType:         1,
-		Way:               1,
-	}
+// 	//用户ID
+// 	userId := app.GetUserId(c)
+// 	//初始化权益实例
+// 	ap := ruser.UserPowerBusiness(req.AppId, userId, c.GetInt("agent_type"))
+// 	//渠道上报实例
+// 	channelRepository := &data.Channels{
+// 		AppId:       req.AppId,
+// 		ChannelId:   req.ChannelId,
+// 		ResourceId:  req.ResourceId,
+// 		PaymentType: req.PaymentType,
+// 		ProductId:   req.ProductId,
+// 	}
+// 	//流量上报实例
+// 	dataUageBusiness := &data.DataUageBusiness{}
+// 	//流量上报处理
+// 	//流量上报结构体
+// 	flowReportData := data.FlowReportData{
+// 		AppId:             req.AppId,
+// 		UserId:            app.GetUserId(c),
+// 		ResourceType:      3,
+// 		AliveId:           req.ResourceId,
+// 		Title:             aliveInfo.Title.String,
+// 		VidioSize:         aliveInfo.VideoSize,
+// 		AliveM3u8HighSize: aliveInfo.AliveM3u8HighSize,
+// 		ImgSizeTotal:      float64(0),
+// 		WxAppType:         1,
+// 		Way:               1,
+// 	}
 
-	available, _ := ap.IsInsideAliveAccess(aliveInfo.Id)                                                                                                                 //权益
-	aliveState := aliveRep.GetAliveState(aliveInfo.ZbStartAt.Time, aliveInfo.ZbStopAt.Time, aliveInfo.ManualStopAt.Time, aliveInfo.RewindTime.Time, aliveInfo.PushState) //直播状态
-	if aliveInfo.AliveType == 1 && available {                                                                                                                           //视频直播
-		//直播类型（如果直播结束就是回看类型）
-		switch aliveState {
-		case 1:
-			flowReportData.ResourceType = 3
-		case 3:
-			flowReportData.ResourceType = 5
-		}
-	} else if (aliveInfo.AliveType == 2 || aliveInfo.AliveType == 4) && available { //推流直播上报流量
-		flowReportData.ResourceType = 6
-		if aliveState == 3 {
-			flowReportData.ResourceType = 5
-		} else {
-			flowReportData.VidioSize, flowReportData.AliveM3u8HighSize = float64(0), float64(0)
-		}
-	}
+// 	available, _ := ap.IsInsideAliveAccess(aliveInfo.Id)                                                                                                                 //权益
+// 	aliveState := aliveRep.GetAliveState(aliveInfo.ZbStartAt.Time, aliveInfo.ZbStopAt.Time, aliveInfo.ManualStopAt.Time, aliveInfo.RewindTime.Time, aliveInfo.PushState) //直播状态
+// 	if aliveInfo.AliveType == 1 && available {                                                                                                                           //视频直播
+// 		//直播类型（如果直播结束就是回看类型）
+// 		switch aliveState {
+// 		case 1:
+// 			flowReportData.ResourceType = 3
+// 		case 3:
+// 			flowReportData.ResourceType = 5
+// 		}
+// 	} else if (aliveInfo.AliveType == 2 || aliveInfo.AliveType == 4) && available { //推流直播上报流量
+// 		flowReportData.ResourceType = 6
+// 		if aliveState == 3 {
+// 			flowReportData.ResourceType = 5
+// 		} else {
+// 			flowReportData.VidioSize, flowReportData.AliveM3u8HighSize = float64(0), float64(0)
+// 		}
+// 	}
 
-	//协程组执行IO处理
-	err = app.GoroutineNotPanic(
-		func() error {
-			//增加渠道浏览量
-			channelRepository.AddChannelViewCount()
-			return nil
-		},
-		func() error {
-			//直接上报流量
-			dataUageBusiness.InsertFlowRecord(flowReportData)
-			return nil
-		},
-		func() error {
-			// 用户购买关系上报
-			if aliveInfo.IsPublic != 0 {
-				if aliveInfo.PaymentType == enums.PaymentTypeFree && aliveInfo.HavePassword != 1 && aliveInfo.State == 0 {
-					available = true
-				} else {
-					if aliveInfo.HavePassword == 1 {
-						available, err = ap.IsEncryAliveAccess(req.ResourceId)
-					} else {
-						_, available = ap.IsHaveAlivePower(req.ResourceId, strconv.Itoa(enums.ResourceTypeLive), true)
-					}
-				}
-			}
-			dataRep := data.BuryingPoint{AppId: req.AppId, UserId: userId, ResourceId: req.ResourceId, ProductId: req.ProductId}
-			dataRep.InsertDataUserPurchase(c, available)
-			return nil
-		},
-	)
-	app.OkWithData("OK", c)
-}
+// 	//协程组执行IO处理
+// 	err = app.GoroutineNotPanic(
+// 		func() error {
+// 			//增加渠道浏览量
+// 			channelRepository.AddChannelViewCount()
+// 			return nil
+// 		},
+// 		func() error {
+// 			//直接上报流量
+// 			dataUageBusiness.InsertFlowRecord(flowReportData)
+// 			return nil
+// 		},
+// 		func() error {
+// 			// 用户购买关系上报
+// 			if aliveInfo.IsPublic != 0 {
+// 				if aliveInfo.PaymentType == enums.PaymentTypeFree && aliveInfo.HavePassword != 1 && aliveInfo.State == 0 {
+// 					available = true
+// 				} else {
+// 					if aliveInfo.HavePassword == 1 {
+// 						available, err = ap.IsEncryAliveAccess(req.ResourceId)
+// 					} else {
+// 						_, available = ap.IsHaveAlivePower(req.ResourceId, strconv.Itoa(enums.ResourceTypeLive), true)
+// 					}
+// 				}
+// 			}
+// 			dataRep := data.BuryingPoint{AppId: req.AppId, UserId: userId, ResourceId: req.ResourceId, ProductId: req.ProductId}
+// 			dataRep.InsertDataUserPurchase(c, available)
+// 			return nil
+// 		},
+// 	)
+// 	app.OkWithData("OK", c)
+// }

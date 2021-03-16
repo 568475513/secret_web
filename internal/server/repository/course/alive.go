@@ -23,7 +23,6 @@ type AliveInfo struct {
 const (
 	// Redis key
 	aliveInfoKey         = "base_info_alive_info:%s:%s"
-	aliveViewCountNewKey = "alive_view_count_new:%s:%s"
 	aliveModuleConf      = "alive_module_conf:%s:%s"
 	aliveCircuitBreaker  = "alive:circuitBreaker"
 	// 直播静态相关
@@ -151,9 +150,9 @@ func (a *AliveInfo) GetAliveViewCountFromCache() (viewCount int, err error) {
 	}
 	defer conn.Close()
 
-	viewCount, err = redis.Int(conn.Do("GET", fmt.Sprintf(aliveViewCountNewKey, a.AppId, a.AliveId)))
+	viewCount, err = redis.Int(conn.Do("GET", fmt.Sprintf(aliveViewCountNew, a.AppId, a.AliveId)))
 	if err != nil {
-		logging.Error(fmt.Sprintf("获取缓存里面的直播评论ViewCount失败：%s", err.Error()))
+		logging.Warn(fmt.Sprintf("获取缓存里面的直播评论ViewCount失败：%s", err.Error()))
 		return
 	}
 	return
@@ -168,7 +167,10 @@ func (a *AliveInfo) GetAliveModuleConf() (*alive.AliveModuleConf, error) {
 	cacheKey := fmt.Sprintf(aliveModuleConf, a.AppId, a.AliveId)
 	info, err := redis.Bytes(conn.Do("GET", cacheKey))
 	if err == nil {
-		util.JsonDecode(info, &cacheAliveModuleConf)
+		if err = util.JsonDecode(info, &cacheAliveModuleConf); err != nil {
+			logging.Error(err)
+			logging.LogToEs("GetAliveModuleConf", cacheAliveModuleConf)
+		}
 		return cacheAliveModuleConf, nil
 	}
 
@@ -403,54 +405,53 @@ func (a *AliveInfo) GetAliveStateForOthers(start time.Time, mst time.Time, stop 
 // 直播次数加一，PV+1
 func (a *AliveInfo) UpdateViewCountToCache(viewCount int) (int, error) {
 	redisConn, err := redis_alive.GetLiveInteractConn()
+	// 直接数据库写入
 	if err != nil {
-		//直接数据库写入
-		err = alive.UpdateViewCount(a.AppId, a.AliveId, viewCount+1)
-		if err != nil {
-			return 0, err
-		}
-		return viewCount, nil
+		err = alive.UpdateViewCount(a.AppId, a.AliveId, viewCount + 1)
+		logging.Error(err)
+		return viewCount, err
 	}
 	defer redisConn.Close()
 
-	// 1.优先查询set里面有没有该直播, 如果有，则走新逻辑新key
+	// 更新周期，先设置时间为5分钟
+	updateTime := 300
+	// 优先查询set里面有没有该直播, 如果有，则走新逻辑新key
 	key := fmt.Sprintf("%s:%s", a.AppId, a.AliveId)
-	isExist, err := redis.Int(redisConn.Do("sismember", viewCountSetKey, key))
-	if err != nil {
-		isExist = 0
-	}
-
 	setTimeKey := fmt.Sprintf(viewCountTimeKeyNew, a.AppId, a.AliveId)
 	viewCountKey := fmt.Sprintf(aliveViewCountNew, a.AppId, a.AliveId)
-	updateTime := 300 // 更新周期，先设置时间为5分钟
+	isExist, err := redis.Bool(redisConn.Do("sismember", viewCountSetKey, key))
+	if err != nil {
+		isExist = false
+	}
 	setTime, err := redis.Int(redisConn.Do("get", setTimeKey))
 	if err != nil {
 		setTime = 0
 	}
-	viewCountByRedis, err := redis.Int(redisConn.Do("get", viewCountKey))
+	viewCountByRedis, err := redis.Bool(redisConn.Do("exists", viewCountKey))
 	if err != nil {
-		viewCountByRedis = 0
+		viewCountByRedis = false
 	}
 
-	if isExist != 0 && setTime != 0 && viewCountByRedis != 0 {
+	if isExist != false && setTime != 0 && viewCountByRedis != false {
 		// redis有值，判断是否到更新周期时间，到更新时间则更新到数据库，并重置key，没到更新周期则更新缓存
-		viewCount, _ = redis.Int(redisConn.Do("incr", viewCountKey))
-		if time.Now().Second()-setTime >= updateTime {
-			redisConn.Do("set", setTimeKey, time.Now().Second())
+		viewCount, err = redis.Int(redisConn.Do("incr", viewCountKey))
+		if int(time.Now().Unix()) - setTime >= updateTime {
+			redisConn.Do("set", setTimeKey, time.Now().Unix())
 			// 直接数据库写入
 			err = alive.UpdateViewCount(a.AppId, a.AliveId, viewCount)
 			if err != nil {
-				return viewCount - 1, err
+				logging.Error(err)
 			}
 		}
 	} else {
 		// 写入redis
+		viewCount = viewCount + 1
 		redisConn.Do("sadd", viewCountSetKey, key)
-		redisConn.Do("set", setTimeKey, time.Now().Second())
-		redisConn.Do("set", viewCountKey, viewCount+1)
+		redisConn.Do("set", setTimeKey, time.Now().Unix())
+		redisConn.Do("set", viewCountKey, viewCount)
 	}
 
-	return viewCount, nil
+	return viewCount - 1, err
 }
 
 // 直播带货商品PV+1
@@ -598,7 +599,7 @@ func (a *AliveInfo) updatePv(resourceId string, resourceType int) {
 // 				"encrypt":         "",
 // 			}
 // 		}
-		
+
 // 		// 快直播O端名单目录
 // 		if redis_gray.InGrayShop("fast_alive_switch", a.AppId) && isUserWebRtc && enableWebRtc == 1 && util.Substr(playUrls[0], 0, 4) == "rtmp" {
 // 			liveUrl.AliveFastWebrtcurl = "webrtc" + util.Substr(playUrls[0], 4, len(playUrls[0]))

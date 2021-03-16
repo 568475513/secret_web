@@ -98,7 +98,7 @@ func CloseDB() {
 // updateTimeStampForUpdateCallback will set `UpdatedAt` when updating
 func updateTimeStampForUpdateCallback(scope *gorm.Scope) {
 	if _, ok := scope.Get("gorm:update_column"); !ok {
-		scope.SetColumn("UpdatedAt", time.Now().Unix())
+		scope.SetColumn("UpdatedAt", time.Now().Format("2006-01-02 15:04:05"))
 	}
 }
 
