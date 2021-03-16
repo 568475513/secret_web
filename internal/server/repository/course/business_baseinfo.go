@@ -255,6 +255,9 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	aliveConf["complete_time"] = aliveModule.CompleteTime
 	// 是否开启打赏， 0-关闭 1-开启
 	aliveConf["is_show_reward_on"] = aliveModule.IsShowRewardOn
+	//是否开启签到，0-未开启，1-开启
+	aliveConf["is_sign_in_on"] = aliveModule.IsSignInOn
+
 	if aliveModule.CompleteTime == 0 {
 		aliveConf["is_open_complete_time"] = 0
 	} else {

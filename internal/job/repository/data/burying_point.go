@@ -139,7 +139,6 @@ func initZapLogeer(maxSize int, maxBackup int, maxAge int, fileName string) *zap
 		MaxAge:     maxAge,
 		LocalTime:  true,
 	}
-	fmt.Println(fileName)
 	encoder := func() zapcore.Encoder {
 		return zapcore.NewConsoleEncoder(zapcore.EncoderConfig{
 			MessageKey: "msg",

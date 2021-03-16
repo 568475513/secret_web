@@ -97,6 +97,7 @@ type AliveModuleConf struct {
 	IsShowRewardOn  uint8  `json:"is_show_reward_on"`
 	IsInviteOn      uint8  `json:"is_invite_on"`
 	IsMessageOn     uint8  `json:"is_message_on"`
+	IsSignInOn      uint8  `json:"is_sign_in_on"`
 	IsMessageVerify uint8  `json:"is_message_verify"`
 	IsPrizeOn       uint8  `json:"is_prize_on"`
 	MessageAhead    int    `json:"message_ahead"`
