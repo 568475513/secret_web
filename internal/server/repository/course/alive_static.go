@@ -1,16 +1,13 @@
 package course
 
 import (
-	"abs/service"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
 
-	ruser "abs/internal/server/repository/user"
-	muser "abs/models/user"
+	"abs/models/user"
 	"abs/pkg/cache/alive_static"
 	"abs/pkg/logging"
 )
@@ -46,6 +43,8 @@ type AliveStatic struct {
 	UserId    string
 	Type      string
 	ExtraData string
+	ImInit    map[string]string
+	UserInfo  user.User
 }
 
 const (
@@ -219,15 +218,12 @@ func (c *AliveStatic) CheckAliveStaticSwitch(conn redis.Conn) (Switch bool) {
 //次级业务接口静态化逻辑
 func (c *AliveStatic) SecondaryInfoStaticData() map[string]interface{} {
 
-	var userInfo muser.User
 	data := make(map[string]interface{})
-	// 初始化用户实例
-	userRep, userInfoMap := ruser.UserBusinessConstrct(c.AppId, c.UserId), make(map[string]interface{})
-	userInfo, _ = userRep.GetUserInfo()
 	// 组装用户信息
-	userInfoMap["phone"] = userInfo.Phone
-	userInfoMap["wx_avatar"] = userInfo.WxAvatar
-	userInfoMap["wx_nickname"] = userInfo.WxNickname
+	userInfoMap := make(map[string]interface{})
+	userInfoMap["phone"] = c.UserInfo.Phone
+	userInfoMap["wx_avatar"] = c.UserInfo.WxAvatar
+	userInfoMap["wx_nickname"] = c.UserInfo.WxNickname
 	// 用户信息
 	data["user_info"] = userInfoMap
 	// 短信预约总开关
@@ -245,27 +241,6 @@ func (c *AliveStatic) SecondaryInfoStaticData() map[string]interface{} {
 	// 共享文件列表链接
 	data["share_file_url"] = ""
 	// 获取云通信配置
-	data["im_init"] = c.GetCommunicationCloudInfo(c.UserId)
+	data["im_init"] = c.ImInit
 	return data
-}
-
-// 获取云通信配置
-func (c *AliveStatic) GetCommunicationCloudInfo(identifier string) map[string]string {
-	conf := map[string]string{
-		"user_sign":    "",
-		"sdk_app_id":   "",
-		"account_type": os.Getenv("AccountType"),
-	}
-	timeRestApi := service.TimeRestApi{
-		SdkAppId:   os.Getenv("AliveVideoAppId"),
-		Identifier: identifier,
-	}
-	conf["sdk_app_id"] = timeRestApi.SdkAppId
-	userSig, err := timeRestApi.GenerateUserSig()
-	if err != nil {
-		logging.Error(err)
-		return conf
-	}
-	conf["user_sign"] = userSig
-	return conf
 }
