@@ -1,13 +1,14 @@
 package course
 
 import (
+	"abs/service"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
 
-	"abs/internal/server/repository/app_conf"
 	ruser "abs/internal/server/repository/user"
 	muser "abs/models/user"
 	"abs/pkg/cache/alive_static"
@@ -220,7 +221,6 @@ func (c *AliveStatic) SecondaryInfoStaticData() map[string]interface{} {
 
 	var userInfo muser.User
 	data := make(map[string]interface{})
-	appRep := app_conf.AppInfo{AppId: c.AppId}
 	// 初始化用户实例
 	userRep, userInfoMap := ruser.UserBusinessConstrct(c.AppId, c.UserId), make(map[string]interface{})
 	userInfo, _ = userRep.GetUserInfo()
@@ -245,6 +245,27 @@ func (c *AliveStatic) SecondaryInfoStaticData() map[string]interface{} {
 	// 共享文件列表链接
 	data["share_file_url"] = ""
 	// 获取云通信配置
-	data["im_init"] = appRep.GetCommunicationCloudInfo(c.UserId)
+	data["im_init"] = c.GetCommunicationCloudInfo(c.UserId)
 	return data
+}
+
+// 获取云通信配置
+func (c *AliveStatic) GetCommunicationCloudInfo(identifier string) map[string]string {
+	conf := map[string]string{
+		"user_sign":    "",
+		"sdk_app_id":   "",
+		"account_type": os.Getenv("AccountType"),
+	}
+	timeRestApi := service.TimeRestApi{
+		SdkAppId:   os.Getenv("AliveVideoAppId"),
+		Identifier: identifier,
+	}
+	conf["sdk_app_id"] = timeRestApi.SdkAppId
+	userSig, err := timeRestApi.GenerateUserSig()
+	if err != nil {
+		logging.Error(err)
+		return conf
+	}
+	conf["user_sign"] = userSig
+	return conf
 }
