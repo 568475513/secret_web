@@ -23,10 +23,11 @@ type BaseInfoRuleV2 struct {
 
 // v2/baseinfo.go/GetSecondaryInfo
 type SecondaryInfoRuleV2 struct {
-	ResourceId  string `form:"resource_id" json:"resource_id" binding:"required"`
-	ShareUserId string `json:"share_user_id" form:"share_user_id"`
-	PaymentType int    `form:"payment_type" json:"payment_type" binding:"required"`
-	ProductId   string `form:"product_id" json:"product_id"`
+	ResourceId    string `form:"resource_id" json:"resource_id" binding:"required"`
+	ShareUserId   string `json:"share_user_id" form:"share_user_id"`
+	PaymentType   int    `form:"payment_type" json:"payment_type" binding:"required"`
+	ProductId     string `form:"product_id" json:"product_id"`
+	StaticIsStart string `form:"static_is_start" json:"static_is_start"`
 }
 
 // v2/baseinfo.go/DataReported

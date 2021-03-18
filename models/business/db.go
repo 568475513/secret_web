@@ -32,7 +32,8 @@ const (
 	maxIdleConns = 32
 	// 可以重用连接的最长时间[5分钟先]
 	// 防止closing bad idle connection: EOF（ 在 MySQL Server 主动断开连接之前，MySQL Client 的连接池中的连接被关闭掉），具体值要问DBA
-	maxLifetime = 180
+	// 数据库端设置生存时间30s
+	maxLifetime = 28
 )
 
 // 初始化数据库连接

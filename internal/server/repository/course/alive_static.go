@@ -7,12 +7,35 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 
-	"abs/internal/server/repository/app_conf"
-	ruser "abs/internal/server/repository/user"
-	muser "abs/models/user"
+	"abs/models/user"
 	"abs/pkg/cache/alive_static"
 	"abs/pkg/logging"
 )
+
+type StaticData struct {
+	IsFree           int    `redis:"is_free"`
+	Title            string `redis:"title"`
+	RoomId           string `redis:"room_id"`
+	ImgUrl           string `redis:"img_url"`
+	AliveType        int    `redis:"alive_type"`
+	ForbidTalk       int    `redis:"forbid_talk"`
+	Summary          string `redis:"summary"`
+	ZbStartAt        string `redis:"zb_start_at"`
+	RoomUrl          string `redis:"room_url"`
+	ImgUrlCompressed string `redis:"img_url_compressed"`
+	AliveVideoUrl    string `redis:"alive_video_url"`
+	CommentCount     int    `redis:"comment_count"`
+	PptImgs          string `redis:"ppt_imgs"`
+	OrgContent       string `redis:"org_content"`
+	AliveImgUrl      string `redis:"alive_img_url"`
+	ViewCount        int    `redis:"view_count"`
+	HavePassword     int    `redis:"have_password"`
+	ZbStopAt         string `redis:"zb_stop_at"`
+	AliveroomImgUrl  string `redis:"aliveroom_img_url"`
+	ManualStopAt     string `redis:"manual_stop_at"`
+	PaymentType      string `redis:"payment_type"`
+	Descrb           string `redis:"descrb"`
+}
 
 type AliveStatic struct {
 	AppId     string
@@ -42,7 +65,7 @@ func (c *AliveStatic) AliveStaticMain() (RoomData map[string]interface{}, err er
 
 	if c.CheckAliveStaticSwitch(StaticRedisCon) {
 		staticDataValues, err := redis.Values(StaticRedisCon.Do("HGETALL", fmt.Sprintf(Static_Data, c.AppId, c.AliveId))) //获取直播静态数据
-		staticData := &alive_static.StaticData{}
+		staticData := &StaticData{}
 		if err := redis.ScanStruct(staticDataValues, staticData); err != nil {
 			logging.Error(err)
 		}
@@ -191,18 +214,14 @@ func (c *AliveStatic) CheckAliveStaticSwitch(conn redis.Conn) (Switch bool) {
 }
 
 //次级业务接口静态化逻辑
-func (c *AliveStatic) SecondaryInfoStaticData() map[string]interface{} {
+func (c *AliveStatic) SecondaryInfoStaticData(im map[string]string, user user.User) map[string]interface{} {
 
-	var userInfo muser.User
 	data := make(map[string]interface{})
-	appRep := app_conf.AppInfo{AppId: c.AppId}
-	// 初始化用户实例
-	userRep, userInfoMap := ruser.UserBusinessConstrct(c.AppId, c.UserId), make(map[string]interface{})
-	userInfo, _ = userRep.GetUserInfo()
 	// 组装用户信息
-	userInfoMap["phone"] = userInfo.Phone
-	userInfoMap["wx_avatar"] = userInfo.WxAvatar
-	userInfoMap["wx_nickname"] = userInfo.WxNickname
+	userInfoMap := make(map[string]interface{})
+	userInfoMap["phone"] = user.Phone
+	userInfoMap["wx_avatar"] = user.WxAvatar
+	userInfoMap["wx_nickname"] = user.WxNickname
 	// 用户信息
 	data["user_info"] = userInfoMap
 	// 短信预约总开关
@@ -220,6 +239,6 @@ func (c *AliveStatic) SecondaryInfoStaticData() map[string]interface{} {
 	// 共享文件列表链接
 	data["share_file_url"] = ""
 	// 获取云通信配置
-	data["im_init"] = appRep.GetCommunicationCloudInfo(c.UserId)
+	data["im_init"] = im
 	return data
 }
