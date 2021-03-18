@@ -297,11 +297,8 @@ func GetSecondaryInfo(c *gin.Context) {
 	// 直播静态化查询操作
 	if req.StaticIsStart != "" { //如果携带固定参数则走静态页
 		ImInit := appRep.GetCommunicationCloudInfo(userId) //获取im配置
-		var (
-			userInfo muser.User
-		)
 		userRep := ruser.UserBusinessConstrct(appId, userId)
-		userInfo, _ = userRep.GetUserInfo()
+		userInfo, _ := userRep.GetUserInfo()
 		aliveStaticRep := course.AliveStatic{AppId: appId, UserId: userId, ImInit: ImInit, UserInfo: userInfo}
 		StaticData := aliveStaticRep.SecondaryInfoStaticData()
 		app.OkWithData(StaticData, c)
