@@ -43,8 +43,6 @@ type AliveStatic struct {
 	UserId    string
 	Type      string
 	ExtraData string
-	ImInit    map[string]string
-	UserInfo  user.User
 }
 
 const (
@@ -216,14 +214,14 @@ func (c *AliveStatic) CheckAliveStaticSwitch(conn redis.Conn) (Switch bool) {
 }
 
 //次级业务接口静态化逻辑
-func (c *AliveStatic) SecondaryInfoStaticData() map[string]interface{} {
+func (c *AliveStatic) SecondaryInfoStaticData(im map[string]string, user user.User) map[string]interface{} {
 
 	data := make(map[string]interface{})
 	// 组装用户信息
 	userInfoMap := make(map[string]interface{})
-	userInfoMap["phone"] = c.UserInfo.Phone
-	userInfoMap["wx_avatar"] = c.UserInfo.WxAvatar
-	userInfoMap["wx_nickname"] = c.UserInfo.WxNickname
+	userInfoMap["phone"] = user.Phone
+	userInfoMap["wx_avatar"] = user.WxAvatar
+	userInfoMap["wx_nickname"] = user.WxNickname
 	// 用户信息
 	data["user_info"] = userInfoMap
 	// 短信预约总开关
@@ -241,6 +239,6 @@ func (c *AliveStatic) SecondaryInfoStaticData() map[string]interface{} {
 	// 共享文件列表链接
 	data["share_file_url"] = ""
 	// 获取云通信配置
-	data["im_init"] = c.ImInit
+	data["im_init"] = im
 	return data
 }

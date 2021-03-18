@@ -299,8 +299,8 @@ func GetSecondaryInfo(c *gin.Context) {
 		ImInit := appRep.GetCommunicationCloudInfo(userId) //获取im配置
 		userRep := ruser.UserBusinessConstrct(appId, userId)
 		userInfo, _ := userRep.GetUserInfo()
-		aliveStaticRep := course.AliveStatic{AppId: appId, UserId: userId, ImInit: ImInit, UserInfo: userInfo}
-		StaticData := aliveStaticRep.SecondaryInfoStaticData()
+		aliveStaticRep := course.AliveStatic{AppId: appId, UserId: userId}
+		StaticData := aliveStaticRep.SecondaryInfoStaticData(ImInit, userInfo)
 		app.OkWithData(StaticData, c)
 		return
 	}
