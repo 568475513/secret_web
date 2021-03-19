@@ -36,6 +36,7 @@ type PayProducts struct {
 	ShareListenCount       int                 `json:"share_listen_count"`    // share_listen_count
 	ResourceCount          int                 `json:"resource_count"`
 	RecycleBinState        uint8               `json:"recycle_bin_state"` // recycle_bin_state
+	DisplayState           uint8               `json:"display_state"`     // display_state
 	State                  uint8               `json:"state"`
 
 	RatePrice  int      `json:"rate_price"`

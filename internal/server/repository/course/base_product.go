@@ -119,7 +119,7 @@ func (p *Product) GetCampTermListByIds(relations []*business.ProResRelation) ([]
 	if len(ids) == 0 {
 		return terms, nil
 	}
-	//查询字段
+	// 查询字段
 	selectFields := []string{"app_id", "id", "img_url", "img_url_compressed", "title", "summary", "join_count",
 		"price", "display_state", "distribute_percent", "first_distribute_percent", "lesson_start_at", "lesson_stop_at", "recycle_bin_state"}
 	// 初始化营期请求服务
@@ -129,23 +129,6 @@ func (p *Product) GetCampTermListByIds(relations []*business.ProResRelation) ([]
 		logging.Error(err)
 	}
 	return terms, nil
-
-	// 老方法，注意废弃！！！
-	// if termResult["code"].(float64) == 0 {
-	// 	rdata := termResult["data"].(map[string]interface{})
-	// 	var item business.PayProducts
-	// 	for _, val := range rdata["terms"].([]interface{}) {
-	// 		v := val.(map[string]interface{})
-	// 		v["app_id"] = p.AppId
-	// 		err = mapstructure.Decode(v, &item)
-	// 		// 这里注意下！！！有过滤
-	// 		if err != nil {
-	// 			logging.Error(err)
-	// 			continue
-	// 		}
-	// 		terms = append(terms, &item)
-	// 	}
-	// }
 }
 
 // 小程序部分代码此期不用
