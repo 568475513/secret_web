@@ -80,7 +80,12 @@ func (t *CampService) GetCampTermInfo(ids, fields []string) ([]*business.PayProd
 
 	// 转化为返回指针
 	for _, v := range result.Data.Terms {
-		trems = append(trems, &v)
+		// 过滤隐藏的
+		if v.DisplayState == 0 && v.RecycleBinState == 0 {
+			// var tmp business.PayProducts
+			tmp := v
+			trems = append(trems, &tmp)
+		}
 	}
 	return trems, nil
 }
