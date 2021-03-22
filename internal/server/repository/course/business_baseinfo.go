@@ -357,7 +357,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			// })
 			// 置为使用cos录播方式
 			liveUrl.VideoAliveUseCos = true
-			if len(playUrls) != 0 {
+			if len(playUrls) > 3 {
 				liveUrl.NewAliveVideoUrl = playUrls[3]
 			} else {
 				liveUrl.NewAliveVideoUrl = b.Alive.PlayUrl
