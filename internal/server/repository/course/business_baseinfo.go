@@ -277,7 +277,6 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		isUserWebRtc bool
 		// isEnableWebRtc bool
 	)
-	b.Alive.PlayUrl = "[\"rtmp://liveplay.xiaoeknow.com/live/5060_65nirrtscSj7Yk6W\",\"http://liveplay.xiaoeknow.com/live/5060_65nirrtscSj7Yk6W.flv\",\"http://liveplay.xiaoeknow.com/live/5060_65nirrtscSj7Yk6W.m3u8\"]"
 	if err = util.JsonDecode([]byte(b.Alive.PlayUrl), &playUrls); err != nil {
 		logging.Warn(fmt.Sprintf("获取直播间播放链接JsonDecode有错误【非致命，不慌】：%s", err.Error()))
 		// 不能返回，有特殊的PlayUrl
