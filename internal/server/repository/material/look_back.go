@@ -70,11 +70,15 @@ func (lb *LookBack) GetLookBackUrl(aliveInfo *alive.Alive, aliveState, appType i
 				}
 			} else if aliveInfo.AliveType == e.AliveTypePush || aliveInfo.AliveType == e.AliveOldTypePush { //视频直播
 				lookBackFile, _ := lb.GetLookBackFile(lb.AppId, lb.AliveId)
-				if aliveInfo.CreateMode == 1 { //转播课程，判断直播方的回放权限
+				if aliveInfo.CreateMode == 1 { // 转播课程，判断直播方的回放权限
 					originAliveInfo, _ := alive.GetAliveInfoByChannelId(aliveInfo.ChannelId, []string{"app_id", "id", "is_lookback"})
-					permission, _ := sub_business.GetCloneResApply(originAliveInfo.AppId, originAliveInfo.Id, aliveInfo.AppId, []string{"lookback_permission"})
-					if originAliveInfo.IsLookback == 1 && permission.LookbackPermission == 1 { //原视频有开启回放且开了权限
-						lookBackFile, _ = lb.GetLookBackFile(originAliveInfo.AppId, originAliveInfo.Id)
+					if originAliveInfo != nil {
+						permission, err := sub_business.GetCloneResApply(originAliveInfo.AppId, originAliveInfo.Id, aliveInfo.AppId, []string{"lookback_permission"})
+						if err != nil {
+							logging.Error(err)
+						} else if permission != nil && originAliveInfo.IsLookback == 1 && permission.LookbackPermission == 1 { // 原视频有开启回放且开了权限
+							lookBackFile, _ = lb.GetLookBackFile(originAliveInfo.AppId, originAliveInfo.Id)
+						}	
 					}
 				}
 
