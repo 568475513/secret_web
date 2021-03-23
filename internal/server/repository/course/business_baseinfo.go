@@ -70,6 +70,10 @@ func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 	aliveInfoDetail["img_url_compressed"] = b.Alive.ImgUrlCompressed.String
 	// 直播类型（语音/视频）0-语音直播，1-视频直播 2-推流直播
 	aliveInfoDetail["alive_type"] = b.Alive.AliveType
+	// 推流直播开始时间
+	aliveInfoDetail["pushzb_start_at"] = b.Alive.ZbStartAt
+	// 推流直播结束时间
+	aliveInfoDetail["pushzb_stop_at"] = b.Alive.ZbStopAt
 	// 获取直播状态
 	aliveInfoDetail["alive_state"] = b.AliveRep.GetAliveStates(b.Alive)
 	// 推流状态，0推流结束，1推流中，2推流未开始
@@ -79,10 +83,6 @@ func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 	if b.Alive.AliveType == e.AliveTypeVideo {
 		aliveInfoDetail["remainder_time"] = b.Alive.ZbStartAt.Unix() + b.Alive.VideoLength - now.Unix()
 	}
-	// 推流直播开始时间
-	aliveInfoDetail["pushzb_start_at"] = b.Alive.ZbStartAt
-	// 推流直播结束时间
-	aliveInfoDetail["pushzb_stop_at"] = b.Alive.ZbStopAt
 	// 直播开始时间（时间戳：秒）
 	aliveInfoDetail["zb_start_at"] = b.Alive.ZbStopAt.Unix()
 	// 直播结束时间（时间戳：秒）
