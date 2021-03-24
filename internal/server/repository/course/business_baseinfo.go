@@ -582,7 +582,14 @@ func (b *BaseInfo) getAppExpireTime(profit map[string]interface{}) map[string]in
 		"exercise",
 	}
 
-	permissionArray := profit["fp_conf"].(map[string]interface{}) //店铺配置
+	var permissionArray map[string]interface{}
+	if v, ok := profit["fp_conf"]; ok {
+		permissionArray = v.(map[string]interface{})
+	} else {
+		permissionArray = make(map[string]interface{})
+	}
+	// 不兼容配置服务报错
+	// permissionArray := profit["fp_conf"].(map[string]interface{}) //店铺配置
 	result := make(map[string]interface{})
 	for _, v := range versionStateArray {
 		// 0-未过期 1-即将过期，2-过期，-1未购买
@@ -596,7 +603,6 @@ func (b *BaseInfo) getAppExpireTime(profit map[string]interface{}) map[string]in
 				expireTime, _ := time.Parse("2006-01-02 15:04:05", permissionArray[v].(string))
 				leftTime := expireTime.Unix() - time.Now().Unix()
 				result[v+"_expire_time"] = permissionArray[v]
-
 				if leftTime > 8*24*3600 {
 					result[v+"_is_remind"] = 0
 				} else {
