@@ -165,8 +165,6 @@ func (a *AppInfo) GetAppConfSwitchState() (info int, err error) {
 
 // 【直播】统一获取配置中心配置信息
 func (a *AppInfo) GetConfHubInfo() (baseConf *service.AppBaseConf, err error) {
-	// 防止店铺服务挂了影响
-	baseConf = &service.AppBaseConf{}
 	conn, err := redis_alive.GetSubBusinessConn()
 	if err != nil {
 		logging.Error(err)
@@ -188,6 +186,8 @@ func (a *AppInfo) GetConfHubInfo() (baseConf *service.AppBaseConf, err error) {
 	result, err := conInfo.GetConf([]string{"base", "version", "profit", "switches", "extra", "h5_custom", "safe", "pc", "domain", "live"})
 	if err != nil {
 		logging.Error(err)
+		// 防止店铺服务挂了影响返回
+		baseConf = &service.AppBaseConf{}
 		return
 	}
 	// 组装基本配置
