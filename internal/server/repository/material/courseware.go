@@ -161,7 +161,7 @@ func (c *CourseWare) GetCourseWareRecords(client int, aliveTime int, pageSize in
 				if err != nil {
 					return nil, err
 				}
-				if preview != nil && preview[0].AppId != "" { //将preview插入到头部
+				if preview != nil && len(preview) > 0 && preview[0].AppId != "" { // 将preview插入到头部
 					cacheCourseWareRecords = append(preview, cacheCourseWareRecords...)
 				}
 			}
