@@ -120,7 +120,7 @@ func GetAliveInfo(appId string, aliveId string, s []string) (*Alive, error) {
 // 通过channelId获取直播详情
 func GetAliveInfoByChannelId(channelId string, s []string) (*Alive, error) {
 	var a Alive
-	err := db.Select(s).Where("channel_id=?", channelId).First(&a).Error
+	err := db.Select(s).Where("channel_id=? and create_mode=0", channelId).First(&a).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}

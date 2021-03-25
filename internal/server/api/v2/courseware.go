@@ -51,11 +51,6 @@ func GetCourseWareRecords(c *gin.Context) {
 	if err = app.ParseQueryRequest(c, &req); err != nil {
 		return
 	}
-	// AppId := app.GetAppId(c)
-	// req.AliveId = c.Query("alive_id")
-	// req.Client, _ = strconv.Atoi(c.Query("client"))
-	// req.AliveTime, _ = strconv.Atoi(c.Query("alive_time"))
-	// req.PageSize, _ = strconv.Atoi(c.Query("page_size"))
 
 	if req.PageSize == 0 { //默认100条数据
 		req.PageSize = 100
@@ -68,7 +63,7 @@ func GetCourseWareRecords(c *gin.Context) {
 
 	//获取课件使用记录
 	courseWareRep := material.CourseWare{AppId: AppId, AliveId: req.AliveId}
-	data, err := courseWareRep.GetCourseWareRecords(req.Client, req.AliveTime, req.PageSize)
+	data, err := courseWareRep.GetCourseWareRecords(c.GetInt("client"), req.AliveTime, req.PageSize)
 	if err != nil {
 		app.FailWithMessage(fmt.Sprintf("获取课件使用记录错误:%s", err.Error()), enums.ERROR, c)
 		return
