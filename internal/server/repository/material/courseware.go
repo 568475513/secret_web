@@ -143,7 +143,7 @@ func (c *CourseWare) GetCourseWareRecords(client int, aliveTime int, pageSize in
 		if aliveTime == 0 { //如果是获取从alive_time = 0开始的课件，则从Redis里获取
 			recordInfo, err := redis.Bytes(conn.Do("GET", cacheKey))
 			if err != nil {
-				logging.Error(err)
+				logging.Warn(err)
 			} else {
 				json.Unmarshal(recordInfo, &cacheCourseWareRecords)
 			}
