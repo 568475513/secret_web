@@ -45,7 +45,7 @@ func (userService *UserService) RequestUserInfo() (UserServiceResponse, error) {
 		return result, err
 	}
 	if result.Code != e.SUCCESS {
-		return result, errors.New(fmt.Sprintf("请求用户数据错误：%s", result.Msg))
+		return result, errors.New(fmt.Sprintf("请求用户数据错误：%s[appId:%s,userId:%s]", result.Msg, userService.AppId, userService.UserId))
 	}
 	return result, nil
 }

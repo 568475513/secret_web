@@ -97,6 +97,7 @@ type AliveModuleConf struct {
 	IsShowRewardOn  uint8  `json:"is_show_reward_on"`
 	IsInviteOn      uint8  `json:"is_invite_on"`
 	IsMessageOn     uint8  `json:"is_message_on"`
+	IsSignInOn      uint8  `json:"is_sign_in_on"`
 	IsMessageVerify uint8  `json:"is_message_verify"`
 	IsPrizeOn       uint8  `json:"is_prize_on"`
 	MessageAhead    int    `json:"message_ahead"`
@@ -121,7 +122,7 @@ func GetAliveInfo(appId string, aliveId string, s []string) (*Alive, error) {
 // 通过channelId获取直播详情
 func GetAliveInfoByChannelId(channelId string, s []string) (*Alive, error) {
 	var a Alive
-	err := db.Select(s).Where("channel_id=?", channelId).First(&a).Error
+	err := db.Select(s).Where("channel_id=? and create_mode=0", channelId).First(&a).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}

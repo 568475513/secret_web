@@ -70,6 +70,10 @@ func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 	aliveInfoDetail["img_url_compressed"] = b.Alive.ImgUrlCompressed.String
 	// 直播类型（语音/视频）0-语音直播，1-视频直播 2-推流直播
 	aliveInfoDetail["alive_type"] = b.Alive.AliveType
+	// 推流直播开始时间
+	aliveInfoDetail["pushzb_start_at"] = b.Alive.ZbStartAt
+	// 推流直播结束时间
+	aliveInfoDetail["pushzb_stop_at"] = b.Alive.ZbStopAt
 	// 获取直播状态
 	aliveInfoDetail["alive_state"] = b.AliveRep.GetAliveStates(b.Alive)
 	// 推流状态，0推流结束，1推流中，2推流未开始
@@ -79,10 +83,6 @@ func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 	if b.Alive.AliveType == e.AliveTypeVideo {
 		aliveInfoDetail["remainder_time"] = b.Alive.ZbStartAt.Unix() + b.Alive.VideoLength - now.Unix()
 	}
-	// 推流直播开始时间
-	aliveInfoDetail["pushzb_start_at"] = b.Alive.ZbStartAt
-	// 推流直播结束时间
-	aliveInfoDetail["pushzb_stop_at"] = b.Alive.ZbStopAt
 	// 直播开始时间（时间戳：秒）
 	aliveInfoDetail["zb_start_at"] = b.Alive.ZbStopAt.Unix()
 	// 直播结束时间（时间戳：秒）
@@ -255,6 +255,9 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	aliveConf["complete_time"] = aliveModule.CompleteTime
 	// 是否开启打赏， 0-关闭 1-开启
 	aliveConf["is_show_reward_on"] = aliveModule.IsShowRewardOn
+	// 是否开启签到，0-未开启，1-开启
+	aliveConf["is_sign_in_on"] = aliveModule.IsSignInOn
+
 	if aliveModule.CompleteTime == 0 {
 		aliveConf["is_open_complete_time"] = 0
 	} else {
@@ -584,7 +587,14 @@ func (b *BaseInfo) getAppExpireTime(profit map[string]interface{}) map[string]in
 		"exercise",
 	}
 
-	permissionArray := profit["fp_conf"].(map[string]interface{}) //店铺配置
+	var permissionArray map[string]interface{}
+	if v, ok := profit["fp_conf"]; ok {
+		permissionArray = v.(map[string]interface{})
+	} else {
+		permissionArray = make(map[string]interface{})
+	}
+	// 不兼容配置服务报错
+	// permissionArray := profit["fp_conf"].(map[string]interface{}) //店铺配置
 	result := make(map[string]interface{})
 	for _, v := range versionStateArray {
 		// 0-未过期 1-即将过期，2-过期，-1未购买
@@ -598,7 +608,6 @@ func (b *BaseInfo) getAppExpireTime(profit map[string]interface{}) map[string]in
 				expireTime, _ := time.Parse("2006-01-02 15:04:05", permissionArray[v].(string))
 				leftTime := expireTime.Unix() - time.Now().Unix()
 				result[v+"_expire_time"] = permissionArray[v]
-
 				if leftTime > 8*24*3600 {
 					result[v+"_is_remind"] = 0
 				} else {
