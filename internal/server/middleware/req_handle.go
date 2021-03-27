@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,7 +14,6 @@ func ReqParamHandle() gin.HandlerFunc {
 		c.Set("user_id", c.GetHeader("XE_X_USE_ID"))
 		// c.Set("wx_app_id", c.GetHeader("XE_X_WX_APP_ID"))
 		// c.Set("user_account_type", c.GetHeader("XE_X_USER_ACCOUNT_TYPE"))
-		c.Set("client", c.GetHeader("XE_X_CLIENT"))
 		c.Set("app_version", c.GetHeader("XE_X_APP_VERSION"))
 		// c.Set("force_collection", c.GetHeader("XE_X_FORCE_COLLECTION"))
 		c.Set("buz_uri", c.GetHeader("XE_X_BUZ_URI"))
@@ -20,8 +21,11 @@ func ReqParamHandle() gin.HandlerFunc {
 		// c.Set("buz_referer", c.GetHeader("XE_X_BUZ_REFERER"))
 		c.Set("agent", c.GetHeader("XE_X_AGENT"))
 		// c.Set("is_manager", c.GetHeader("XE_X_IS_MANAGER"))
-		c.Set("agent_type", c.GetHeader("XE_X_AGENT_TYPE"))
-		c.Set("agent_version", c.GetHeader("XE_X_AGENT_VERSION"))
+		client, _ := strconv.Atoi(c.GetHeader("XE_X_CLIENT"))
+		agentType, _ := strconv.Atoi(c.GetHeader("XE_X_AGENT_TYPE"))
+		c.Set("client", client)
+		c.Set("agent_type", agentType)
+		// c.Set("agent_version", c.GetHeader("XE_X_AGENT_VERSION"))
 
 		// 暂时不这么用
 		// 设置全局参数

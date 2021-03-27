@@ -8,3 +8,4 @@ __debug_bin
 .env.test
 .env.production
 absGoDev
+.idea

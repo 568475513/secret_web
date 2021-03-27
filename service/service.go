@@ -300,10 +300,11 @@ func (x *XiaoeHttpRequest) Bytes() ([]byte, error) {
 		if err != nil {
 			msg = fmt.Sprintf("%s, Error: %s", msg, err.Error())
 		} else {
-			msg = fmt.Sprintf("%s, Resp: %s", msg, string(body))
+			msg = fmt.Sprintf("%s\n Params: %+v\n Resp: %s", msg, x.params, string(body))
 		}
 		return nil, errors.New(msg)
 	}
+	// debug日志
 	if x.debug() {
 		eT := time.Since(bT)
 		// string(body)
@@ -311,7 +312,7 @@ func (x *XiaoeHttpRequest) Bytes() ([]byte, error) {
 		// 输出打印
 		fmt.Println(msg)
 		// 输出相关日志
-		// 这里不能打开，除非job也有日志体系
+		// 这里暂时不能打开，除非job也有日志体系
 		// logging.Info(msg)
 	}
 	return body, err

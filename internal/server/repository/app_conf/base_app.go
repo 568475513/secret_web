@@ -185,11 +185,13 @@ func (a *AppInfo) GetConfHubInfo() (baseConf *service.AppBaseConf, err error) {
 	conInfo := service.ConfHubServer{AppId: a.AppId, WxAppType: 1}
 	result, err := conInfo.GetConf([]string{"base", "version", "profit", "switches", "extra", "h5_custom", "safe", "pc", "domain", "live"})
 	if err != nil {
+		logging.Error(err)
+		// 防止店铺服务挂了影响返回
+		baseConf = &service.AppBaseConf{}
 		return
 	}
 	// 组装基本配置
 	baseConf = a.handleConfResult(result)
-
 	// 缓存
 	if baseConfBytes, err := util.JsonEncode(baseConf); err == nil {
 		if _, err = conn.Do("SET", cacheKey, baseConfBytes, "EX", confHubInfoCacheTime); err != nil {
