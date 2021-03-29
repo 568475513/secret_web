@@ -9,6 +9,7 @@ import (
 
 	"abs/models/user"
 	"abs/pkg/cache/alive_static"
+	"abs/pkg/cache/redis_gray"
 	"abs/pkg/logging"
 )
 
@@ -35,6 +36,7 @@ type StaticData struct {
 	ManualStopAt     string `redis:"manual_stop_at"`
 	PaymentType      string `redis:"payment_type"`
 	Descrb           string `redis:"descrb"`
+	VideoAliveUseCos string `redis:"video_alive_use_cos"`
 }
 
 type AliveStatic struct {
@@ -54,7 +56,7 @@ const (
 )
 
 //直播静态化切换主流程
-func (c *AliveStatic) AliveStaticMain() (RoomData map[string]interface{}, err error) {
+func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interface{}, err error) {
 
 	StaticRedisCon, err := alive_static.GetStaticRedisCon()
 	if err != nil {
@@ -144,8 +146,17 @@ func (c *AliveStatic) AliveStaticMain() (RoomData map[string]interface{}, err er
 					"payment_type":      1,
 					"recycle_bin_state": "",
 				}
+				isGrayBool := redis_gray.InGrayShop("video_alive_not_use_cos", c.AppId)
+				// 不为小程序--不在O端名单内
 				RoomData["alive_play"] = map[string]interface{}{
 					"alive_video_url": staticData.AliveVideoUrl,
+				}
+				if !isGrayBool && staticData.VideoAliveUseCos == "1" && agentType != 14 {
+					RoomData["alive_play"] = map[string]interface{}{
+						"video_alive_use_cos": true,
+						"new_alive_video_url": staticData.AliveVideoUrl,
+						"alive_video_url":     staticData.AliveVideoUrl,
+					}
 				}
 				RoomData["alive_conf"] = map[string]interface{}{
 					"alive_mode":       0,
