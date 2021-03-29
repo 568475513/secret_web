@@ -61,7 +61,7 @@ func GetBaseInfo(c *gin.Context) {
 
 	// 直播静态化查询操作
 	aliveStaticRep := course.AliveStatic{AppId: req.AppId, AliveId: req.ResourceId, UserId: userId, Type: req.Type}
-	aliveStaticData, err := aliveStaticRep.AliveStaticMain()
+	aliveStaticData, err := aliveStaticRep.AliveStaticMain(c.GetInt("agent_type"))
 	if len(aliveStaticData) > 0 {
 		app.OkWithData(aliveStaticData, c)
 		return
