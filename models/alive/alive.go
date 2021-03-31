@@ -105,6 +105,7 @@ type AliveModuleConf struct {
 	CompleteTime    uint8  `json:"complete_time"`
 	LookbackName    string `json:"lookback_name"`
 	LookbackTime    string `json:"lookback_time"`
+	IsRoundTableOn  uint8  `json:"is_round_table_on"`
 }
 
 // 获取直播详情
