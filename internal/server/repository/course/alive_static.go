@@ -51,8 +51,8 @@ const (
 	staticAliveSwitch        = "aliveGw:switch"
 	staticAlivePageCacheList = "aliveGw:page:list"
 	hashStaticAliveUser      = "hash_static_alive_user_"
-	current_day_alive_role   = "current_day_alive_role:%s:%s"
-	Static_Data              = "current_day_alive_info:%s:%s"
+	currentDayAliveRole      = "current_day_alive_role:%s:%s"
+	static_Data              = "current_day_alive_info:%s:%s"
 )
 
 //直播静态化切换主流程
@@ -66,7 +66,7 @@ func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interf
 	RoomData = make(map[string]interface{})
 
 	if c.CheckAliveStaticSwitch(StaticRedisCon) {
-		staticDataValues, err := redis.Values(StaticRedisCon.Do("HGETALL", fmt.Sprintf(Static_Data, c.AppId, c.AliveId))) //获取直播静态数据
+		staticDataValues, err := redis.Values(StaticRedisCon.Do("HGETALL", fmt.Sprintf(static_Data, c.AppId, c.AliveId))) //获取直播静态数据
 		staticData := &StaticData{}
 		if err := redis.ScanStruct(staticDataValues, staticData); err != nil {
 			logging.Error(err)
@@ -75,7 +75,7 @@ func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interf
 			yymmdd         = time.Now().Format("2006-01-02")
 			key            = c.AliveId + c.UserId
 			ava, _         = redis.Values(StaticRedisCon.Do("HMGET", hashStaticAliveUser+yymmdd, key))
-			teacher_val, _ = redis.Values(StaticRedisCon.Do("HGETALL", fmt.Sprintf(current_day_alive_role, c.AppId, c.AliveId)))
+			teacher_val, _ = redis.Values(StaticRedisCon.Do("HGETALL", fmt.Sprintf(currentDayAliveRole, c.AppId, c.AliveId)))
 		)
 		teacher := ""
 		for _, v := range teacher_val {
@@ -149,7 +149,8 @@ func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interf
 				isGrayBool := redis_gray.InGrayShop("video_alive_not_use_cos", c.AppId)
 				// 不为小程序--不在O端名单内
 				RoomData["alive_play"] = map[string]interface{}{
-					"alive_video_url": staticData.AliveVideoUrl,
+					"alive_video_url":     staticData.AliveVideoUrl,
+					"video_alive_use_cos": false,
 				}
 				if !isGrayBool && staticData.VideoAliveUseCos == "1" && agentType != 14 {
 					RoomData["alive_play"] = map[string]interface{}{

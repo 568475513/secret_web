@@ -48,7 +48,7 @@ func ZipkinTracer(isAlibaba bool) gin.HandlerFunc {
 	} else {
 		// 高流量一定量随机采样
 		appName = "abs-go-production"
-		sampler, err = zipkin.NewBoundarySampler(float64(0.01), 2)
+		sampler, err = zipkin.NewBoundarySampler(float64(0.001), 2)
 		if err != nil {
 			log.Fatalf("[采样率]set-up our sampling strategy err: %+v\n", err)
 		}
