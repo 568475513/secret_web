@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 
@@ -17,6 +18,7 @@ import (
 	e "abs/pkg/enums"
 	"abs/pkg/logging"
 	"abs/pkg/util"
+	"abs/service"
 )
 
 const (
@@ -126,6 +128,35 @@ func (lb *LookBack) GetLookBackUrl(aliveInfo *alive.Alive, aliveState, appType i
 	data["miniAliveVideoUrl"] = miniAliveVideoUrl
 	data["aliveReviewUrl"] = aliveReviewUrl
 	data["aliveVideoUrlEncrypt"] = aliveVideoUrlEncrypt
+	data = lb.ReplaceLookBackUrl(data)
+
+	return data
+}
+
+//替换url为素材中心的url
+func (lb *LookBack) ReplaceLookBackUrl(data map[string]string) map[string]string {
+	//过滤数据，只去素材中心查满足以下正则匹配的url
+	var requestParam []string
+	for _, value := range data {
+		match, _ := regexp.MatchString("https?:\\\\?\\/\\\\?\\/([0-9a-z\\-_]+?\\.[a-z]+|([0-9a-z\\-_]+)\\.vod2?)\\.myqcloud\\.com[^\"\\'\\s]+\\.(mp3|mp4|m3u8|epub|opf|pdf|m4a)", value)
+		if match == true {
+			requestParam = append(requestParam, value)
+		}
+	}
+	responseData, err := service.WashingData(lb.AppId, requestParam)
+	if err != nil {
+		logging.Error(err)
+	}
+
+	//替换url
+	if len(responseData.FilterData) > 0 {
+		for key, value := range data {
+			url, ok := responseData.FilterData[value]
+			if ok {
+				data[key] = url
+			}
+		}
+	}
 
 	return data
 }
