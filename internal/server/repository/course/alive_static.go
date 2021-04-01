@@ -52,7 +52,7 @@ const (
 	staticAlivePageCacheList = "aliveGw:page:list"
 	hashStaticAliveUser      = "hash_static_alive_user_"
 	currentDayAliveRole      = "current_day_alive_role:%s:%s"
-	static_Data              = "current_day_alive_info:%s:%s"
+	currentDayAliveInfo      = "current_day_alive_info:%s:%s"
 )
 
 //直播静态化切换主流程
@@ -66,7 +66,7 @@ func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interf
 	RoomData = make(map[string]interface{})
 
 	if c.CheckAliveStaticSwitch(StaticRedisCon) {
-		staticDataValues, err := redis.Values(StaticRedisCon.Do("HGETALL", fmt.Sprintf(static_Data, c.AppId, c.AliveId))) //获取直播静态数据
+		staticDataValues, err := redis.Values(StaticRedisCon.Do("HGETALL", fmt.Sprintf(currentDayAliveInfo, c.AppId, c.AliveId))) //获取直播静态数据
 		staticData := &StaticData{}
 		if err := redis.ScanStruct(staticDataValues, staticData); err != nil {
 			logging.Error(err)
