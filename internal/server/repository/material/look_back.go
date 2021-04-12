@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	aliveLookBackKey     = "alive_look_back:%s:%s"
+	aliveLookBackKey     = "alive_look_back_new:%s:%s"
 	LookBackEncryptkey   = "alive_lookback_encryption"
 	aliveOnlyDrmMp4Key   = "alive_only_drm_mp4"
 	xiaoeVideoEncryptKey = "xiaoe_video_encrypt_whirly_is_a_liangzai"
@@ -80,7 +80,7 @@ func (lb *LookBack) GetLookBackUrl(aliveInfo *alive.Alive, aliveState, appType i
 							logging.Error(err)
 						} else if permission != nil && originAliveInfo.IsLookback == 1 && permission.LookbackPermission == 1 { // 原视频有开启回放且开了权限
 							lookBackFile, _ = lb.GetLookBackFile(originAliveInfo.AppId, originAliveInfo.Id)
-						}	
+						}
 					}
 				}
 
