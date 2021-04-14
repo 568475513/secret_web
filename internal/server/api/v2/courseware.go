@@ -105,8 +105,6 @@ func GetCourseWareInfo(c *gin.Context) {
 	if err = app.ParseQueryRequest(c, &req); err != nil {
 		return
 	}
-	// req.AliveId = c.Query("alive_id")
-	// req.CourseWareId = c.Query("courseware_id")
 
 	if AppId == "" || req.AliveId == "" {
 		app.FailWithMessage("内容已被删除1", enums.Code_Db_Not_Find, c)
@@ -131,7 +129,7 @@ func GetCourseWareInfo(c *gin.Context) {
 		}
 		if courseWareInfo.CoursewareImage != "" {
 			data.Id = courseWareInfo.Id.String
-			data.CoursewareImage = courseWareInfo.CourseImageArray
+			data.CoursewareImage = courseWareRep.ReplaceCourseLinkInfoStr(courseWareInfo.CourseImageArray)
 			data.PageCount = courseWareInfo.PageCount
 			data.CurrentPreviewPage = courseWareInfo.CurrentPreviewPage
 		}
@@ -149,18 +147,19 @@ func GetCourseWareInfo(c *gin.Context) {
 		}
 
 		//更改新字段返回
-		var imageReturnSlice []map[string]interface{}
-		for k, v := range coursewareImage {
-			imageReturnSlice = append(imageReturnSlice, map[string]interface{}{
-				"index":              k,
-				"pic_url":            v["pic_url"],
-				"server_id":          v["server_id"],
-				"pic_compressed_url": v["pic_url_compressed"],
-			})
-		}
+		// var imageReturnSlice []map[string]interface{}
+		// for k, v := range coursewareImage {
+		// 	fmt.Println(v["pic_url"].(string))
+		// 	imageReturnSlice = append(imageReturnSlice, map[string]interface{}{
+		// 		"index":              k,
+		// 		"pic_url":            courseWareRep.ReplaceCourseLinkStr(v["pic_url"].(string)),
+		// 		"server_id":          v["server_id"],
+		// 		"pic_compressed_url": courseWareRep.ReplaceCourseLinkStr(v["pic_url_compressed"].(string)), // v["pic_url_compressed"]
+		// 	})
+		// }
 		//赋值到新字段
-		data.CoursewareImage = imageReturnSlice
-		data.PageCount = len(imageReturnSlice)
+		data.CoursewareImage = courseWareRep.ReplaceCourseLinkInfoStr(coursewareImage)
+		data.PageCount = len(data.CoursewareImage)
 		app.OkWithData(data, c)
 		return
 	}
@@ -178,7 +177,7 @@ func GetCourseWareInfo(c *gin.Context) {
 
 	if courseWareInfo.CoursewareImage != "" {
 		data.Id = courseWareInfo.Id.String
-		data.CoursewareImage = courseWareInfo.CourseImageArray
+		data.CoursewareImage = courseWareRep.ReplaceCourseLinkInfoStr(courseWareInfo.CourseImageArray)
 		data.PageCount = courseWareInfo.PageCount
 		data.CurrentPreviewPage = courseWareInfo.CurrentPreviewPage
 	}
