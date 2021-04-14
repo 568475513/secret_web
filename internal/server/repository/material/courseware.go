@@ -308,6 +308,36 @@ func (c *CourseWare) ReplaceCourseLinkArrStr(records []*alive.CourseWareRecords)
 	}
 }
 
+// 详情替换入口
+// 全量替换数组中的某个字符串，替换数据库链接数据之前临时用
+func (c *CourseWare) ReplaceCourseLinkInfoStr(infoRecords []map[string]interface{}) []map[string]interface{} {
+	if len(infoRecords) == 0 {
+		return infoRecords
+	}
+	// 这里有灰度控制
+	if isGray := redis_gray.InGrayShop("courseware_replace", c.AppId); !isGray {
+		return infoRecords
+	}
+	// 判断记录是否存在
+	// 更改新字段返回
+	var imageReturnSlice []map[string]interface{}
+	for k, v := range infoRecords {
+		picCompressedUrl, ok := v["pic_url_compressed"]
+		if !ok {
+			if picCompressedUrl, ok = v["pic_compressed_url"]; !ok {
+				picCompressedUrl = ""
+			}
+		}
+		imageReturnSlice = append(imageReturnSlice, map[string]interface{}{
+			"index":              k,
+			"pic_url":            c.ReplaceCourseLinkStr(v["pic_url"].(string)),
+			"server_id":          v["server_id"],
+			"pic_compressed_url": c.ReplaceCourseLinkStr(picCompressedUrl.(string)), // v["pic_url_compressed"]
+		})
+	}
+	return imageReturnSlice
+}
+
 // 全量替换数组中的某个字符串，替换数据库链接数据之前临时用
 func (c *CourseWare) ReplaceCourseLinkStr(replaceStr string) string {
 	// 空就直接返回
