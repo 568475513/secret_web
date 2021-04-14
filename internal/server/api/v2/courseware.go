@@ -153,9 +153,9 @@ func GetCourseWareInfo(c *gin.Context) {
 		for k, v := range coursewareImage {
 			imageReturnSlice = append(imageReturnSlice, map[string]interface{}{
 				"index":              k,
-				"pic_url":            v["pic_url"],
+				"pic_url":            courseWareRep.ReplaceCourseLinkStr(v["pic_url"].(string)),
 				"server_id":          v["server_id"],
-				"pic_compressed_url": v["pic_url_compressed"],
+				"pic_compressed_url": courseWareRep.ReplaceCourseLinkStr(v["pic_url_compressed"].(string)), // v["pic_url_compressed"]
 			})
 		}
 		//赋值到新字段
