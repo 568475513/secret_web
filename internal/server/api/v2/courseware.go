@@ -37,7 +37,7 @@ type CourseWareRecords struct {
 	CoursewareId       string `json:"courseware_id"`
 }
 
-//获取课件使用记录接口
+// 获取课件使用记录接口
 func GetCourseWareRecords(c *gin.Context) {
 	var (
 		err        error
@@ -69,17 +69,20 @@ func GetCourseWareRecords(c *gin.Context) {
 		return
 	}
 
+	// 替换错误链接
+	courseWareRep.ReplaceCourseLinkArrStr(data)
+
 	//统一返回结构
 	for _, v := range data {
-		courseWare = CourseWareRecords{
+		courseWare = CourseWareRecords {
 			AliveId:            v.AliveId,
 			AliveTime:          v.AliveTime,
 			CourseUseTime:      v.CourseUseTime,
 			UserId:             v.UserId.String,
 			CurrentPreviewPage: v.CurrentPreviewPage,
 			CurrentImageUrl:    v.CurrentImageUrl.String,
-			CoursewareId:       v.CoursewareId.String}
-
+			CoursewareId:       v.CoursewareId.String,
+		}
 		returnData = append(returnData, courseWare)
 	}
 
