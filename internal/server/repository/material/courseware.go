@@ -303,7 +303,7 @@ func (c *CourseWare) ReplaceCourseLinkArrStr(records []*alive.CourseWareRecords)
 	// 判断记录是否存在
 	if len(records) > 0 {
 		for _, v := range records {
-			v.CurrentImageUrl.String = c.ReplaceCourseLinkStr(v.CurrentImageUrl.String )
+			v.CurrentImageUrl.String = c.ReplaceCourseLinkStr(v.CurrentImageUrl.String)
 		}
 	}
 }
