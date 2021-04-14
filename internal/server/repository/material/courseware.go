@@ -341,7 +341,7 @@ func (c *CourseWare) ReplaceCourseLinkInfoStr(infoRecords []map[string]interface
 // 全量替换数组中的某个字符串，替换数据库链接数据之前临时用
 func (c *CourseWare) ReplaceCourseLinkStr(replaceStr string) string {
 	// 空就直接返回
-	if replaceStr == "" {
+	if replaceStr == "" || !strings.Contains(replaceStr, "transcode") {
 		return replaceStr
 	}
 	// 智障设置，为什么没有Default ???
@@ -366,7 +366,7 @@ func (c *CourseWare) ReplaceCourseLinkStr(replaceStr string) string {
 		replaceStr = strings.ReplaceAll(replaceStr, filetranscode2, filetranscode)
 		replaceStr = strings.ReplaceAll(replaceStr, filetranscode3, filetranscode)
 	}
-	if !strings.Contains(replaceStr, "/picture") && !strings.Contains(replaceStr, "/picutre") {
+	if strings.Contains(replaceStr, filetranscode) && !strings.Contains(replaceStr, "/picture") && !strings.Contains(replaceStr, "/picutre") {
 		replaceStr = strings.Split(replaceStr, "?")[0]
 		if index := strings.LastIndex(replaceStr, "/"); index != -1 {
 			tmp := replaceStr[index:]
