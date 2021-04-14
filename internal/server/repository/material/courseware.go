@@ -1,13 +1,17 @@
 package material
 
 import (
-	"abs/models/alive"
-	"abs/pkg/cache/redis_alive"
-	"abs/pkg/logging"
 	"encoding/json"
 	"fmt"
-	"github.com/gomodule/redigo/redis"
+	"os"
 	"strings"
+
+	"github.com/gomodule/redigo/redis"
+
+	"abs/models/alive"
+	"abs/pkg/cache/redis_alive"
+	"abs/pkg/cache/redis_gray"
+	"abs/pkg/logging"
 )
 
 /**
@@ -287,4 +291,57 @@ func (c *CourseWare) GetCourseWareInfoCacheByAliveId(s []string) (*alive.CourseW
 	}
 
 	return cacheCourseWareInfo, nil
+}
+
+// 列表替换入口
+// 全量替换数组中的某个字符串，替换数据库链接数据之前临时用
+func (c *CourseWare) ReplaceCourseLinkArrStr(records []*alive.CourseWareRecords) {
+	// 这里有灰度控制
+	if isGray := redis_gray.InGrayShop("courseware_replace", c.AppId); !isGray {
+		return
+	}
+	// 判断记录是否存在
+	if len(records) > 0 {
+		for _, v := range records {
+			v.CurrentImageUrl.String = c.ReplaceCourseLinkStr(v.CurrentImageUrl.String )
+		}
+	}
+}
+
+// 全量替换数组中的某个字符串，替换数据库链接数据之前临时用
+func (c *CourseWare) ReplaceCourseLinkStr(replaceStr string) string {
+	// 空就直接返回
+	if replaceStr == "" {
+		return replaceStr
+	}
+	// 智障设置，为什么没有Default ???
+	filetranscode := os.Getenv("QCLOUD_COS_LINK_filetranscode")
+	filetranscode1 := os.Getenv("OLD_QCLOUD_COS_LINK_filetranscode1")
+	filetranscode2 := os.Getenv("OLD_QCLOUD_COS_LINK_filetranscode2")
+	filetranscode3 := os.Getenv("OLD_QCLOUD_COS_LINK_filetranscode3")
+	if filetranscode == "" {
+		filetranscode = "filetranscode-1252524126.file.myqcloud.com"
+	}
+	if filetranscode1 == "" {
+		filetranscode1 = "transcode.qcloudtiw.com"
+	}
+	if filetranscode2 == "" {
+		filetranscode2 = "transcode-result-1259648581.file.myqcloud.com"
+	}
+	if filetranscode3 == "" {
+		filetranscode3 = "transcode.qcloudtiw.com"
+	}
+	if replaceStr != "" {
+		replaceStr = strings.ReplaceAll(replaceStr, filetranscode1, filetranscode)
+		replaceStr = strings.ReplaceAll(replaceStr, filetranscode2, filetranscode)
+		replaceStr = strings.ReplaceAll(replaceStr, filetranscode3, filetranscode)
+	}
+	if !strings.Contains(replaceStr, "/picture") && !strings.Contains(replaceStr, "/picutre") {
+		replaceStr = strings.Split(replaceStr, "?")[0]
+		if index := strings.LastIndex(replaceStr, "/"); index != -1 {
+			tmp := replaceStr[index:]
+			replaceStr = strings.ReplaceAll(replaceStr, tmp, "/picture" + tmp)
+		}
+	}
+	return replaceStr
 }
