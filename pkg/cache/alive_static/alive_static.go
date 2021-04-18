@@ -19,31 +19,6 @@ const (
 	idleTimeout = 180 * time.Second
 )
 
-type StaticData struct {
-	IsFree           int    `redis:"is_free"`
-	Title            string `redis:"title"`
-	RoomId           string `redis:"room_id"`
-	ImgUrl           string `redis:"img_url"`
-	AliveType        int    `redis:"alive_type"`
-	ForbidTalk       int    `redis:"forbid_talk"`
-	Summary          string `redis:"summary"`
-	ZbStartAt        string `redis:"zb_start_at"`
-	RoomUrl          string `redis:"room_url"`
-	ImgUrlCompressed string `redis:"img_url_compressed"`
-	AliveVideoUrl    string `redis:"alive_video_url"`
-	CommentCount     int    `redis:"comment_count"`
-	PptImgs          string `redis:"ppt_imgs"`
-	OrgContent       string `redis:"org_content"`
-	AliveImgUrl      string `redis:"alive_img_url"`
-	ViewCount        int    `redis:"view_count"`
-	HavePassword     int    `redis:"have_password"`
-	ZbStopAt         string `redis:"zb_stop_at"`
-	AliveroomImgUrl  string `redis:"aliveroom_img_url"`
-	ManualStopAt     string `redis:"manual_stop_at"`
-	PaymentType      string `redis:"payment_type"`
-	Descrb           string `redis:"descrb"`
-}
-
 // Setup Static Initialize the Redis instance
 func Init() error {
 	AliveStaticRedisConn = &redis.Pool{
