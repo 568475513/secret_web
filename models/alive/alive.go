@@ -172,3 +172,14 @@ func UpdateViewCount(appId, aliveId string, viewCount int) error {
 		Update("view_count", viewCount).
 		Limit(1).Error
 }
+
+//根据直播开始时间查询直播列表
+func GetAliveListByZbStartTime(appId string, startTime string, endTime string, s []string) ([]*Alive, error) {
+	var aliveList []*Alive
+	err := db.Table("t_alive").Select(s).
+		Where("app_id=? and zb_start_at>= ? and zb_start_at<=?", appId, startTime, endTime).Find(&aliveList).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	return aliveList, nil
+}
