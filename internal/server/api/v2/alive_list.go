@@ -42,7 +42,7 @@ func GetSubscribeAliveListByDate(c *gin.Context) {
 	}
 
 	//筛出当前用户已订阅的直播
-	aliveList = li.GetSubscribedALiveList(aliveList)
+	result := li.GetSubscribedALiveList(aliveList)
 
-	app.OkWithData(aliveList, c)
+	app.OkWithData(result, c)
 }

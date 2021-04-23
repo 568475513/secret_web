@@ -5,6 +5,7 @@ import (
 	//内部包
 	"abs/models/alive"
 	"abs/pkg/logging"
+	"abs/pkg/util"
 	"abs/service"
 
 	//系统标准包
@@ -40,9 +41,9 @@ func (l *ListInfo) GetALiveListByTime(startTime time.Time, endTime time.Time) ([
 }
 
 //从给定的直播列表筛选出当前用户已订阅的直播
-func (l *ListInfo) GetSubscribedALiveList(aliveList []*alive.Alive) []*alive.Alive {
+func (l *ListInfo) GetSubscribedALiveList(aliveList []*alive.Alive) map[string][]*alive.Alive {
 	var (
-		result     []*alive.Alive
+		result     = make(map[string][]*alive.Alive)
 		aliveIds   []string
 		filterList = make(map[string]*alive.Alive)
 	)
@@ -55,7 +56,8 @@ func (l *ListInfo) GetSubscribedALiveList(aliveList []*alive.Alive) []*alive.Ali
 		for _, aliveId := range subscribedAliveIds {
 			aliveInfo, ok := filterList[aliveId]
 			if ok {
-				result = append(result, aliveInfo)
+				zbStartDate := aliveInfo.ZbStartAt.Time.Format(util.DATE_LAYOUT)
+				result[zbStartDate] = append(result[zbStartDate], aliveInfo)
 			}
 		}
 	} else if err != nil {
