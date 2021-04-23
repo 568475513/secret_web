@@ -31,7 +31,7 @@ func GetSubscribeAliveListByDate(c *gin.Context) {
 	}
 
 	//按时间查询指定店铺下的直播id
-	var li = course.ListInfo{
+	li := course.ListInfo{
 		AppId:            req.AppId,
 		UniversalUnionId: req.UniversalUnionId,
 	}
