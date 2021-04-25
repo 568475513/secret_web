@@ -26,14 +26,12 @@ func UserPowerBusiness(appId string, userId string, agentType int) *userPowerBus
 // 直播权益判断
 func (upb *userPowerBusiness) IsHaveAlivePower(appId string, resouceId string, resouceType string, needExpire bool) (string, bool) {
 	if redis_gray.InGrayShopSpecial("is_switch_new_permission", appId) {
-		logging.Info("走的是新权益")
 		result, err := upb.IsInsideAliveAccess(resouceId)
 		if err != nil {
 			logging.Error(err)
 		}
 		return "", result
 	} else {
-		logging.Info("走的是老权益")
 		// 参数动态配置
 		resourceAvailable := service.ResourceAvailable{
 			ResourceId:   resouceId,
