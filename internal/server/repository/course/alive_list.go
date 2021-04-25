@@ -32,7 +32,7 @@ const (
 )
 
 //根据直播开时间获取直播列表
-func (l *ListInfo) GetALiveListByTime(startTime time.Time, endTime time.Time) ([]*alive.Alive, error) {
+func (l *ListInfo) GetALiveListByTime(startTime time.Time, endTime time.Time, filter []string) ([]*alive.Alive, error) {
 	var (
 		err          error
 		aliveList    []*alive.Alive
@@ -49,7 +49,8 @@ func (l *ListInfo) GetALiveListByTime(startTime time.Time, endTime time.Time) ([
 	}
 
 	//去缓存读取数据
-	tempStr := strings.Join([]string{startTimeStr, endTimeStr}, "")
+	tempSlice := append(filter, startTimeStr, endTimeStr)
+	tempStr := strings.Join(tempSlice, "")
 	md5Str := fmt.Sprintf("%x", md5.Sum([]byte(tempStr)))
 	cacheKey := fmt.Sprintf(aliveListByTimeCacheKey, l.AppId, md5Str)
 	cacheData, err := redis.Bytes(conn.Do("get", cacheKey))
@@ -62,7 +63,7 @@ func (l *ListInfo) GetALiveListByTime(startTime time.Time, endTime time.Time) ([
 	}
 
 	//无缓存则读数据库
-	aliveList, err = alive.GetAliveListByZbStartTime(l.AppId, startTimeStr, endTimeStr, []string{"*"})
+	aliveList, err = alive.GetAliveListByZbStartTime(l.AppId, startTimeStr, endTimeStr, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -100,4 +101,17 @@ func (l *ListInfo) GetSubscribedALiveList(aliveList []*alive.Alive) map[string][
 		logging.Error(err)
 	}
 	return result
+}
+
+//计算各个日期下的直播课程数量
+func (l *ListInfo) CountAliveNum(data map[string][]*alive.Alive) (result map[string]int) {
+	if len(data) == 0 {
+		return nil
+	}
+	result = make(map[string]int)
+	for k, v := range data {
+		count := len(v)
+		result[k] = count
+	}
+	return
 }
