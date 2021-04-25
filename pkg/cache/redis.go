@@ -59,6 +59,10 @@ func Init() {
 	if err := redis_gray.InitOldGary(); err != nil {
 		log.Fatal(err)
 	}
+	// 灰度控制【直播专用】
+	if err := redis_gray.InitSpecialGary(); err != nil {
+		log.Fatal(err)
+	}
 	fmt.Println(">>>初始化缓存连接池完成")
 }
 
@@ -75,9 +79,9 @@ func InitJob() {
 // 集群redis
 func defaultInit() error {
 	RedisConn = &redis.Pool{
-		MaxIdle: maxIdle,
-		MaxActive: maxActive,
-	    IdleTimeout: idleTimeout,
+		MaxIdle:     maxIdle,
+		MaxActive:   maxActive,
+		IdleTimeout: idleTimeout,
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", fmt.Sprintf("%s:%s", os.Getenv("REDIS_LIVECLUSTER_RW_HOST"), os.Getenv("REDIS_LIVECLUSTER_RW_PORT")))
 			if err != nil {
