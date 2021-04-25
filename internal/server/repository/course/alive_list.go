@@ -42,9 +42,9 @@ func (l *ListInfo) GetALiveListByTime(startTime time.Time, endTime time.Time, fi
 	conn, _ := redis_alive.GetSubBusinessConn()
 	defer conn.Close()
 
-	//时间范围限定为3天以内，防止查询范围太大导致慢查询
+	//时间范围限定为31天以内
 	timeRange := endTime.Unix() - startTime.Unix()
-	if timeRange <= 0 || timeRange > 3600*24*3 {
+	if timeRange <= 0 || timeRange > 3600*24*31 {
 		return nil, errors.New("startTime or endTime error")
 	}
 
