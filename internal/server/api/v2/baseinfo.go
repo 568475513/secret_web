@@ -136,7 +136,7 @@ func GetBaseInfo(c *gin.Context) {
 				} else {
 					goSpan := tracer.StartSpan("用户权益", opentracing.ChildOf(childSpan.Context()))
 					defer goSpan.Finish()
-					expireAt, available = ap.IsHaveAlivePower(req.AppId, req.ResourceId, strconv.Itoa(enums.ResourceTypeLive), true)
+					expireAt, available = ap.IsHaveAlivePower(req.ResourceId, strconv.Itoa(enums.ResourceTypeLive), true)
 				}
 			}
 		}
