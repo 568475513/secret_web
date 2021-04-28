@@ -51,6 +51,7 @@ func (lb *LookBack) GetLookBackUrl(aliveInfo *alive.Alive, aliveState, appType i
 	data := make(map[string]string)
 	aliveVideoUrl := ""
 	miniAliveVideoUrl := ""
+	aliveVideoMp4Url := ""
 	aliveReviewUrl := "/" + lb.AliveId + ".m3u8"
 	aliveVideoUrlEncrypt := ""
 
@@ -88,14 +89,16 @@ func (lb *LookBack) GetLookBackUrl(aliveInfo *alive.Alive, aliveState, appType i
 				if lookBackFile != nil && lookBackFile.AliveId != "" {
 					aliveVideoUrl = lookBackFile.LookbackM3u8
 					miniAliveVideoUrl = lookBackFile.LookbackM3u8
+					aliveVideoMp4Url = lookBackFile.LookbackMp4
 				} else { //没有走原逻辑
-					aliveVideoUrlOrigin, miniAliveVideoUrlOrigin, _ := lb.GetAliveComposeLookBack(aliveInfo)
+					aliveVideoUrlOrigin, miniAliveVideoUrlOrigin, aliveVideoMp4UrlOrigin, _ := lb.GetAliveComposeLookBack(aliveInfo)
 					if aliveVideoUrlOrigin != "" {
 						aliveVideoUrl = aliveVideoUrlOrigin
 					}
 					if miniAliveVideoUrlOrigin != "" {
 						miniAliveVideoUrl = miniAliveVideoUrlOrigin
 					}
+					aliveVideoMp4Url = aliveVideoMp4UrlOrigin
 				}
 			}
 		}
@@ -128,6 +131,7 @@ func (lb *LookBack) GetLookBackUrl(aliveInfo *alive.Alive, aliveState, appType i
 	data["miniAliveVideoUrl"] = miniAliveVideoUrl
 	data["aliveReviewUrl"] = aliveReviewUrl
 	data["aliveVideoUrlEncrypt"] = aliveVideoUrlEncrypt
+	data["aliveVideoMp4Url"] = aliveVideoMp4Url
 	data = lb.ReplaceLookBackUrl(data)
 
 	return data
@@ -215,12 +219,13 @@ func (lb *LookBack) GetLookBackFile(appId string, aliveId string) (*alive.AliveL
 /**
  * 获取t_alive_concat_hls_result表中的转码视频链接
  */
-func (lb *LookBack) GetAliveComposeLookBack(aliveInfo *alive.Alive) (aVideoUrl string, miniAVideoUrl string, err error) {
+func (lb *LookBack) GetAliveComposeLookBack(aliveInfo *alive.Alive) (aVideoUrl string, miniAVideoUrl string, aVideoMp4Url string, err error) {
 
 	aliveVideoUrl := ""
 	miniAliveVideoUrl := ""
+	aliveVideoMp4Url := ""
 	if aliveInfo.ChannelId == "" {
-		return aliveVideoUrl, miniAliveVideoUrl, nil
+		return aliveVideoUrl, miniAliveVideoUrl, aliveVideoMp4Url, nil
 	}
 
 	AliveHlsResult, err := alive.GetAliveHlsResult(aliveInfo.ChannelId, []string{
@@ -240,7 +245,7 @@ func (lb *LookBack) GetAliveComposeLookBack(aliveInfo *alive.Alive) (aVideoUrl s
 		"is_drm",
 		"drm_m3u8_url"})
 	if err != nil {
-		return aliveVideoUrl, miniAliveVideoUrl, err
+		return aliveVideoUrl, miniAliveVideoUrl, aliveVideoMp4Url, err
 	}
 
 	if AliveHlsResult != nil { //查看备份临时表数据
@@ -265,6 +270,8 @@ func (lb *LookBack) GetAliveComposeLookBack(aliveInfo *alive.Alive) (aVideoUrl s
 		}
 	}
 
+	aliveVideoMp4Url = AliveHlsResult.ConcatMp4Url
+
 	// 新的直播拼接方式
 	if AliveHlsResult.IsUseConcatMp4 == 1 && AliveHlsResult.ConcatMp4Url != "" &&
 		AliveHlsResult.ComposeLatestFileId == AliveHlsResult.LatestM3u8FileId {
@@ -277,7 +284,7 @@ func (lb *LookBack) GetAliveComposeLookBack(aliveInfo *alive.Alive) (aVideoUrl s
 		miniAliveVideoUrl = AliveHlsResult.DrmM3u8Url
 	}
 
-	return aliveVideoUrl, miniAliveVideoUrl, nil
+	return aliveVideoUrl, miniAliveVideoUrl, aliveVideoMp4Url, nil
 }
 
 // 获取课程设置的回放过期时间
