@@ -29,6 +29,9 @@ type ListInfo struct {
 const (
 	aliveListByTimeCacheKey  = "alive_list_by_time:%s:%s" //根据直播开时间直播列表缓存key
 	aliveListByTimeCacheTime = "30"                       //根据直播开时间直播列表缓存时间，单位s
+
+	livingAliveListCacheKey  = "living_alive_list_by_time:%s:%s" //正在直播中的直播列表缓存key
+	livingAliveListCacheTime = "30"                              //正在直播中的直播列表缓存时间，单位s
 )
 
 //根据直播开时间获取直播列表
@@ -77,10 +80,36 @@ func (l *ListInfo) GetALiveListByTime(startTime time.Time, endTime time.Time, fi
 	return aliveList, nil
 }
 
-//从给定的直播列表筛选出当前用户已订阅的直播，并且按直播开始日期分组
-func (l *ListInfo) GetSubscribedALiveList(aliveList []*alive.Alive) map[string][]*alive.Alive {
+////从给定的直播列表筛选出当前用户已订阅的直播，并且按直播开始日期分组
+//func (l *ListInfo) GetSubscribedALiveList(aliveList []*alive.Alive) map[string][]*alive.Alive {
+//	var (
+//		result     = make(map[string][]*alive.Alive)
+//		aliveIds   []string
+//		filterList = make(map[string]*alive.Alive)
+//	)
+//	for _, aliveInfo := range aliveList {
+//		aliveIds = append(aliveIds, aliveInfo.Id)
+//		filterList[aliveInfo.Id] = aliveInfo
+//	}
+//	subscribedAliveIds, err := service.GetMultipleSubscribe(l.AppId, l.UniversalUnionId, aliveIds)
+//	if err == nil && len(subscribedAliveIds) > 0 {
+//		for _, aliveId := range subscribedAliveIds {
+//			aliveInfo, ok := filterList[aliveId]
+//			if ok {
+//				zbStartDate := aliveInfo.ZbStartAt.Time.Format(util.DATE_LAYOUT)
+//				result[zbStartDate] = append(result[zbStartDate], aliveInfo)
+//			}
+//		}
+//	} else if err != nil {
+//		logging.Error(err)
+//	}
+//	return result
+//}
+
+//从给定的直播列表筛选出当前用户已订阅的直播
+func (l *ListInfo) GetSubscribedALiveList(aliveList []*alive.Alive) []*alive.Alive {
 	var (
-		result     = make(map[string][]*alive.Alive)
+		result     []*alive.Alive
 		aliveIds   []string
 		filterList = make(map[string]*alive.Alive)
 	)
@@ -93,12 +122,21 @@ func (l *ListInfo) GetSubscribedALiveList(aliveList []*alive.Alive) map[string][
 		for _, aliveId := range subscribedAliveIds {
 			aliveInfo, ok := filterList[aliveId]
 			if ok {
-				zbStartDate := aliveInfo.ZbStartAt.Time.Format(util.DATE_LAYOUT)
-				result[zbStartDate] = append(result[zbStartDate], aliveInfo)
+				result = append(result, aliveInfo)
 			}
 		}
 	} else if err != nil {
 		logging.Error(err)
+	}
+	return result
+}
+
+//按时间将直播列表分组
+func (l *ListInfo) ALiveListGroupByTime(aliveList []*alive.Alive) map[string][]*alive.Alive {
+	var result = make(map[string][]*alive.Alive)
+	for _, aliveInfo := range aliveList {
+		zbStartDate := aliveInfo.ZbStartAt.Time.Format(util.DATE_LAYOUT)
+		result[zbStartDate] = append(result[zbStartDate], aliveInfo)
 	}
 	return result
 }
@@ -114,4 +152,41 @@ func (l *ListInfo) CountAliveNum(data map[string][]*alive.Alive) (result map[str
 		result[k] = count
 	}
 	return
+}
+
+//获取正在直播中的直播
+func (l *ListInfo) GetLivingAliveList(filter []string) ([]*alive.Alive, error) {
+	var (
+		err       error
+		aliveList []*alive.Alive
+	)
+	conn, _ := redis_alive.GetSubBusinessConn()
+	defer conn.Close()
+
+	//去缓存读数据
+	tempStr := strings.Join(filter, "")
+	md5Str := fmt.Sprintf("%x", md5.Sum([]byte(tempStr)))
+	cacheKey := fmt.Sprintf(livingAliveListCacheKey, l.AppId, md5Str)
+	cacheData, err := redis.Bytes(conn.Do("get", cacheKey))
+	if err == nil {
+		if err = util.JsonDecode(cacheData, &aliveList); err != nil {
+			logging.Error(err)
+			logging.LogToEs("GetALiveListByTime", aliveList)
+		}
+		return aliveList, nil
+	}
+
+	//无缓存则读数据库
+	aliveList, err = alive.GetLivingAliveListByAppId(l.AppId, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	//写入缓存
+	if value, err := util.JsonEncode(aliveList); err == nil {
+		if _, err = conn.Do("SET", cacheKey, value, "EX", livingAliveListCacheTime); err != nil {
+			logging.Error(err)
+		}
+	}
+	return aliveList, nil
 }

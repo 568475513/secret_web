@@ -8,6 +8,7 @@ import (
 	"abs/models/alive"
 	"abs/pkg/app"
 	"abs/pkg/enums"
+
 	//系统标准包
 	"fmt"
 
@@ -41,7 +42,10 @@ func GetSubscribeAliveListByDate(c *gin.Context) {
 	}
 
 	//筛出当前用户已订阅的直播
-	result := li.GetSubscribedALiveList(aliveList)
+	aliveList = li.GetSubscribedALiveList(aliveList)
+
+	//直播按日期分组下
+	result := li.ALiveListGroupByTime(aliveList)
 
 	app.OkWithData(result, c)
 }
@@ -74,8 +78,38 @@ func GetSubscribeAliveNumByDate(c *gin.Context) {
 	//筛出当前用户已订阅的直播
 	subscribedALiveList := li.GetSubscribedALiveList(aliveList)
 
+	//直播按日期分组下
+	subscribedALiveListGroupByDate := li.ALiveListGroupByTime(subscribedALiveList)
+
 	//计数
-	result := li.CountAliveNum(subscribedALiveList)
+	result := li.CountAliveNum(subscribedALiveListGroupByDate)
 
 	app.OkWithData(result, c)
+}
+
+//获取用户已订阅且正在直播中的直播列表
+func GetSubscribeLivingAliveList(c *gin.Context) {
+	var (
+		err       error
+		req       validator.GetSubscribeLivingAliveListV2
+		aliveList []*alive.Alive
+	)
+
+	//校验请求参数
+	err = app.ParseQueryRequest(c, &req)
+	if err != nil {
+		return
+	}
+
+	//根据app_id获取正在直播中的直播
+	li := course.ListInfo{
+		AppId:            req.AppId,
+		UniversalUnionId: req.UniversalUnionId,
+	}
+	aliveList, err = li.GetLivingAliveList([]string{"*"})
+
+	//筛出当前用户已订阅的直播
+	subscribedALiveList := li.GetSubscribedALiveList(aliveList)
+
+	app.OkWithData(subscribedALiveList, c)
 }
