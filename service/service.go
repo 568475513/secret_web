@@ -295,7 +295,7 @@ func (x *XiaoeHttpRequest) body(data interface{}) *XiaoeHttpRequest {
 func (x *XiaoeHttpRequest) Bytes() ([]byte, error) {
 	bT := time.Now()
 	resp, err := x.getResponse()
-	if resp ！= nil {
+	if resp != nil {
 		defer resp.Body.Close()
 	}
 	// 请求错误
