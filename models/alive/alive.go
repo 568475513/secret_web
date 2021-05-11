@@ -2,13 +2,12 @@ package alive
 
 import (
 	// "strings"
-	// "time"
-
-	"abs/pkg/util"
-	"github.com/jinzhu/gorm"
 	"time"
 
 	"abs/pkg/provider/json"
+	"abs/pkg/util"
+
+	"github.com/jinzhu/gorm"
 )
 
 type Alive struct {
