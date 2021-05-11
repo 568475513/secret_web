@@ -1,13 +1,10 @@
 package alive
 
 import (
-	// "strings"
-	"time"
-
 	"abs/pkg/provider/json"
 	"abs/pkg/util"
-
 	"github.com/jinzhu/gorm"
+	"time"
 )
 
 type Alive struct {
@@ -109,15 +106,6 @@ type AliveModuleConf struct {
 	IsRoundTableOn  uint8  `json:"is_round_table_on"`
 }
 
-const (
-	//直播状态
-	//ALIVE_STATE_UNSTART  = 0 //未开始
-	AliveStateLiving = 1 //直播中
-	//ALIVE_STATE_INTERACT = 2 //互动时间（已经断流，但还未回放）
-	//ALIVE_STATE_END      = 3 //已结束（回放中）
-	//ALIVE_STATE_LEAVE    = 4 //讲师离开
-)
-
 // 获取直播详情
 func GetAliveInfo(appId string, aliveId string, s []string) (*Alive, error) {
 	var a Alive
@@ -201,7 +189,7 @@ func GetLivingAliveListByAppId(appId string, s []string) ([]*Alive, error) {
 		nowTimeStr = time.Now().Format(util.TIME_LAYOUT)
 	)
 	err := db.Table("t_alive").Select(s).
-		Where("app_id=? and (push_state=? or (zb_start_at>? and zb_stop_at<? and manual_stop_at is null))", appId, AliveStateLiving, nowTimeStr, nowTimeStr).
+		Where("app_id=? and (zb_start_at>? and zb_stop_at<? and manual_stop_at is null)", appId, nowTimeStr, nowTimeStr).
 		Find(&aliveList).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err

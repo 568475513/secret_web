@@ -60,7 +60,6 @@ func (l *ListInfo) GetALiveListByTime(startTime time.Time, endTime time.Time, fi
 	if err == nil {
 		if err = util.JsonDecode(cacheData, &aliveList); err != nil {
 			logging.Error(err)
-			logging.LogToEs("GetALiveListByTime", aliveList)
 		}
 		return aliveList, nil
 	}
@@ -145,7 +144,6 @@ func (l *ListInfo) GetLivingAliveList(filter []string) ([]*alive.Alive, error) {
 	if err == nil {
 		if err = util.JsonDecode(cacheData, &aliveList); err != nil {
 			logging.Error(err)
-			logging.LogToEs("GetALiveListByTime", aliveList)
 		}
 		return aliveList, nil
 	}
