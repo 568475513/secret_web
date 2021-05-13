@@ -15,6 +15,6 @@ func AliveAppRouter(Router *gin.RouterGroup) {
 	apiRouterV2.GET("get.alive.list.by.date", v2.GetSubscribeAliveListByDate)
 	//根据直播开始间获取用户已订阅的直播课程数量
 	apiRouterV2.GET("get.alive.num.by.date", v2.GetSubscribeAliveNumByDate)
-	//
+	//获取已订阅且正在直播中的直播
 	apiRouterV2.GET("get.living.alive.list", v2.GetSubscribeLivingAliveList)
 }
