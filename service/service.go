@@ -28,6 +28,9 @@ const (
 	dialerKeepAlive = 60
 )
 
+// http pool
+var client http.Client
+
 type XiaoeHttpSettings struct {
 	Timeout    time.Duration
 	Retries    int
@@ -40,6 +43,25 @@ type XiaoeHttpRequest struct {
 	settings XiaoeHttpSettings
 	req      *http.Request
 	resp     *http.Response
+}
+
+// 用户请求连接池
+func InitService() {
+	// 全局超时
+	timeout, _ := strconv.Atoi(os.Getenv("REQUEST_TIMEOUT"))
+	// 连接池配置
+	client = http.Client{
+		Timeout: time.Duration(timeout) * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns: maxIdleConns,
+			MaxIdleConnsPerHost: maxIdleConnsPerHost,
+			IdleConnTimeout: idleConnTimeout * time.Second,
+			DialContext: (&net.Dialer{
+				Timeout: dialerTimeout * time.Second,
+				KeepAlive: dialerKeepAlive * time.Second,
+			}).DialContext,
+		},
+	}
 }
 
 // 创建请求体
@@ -198,20 +220,20 @@ func (x *XiaoeHttpRequest) doRequest() (resp *http.Response, err error) {
 
 	}
 
-	timeout, _ := strconv.Atoi(os.Getenv("REQUEST_TIMEOUT"))
-	client := http.Client{
-		Timeout: time.Duration(timeout) * time.Second,
-		// 连接池配置
-		Transport: &http.Transport{
-			MaxIdleConns: maxIdleConns,
-			MaxIdleConnsPerHost: maxIdleConnsPerHost,
-			IdleConnTimeout: idleConnTimeout * time.Second,
-			DialContext: (&net.Dialer{
-				Timeout: dialerTimeout * time.Second,
-				KeepAlive: dialerKeepAlive * time.Second,
-			}).DialContext,
-		},
-	}
+	// timeout, _ := strconv.Atoi(os.Getenv("REQUEST_TIMEOUT"))
+	// client := http.Client{
+	// 	Timeout: time.Duration(timeout) * time.Second,
+	// 	// 连接池配置
+	// 	Transport: &http.Transport{
+	// 		MaxIdleConns: maxIdleConns,
+	// 		MaxIdleConnsPerHost: maxIdleConnsPerHost,
+	// 		IdleConnTimeout: idleConnTimeout * time.Second,
+	// 		DialContext: (&net.Dialer{
+	// 			Timeout: dialerTimeout * time.Second,
+	// 			KeepAlive: dialerKeepAlive * time.Second,
+	// 		}).DialContext,
+	// 	},
+	// }
 	for i := 0; x.settings.Retries == -1 || i <= x.settings.Retries; i++ {
 		resp, err = client.Do(x.req)
 		if err == nil {
@@ -219,7 +241,6 @@ func (x *XiaoeHttpRequest) doRequest() (resp *http.Response, err error) {
 		}
 		time.Sleep(x.settings.RetryDelay)
 	}
-
 	return resp, err
 }
 
@@ -274,7 +295,9 @@ func (x *XiaoeHttpRequest) body(data interface{}) *XiaoeHttpRequest {
 func (x *XiaoeHttpRequest) Bytes() ([]byte, error) {
 	bT := time.Now()
 	resp, err := x.getResponse()
-	defer resp.Body.Close()
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	// 请求错误
 	if err != nil {
 		return nil, err
