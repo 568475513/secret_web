@@ -26,7 +26,7 @@ func UserPowerBusiness(appId string, userId string, agentType int) *userPowerBus
 // 直播权益判断
 func (upb *userPowerBusiness) IsHaveAlivePower(resouceId string, resouceType string, needExpire bool) (string, bool) {
 	if redis_gray.InGrayShopSpecial("is_switch_new_permission", upb.AppId) {
-		result, err := upb.IsInsideAliveAccess(resouceId)
+		result, err := upb.IsEncryAliveAccess(resouceId)
 		if err != nil {
 			logging.Error(err)
 		}
@@ -57,7 +57,7 @@ func (upb *userPowerBusiness) IsInsideAliveAccess(resouceId string) (bool, error
 	return upb.service.IsResourceAccess(resouceId, true, 0)
 }
 
-// 加密课程权益判断
+// 加密、付费以及免费的课程权益判断
 func (upb *userPowerBusiness) IsEncryAliveAccess(resouceId string) (bool, error) {
 	return upb.service.IsResourceAccess(resouceId, false, 0)
 }
