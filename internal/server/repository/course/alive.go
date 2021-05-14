@@ -22,9 +22,9 @@ type AliveInfo struct {
 
 const (
 	// Redis key
-	aliveInfoKey         = "base_info_alive_info:%s:%s"
-	aliveModuleConf      = "alive_module_conf:%s:%s"
-	aliveCircuitBreaker  = "alive:circuitBreaker"
+	aliveInfoKey        = "base_info_alive_info:%s:%s"
+	aliveModuleConf     = "alive_module_conf:%s:%s"
+	aliveCircuitBreaker = "alive:circuitBreaker"
 	// 直播静态相关
 	staticAliveHashId   = "hash_static_alive_id_%s"
 	staticAliveHashUser = "hash_static_alive_user_%s"
@@ -407,7 +407,7 @@ func (a *AliveInfo) UpdateViewCountToCache(viewCount int) (int, error) {
 	redisConn, err := redis_alive.GetLiveInteractConn()
 	// 直接数据库写入
 	if err != nil {
-		err = alive.UpdateViewCount(a.AppId, a.AliveId, viewCount + 1)
+		err = alive.UpdateViewCount(a.AppId, a.AliveId, viewCount+1)
 		logging.Error(err)
 		return viewCount, err
 	}
@@ -435,7 +435,7 @@ func (a *AliveInfo) UpdateViewCountToCache(viewCount int) (int, error) {
 	if isExist != false && setTime != 0 && viewCountByRedis != false {
 		// redis有值，判断是否到更新周期时间，到更新时间则更新到数据库，并重置key，没到更新周期则更新缓存
 		viewCount, err = redis.Int(redisConn.Do("incr", viewCountKey))
-		if int(time.Now().Unix()) - setTime >= updateTime {
+		if int(time.Now().Unix())-setTime >= updateTime {
 			redisConn.Do("set", setTimeKey, time.Now().Unix())
 			// 直接数据库写入
 			err = alive.UpdateViewCount(a.AppId, a.AliveId, viewCount)
@@ -451,7 +451,7 @@ func (a *AliveInfo) UpdateViewCountToCache(viewCount int) (int, error) {
 		redisConn.Do("set", viewCountKey, viewCount)
 	}
 
-	return viewCount - 1, err
+	return viewCount, err
 }
 
 // 直播带货商品PV+1
