@@ -191,7 +191,7 @@ func GetLivingAliveListByAppId(appId string, s []string) ([]*Alive, error) {
 		aliveList []*Alive
 	)
 	err := db.Table("t_alive").Select(s).
-		Where("app_id=? and  push_state=?)", appId, StateLiving).
+		Where("app_id=? and  push_state=?", appId, StateLiving).
 		Find(&aliveList).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
