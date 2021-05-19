@@ -114,5 +114,8 @@ func GetSubscribeLivingAliveList(c *gin.Context) {
 	//筛出当前用户已订阅的直播
 	subscribedALiveList := li.GetSubscribedALiveList(aliveList)
 
-	app.OkWithData(subscribedALiveList, c)
+	//将直播列表按app_id分组
+	result := li.ALiveListGroupByAppId(subscribedALiveList)
+
+	app.OkWithData(result, c)
 }

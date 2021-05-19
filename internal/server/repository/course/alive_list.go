@@ -162,3 +162,12 @@ func (l *ListInfo) GetLivingAliveList(appIds string, filter []string) ([]*alive.
 	}
 	return aliveList, nil
 }
+
+//按app_id将直播列表分组
+func (l *ListInfo) ALiveListGroupByAppId(aliveList []*alive.Alive) map[string][]*alive.Alive {
+	var result = make(map[string][]*alive.Alive)
+	for _, aliveInfo := range aliveList {
+		result[aliveInfo.AppId] = append(result[aliveInfo.AppId], aliveInfo)
+	}
+	return result
+}
