@@ -90,7 +90,7 @@ func (l *ListInfo) GetSubscribedALiveList(aliveList []*alive.Alive) []*alive.Ali
 		aliveIds = append(aliveIds, aliveInfo.Id)
 		filterList[aliveInfo.Id] = aliveInfo
 	}
-	subscribedAliveIds, err := service.GetMultipleSubscribe(l.AppId, l.UniversalUnionId, aliveIds)
+	subscribedAliveIds, err := service.GetMultipleSubscribe(l.UniversalUnionId, aliveIds)
 	if err == nil && len(subscribedAliveIds) > 0 {
 		for _, aliveId := range subscribedAliveIds {
 			aliveInfo, ok := filterList[aliveId]
@@ -128,7 +128,7 @@ func (l *ListInfo) CountAliveNum(data map[string][]*alive.Alive) (result map[str
 }
 
 //获取正在直播中的直播
-func (l *ListInfo) GetLivingAliveList(filter []string) ([]*alive.Alive, error) {
+func (l *ListInfo) GetLivingAliveList(appIds string, filter []string) ([]*alive.Alive, error) {
 	var (
 		err       error
 		aliveList []*alive.Alive
@@ -139,7 +139,7 @@ func (l *ListInfo) GetLivingAliveList(filter []string) ([]*alive.Alive, error) {
 	//去缓存读数据
 	tempStr := strings.Join(filter, "")
 	md5Str := fmt.Sprintf("%x", md5.Sum([]byte(tempStr)))
-	cacheKey := fmt.Sprintf(livingAliveListCacheKey, l.AppId, md5Str)
+	cacheKey := fmt.Sprintf(livingAliveListCacheKey, appIds, md5Str)
 	cacheData, err := redis.Bytes(conn.Do("get", cacheKey))
 	if err == nil {
 		if err = util.JsonDecode(cacheData, &aliveList); err != nil {
@@ -149,7 +149,7 @@ func (l *ListInfo) GetLivingAliveList(filter []string) ([]*alive.Alive, error) {
 	}
 
 	//无缓存则读数据库
-	aliveList, err = alive.GetLivingAliveListByAppId(l.AppId, filter)
+	aliveList, err = alive.GetLivingAliveListByAppId(appIds, filter)
 	if err != nil {
 		return nil, err
 	}

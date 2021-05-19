@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	subscribeTimeOut         = 1000                           //超时设置，单位ms
-	showMultipleSubscribeUrl = "/api/subscribe/show_multiple" //查询多个资源的订阅关系
+	subscribeTimeOut         = 1000                               //超时设置，单位ms
+	showMultipleSubscribeUrl = "/api/subscribe/show_multiple_ids" //查询多个资源的订阅关系
 )
 
 type MultipleSubscribeResponse struct {
@@ -27,11 +27,10 @@ type MultipleSubscribeData struct {
 }
 
 //查询多个资源的订阅关系
-func GetMultipleSubscribe(appId string, universalUnionId string, resourceIds []string) ([]string, error) {
+func GetMultipleSubscribe(universalUnionId string, resourceIds []string) ([]string, error) {
 	var result MultipleSubscribeResponse
 	request := Post(fmt.Sprintf("%s%s", os.Getenv("LB_PF_SUBSCRIBE_IN"), showMultipleSubscribeUrl))
 	request.SetParams(map[string]interface{}{
-		"app_id":             appId,
 		"universal_union_id": universalUnionId,
 		"resource_ids":       resourceIds,
 	})

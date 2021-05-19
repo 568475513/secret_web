@@ -2,6 +2,7 @@ package alive
 
 import (
 	"abs/pkg/provider/json"
+	"strings"
 
 	"github.com/jinzhu/gorm"
 )
@@ -186,15 +187,18 @@ func GetAliveListByZbStartTime(appId string, startTime string, endTime string, s
 }
 
 // 根据app_id获取正在直播的直播
-func GetLivingAliveListByAppId(appId string, s []string) ([]*Alive, error) {
+func GetLivingAliveListByAppId(appIds string, s []string) ([]*Alive, error) {
 	var (
 		aliveList []*Alive
 	)
-	err := db.Table("t_alive").Select(s).
-		Where("app_id=? and  push_state=?", appId, StateLiving).
-		Find(&aliveList).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return nil, err
+	appIdSlice := strings.Split(appIds, ",")
+	if len(appIdSlice) > 0 {
+		err := db.Table("t_alive").Select(s).
+			Where("app_id in (?) and  push_state=?", appIdSlice, StateLiving).
+			Find(&aliveList).Error
+		if err != nil && err != gorm.ErrRecordNotFound {
+			return nil, err
+		}
 	}
 	return aliveList, nil
 }
