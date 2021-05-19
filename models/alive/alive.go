@@ -2,6 +2,8 @@ package alive
 
 import (
 	"abs/pkg/provider/json"
+
+	"errors"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -192,13 +194,15 @@ func GetLivingAliveListByAppId(appIds string, s []string) ([]*Alive, error) {
 		aliveList []*Alive
 	)
 	appIdSlice := strings.Split(appIds, ",")
-	if len(appIdSlice) > 0 {
+	if count := len(appIdSlice); count > 0 && count <= 5 {
 		err := db.Table("t_alive").Select(s).
 			Where("app_id in (?) and  push_state=?", appIdSlice, StateLiving).
 			Find(&aliveList).Error
 		if err != nil && err != gorm.ErrRecordNotFound {
 			return nil, err
 		}
+	} else {
+		return nil, errors.New("app_id数量错误")
 	}
 	return aliveList, nil
 }

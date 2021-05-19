@@ -106,6 +106,10 @@ func GetSubscribeLivingAliveList(c *gin.Context) {
 		UniversalUnionId: req.UniversalUnionId,
 	}
 	aliveList, err = li.GetLivingAliveList(req.AppId, []string{"*"})
+	if err != nil {
+		app.FailWithMessage(err.Error(), enums.ERROR, c)
+		return
+	}
 
 	//筛出当前用户已订阅的直播
 	subscribedALiveList := li.GetSubscribedALiveList(aliveList)
