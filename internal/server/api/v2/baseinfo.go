@@ -121,7 +121,7 @@ func GetBaseInfo(c *gin.Context) {
 		return nil
 	}, func() (err error) {
 		// 用户权益
-		if aliveInfo.IsPublic == 0 {
+		if aliveInfo.IsPublic == 0 && !util.IsQyApp(baseConf.VersionType) {
 			goSpan := tracer.StartSpan("用户内部培训权益", opentracing.ChildOf(childSpan.Context()))
 			defer goSpan.Finish()
 			available, err = ap.IsInsideAliveAccess(req.ResourceId)
@@ -171,7 +171,7 @@ func GetBaseInfo(c *gin.Context) {
 		return
 	}
 	// 公开课跳转
-	if aliveInfo.IsPublic == 0 && !available && userType == 0 {
+	if aliveInfo.IsPublic == 0 && !available && userType == 0 && !util.IsQyApp(baseConf.VersionType) {
 		app.FailWithMessage("内部课程，暂无权限", enums.FORBIDDEN, c)
 		return
 	}
