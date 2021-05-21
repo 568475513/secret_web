@@ -121,7 +121,7 @@ func GetBaseInfo(c *gin.Context) {
 		return nil
 	}, func() (err error) {
 		// 用户权益
-		if aliveInfo.IsPublic == 0 && !util.IsQyApp(baseConf.VersionType) {
+		if aliveInfo.IsPublic == 0 {
 			goSpan := tracer.StartSpan("用户内部培训权益", opentracing.ChildOf(childSpan.Context()))
 			defer goSpan.Finish()
 			available, err = ap.IsInsideAliveAccess(req.ResourceId)
