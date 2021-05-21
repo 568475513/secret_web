@@ -71,7 +71,8 @@ type Alive struct {
 	CanRecord              uint8               `json:"can_record"`
 
 	// 非db数据
-	IsTry uint8 `json:"is_try"`
+	IsTry      uint8 `json:"is_try"`
+	AliveState int   `json:"alive_state"`
 }
 
 type AliveRole struct {

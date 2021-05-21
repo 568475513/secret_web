@@ -95,6 +95,12 @@ func (l *ListInfo) GetSubscribedALiveList(aliveList []*alive.Alive) []*alive.Ali
 		for _, aliveId := range subscribedAliveIds {
 			aliveInfo, ok := filterList[aliveId]
 			if ok {
+				//获取直播状态
+				a := AliveInfo{
+					aliveInfo.AppId,
+					aliveInfo.Id,
+				}
+				aliveInfo.AliveState = a.GetAliveStates(aliveInfo)
 				result = append(result, aliveInfo)
 			}
 		}
