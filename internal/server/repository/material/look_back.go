@@ -89,7 +89,12 @@ func (lb *LookBack) GetLookBackUrl(aliveInfo *alive.Alive, aliveState, appType i
 				if lookBackFile != nil && lookBackFile.AliveId != "" {
 					aliveVideoUrl = lookBackFile.LookbackM3u8
 					miniAliveVideoUrl = lookBackFile.LookbackM3u8
-					aliveVideoMp4Url = lookBackFile.LookbackMp4
+					//如果是商家自己上传的视频则用m3u8
+					if lookBackFile.OriginType == 1 {
+						aliveVideoMp4Url = lookBackFile.LookbackM3u8
+					} else {
+						aliveVideoMp4Url = lookBackFile.LookbackMp4
+					}
 				} else { //没有走原逻辑
 					aliveVideoUrlOrigin, miniAliveVideoUrlOrigin, aliveVideoMp4UrlOrigin, _ := lb.GetAliveComposeLookBack(aliveInfo)
 					if aliveVideoUrlOrigin != "" {
