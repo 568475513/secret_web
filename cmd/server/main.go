@@ -3,12 +3,14 @@ package server
 import (
 	"fmt"
 	"log"
-	"net/http"
+	"syscall"
 	"time"
+
+	"github.com/fvbock/endless"
+	"github.com/gin-gonic/gin"
 
 	"abs/cmd/server/routers"
 	"abs/pkg/conf"
-	"github.com/gin-gonic/gin"
 )
 
 // 启动服务
@@ -26,25 +28,25 @@ func main() {
 	maxHeaderBytes := 1 << 20
 
 	// 本地调试直接这么用
-	server := &http.Server{
-		Addr:           endPoint,
-		Handler:        routersInit,
-		ReadTimeout:    readTimeout,
-		WriteTimeout:   writeTimeout,
-		MaxHeaderBytes: maxHeaderBytes,
-	}
-	err := server.ListenAndServe()
+	//server := &http.Server{
+	//	Addr:           endPoint,
+	//	Handler:        routersInit,
+	//	ReadTimeout:    readTimeout,
+	//	WriteTimeout:   writeTimeout,
+	//	MaxHeaderBytes: maxHeaderBytes,
+	//}
+	//err := server.ListenAndServe()
 
 	// 平滑启动，须编译环境【生产环境用下面的代码】
 	// If you want Graceful Restart, you need a Unix system and download github.com/fvbock/endless
-	//endless.DefaultReadTimeOut = readTimeout
-	//endless.DefaultWriteTimeOut = writeTimeout
-	//endless.DefaultMaxHeaderBytes = maxHeaderBytes
-	//server := endless.NewServer(endPoint, routersInit)
-	//server.BeforeBegin = func(add string) {
-	//	log.Printf("Actual pid is %d, Server Listening %s", syscall.Getpid(), endPoint)
-	//}
-	//err := server.ListenAndServe()
+	endless.DefaultReadTimeOut = readTimeout
+	endless.DefaultWriteTimeOut = writeTimeout
+	endless.DefaultMaxHeaderBytes = maxHeaderBytes
+	server := endless.NewServer(endPoint, routersInit)
+	server.BeforeBegin = func(add string) {
+		log.Printf("Actual pid is %d, Server Listening %s", syscall.Getpid(), endPoint)
+	}
+	err := server.ListenAndServe()
 
 	// Server Start Error!!!
 	if err != nil {
