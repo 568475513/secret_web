@@ -363,7 +363,7 @@ func GetSecondaryInfo(c *gin.Context) {
 		app.FailWithMessage(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), enums.ERROR, c)
 		return
 	}
-	//baseInfoRep := course.Secondary{Alive: aliveInfo, UserInfo: &userInfo, BuzUri: c.GetString("buz_uri")}
+	baseInfoRep := course.Secondary{Alive: aliveInfo, UserInfo: &userInfo, BuzUri: c.GetString("buz_uri")}
 	//// 写入邀请关系
 	//if baseInfoRep.GetInviteState(baseConf.HasInvite, req.PaymentType) && aliveInfo.PaymentType == enums.PaymentTypeFree {
 	//	inviteBusiness := marketing.InviteBusiness{AppId: appId, UserId: userId}
