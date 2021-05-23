@@ -5,6 +5,7 @@ import (
 	"abs/models/business"
 	e "abs/pkg/enums"
 	"abs/pkg/logging"
+	"fmt"
 )
 
 // 没时间改了，就先用copy的代码吧
@@ -88,6 +89,7 @@ func (share *Share) GetShareInfoInit(parentColumns []*business.PayProducts) Shar
 				shareInfo.ProductInfo = value
 				break
 			}
+			fmt.Println(value.Id, share.ProductId, share.Alive.PaymentType)
 		}
 	}
 	return shareInfo
