@@ -242,6 +242,8 @@ func GetBaseInfo(c *gin.Context) {
 	}
 	childSpan.Finish()
 
+	req.PaymentType = availableInfo["payment_type"].(int)
+	fmt.Println(req.PaymentType, baseConf.HasInvite, aliveInfo.PaymentType, available, "666")
 	// 写入邀请关系
 	if baseInfoRep.GetInviteState(baseConf.HasInvite, req.PaymentType) && ((aliveInfo.PaymentType == enums.PaymentTypeFree) || available) {
 		inviteBusiness := marketing.InviteBusiness{AppId: aliveInfo.AppId, UserId: userId}
