@@ -242,8 +242,8 @@ func GetBaseInfo(c *gin.Context) {
 	}
 	childSpan.Finish()
 
-	req.PaymentType = availableInfo["payment_type"].(int)
-	fmt.Println(req.PaymentType, baseConf.HasInvite, aliveInfo.PaymentType, available, "666")
+	req.PaymentType = int(availableInfo["payment_type"].(uint8))
+	//fmt.Println(req.PaymentType, baseConf.HasInvite, aliveInfo.PaymentType, available, "666")
 	res_self := make(map[string]interface{})
 	res_self["a"] = req.PaymentType
 	res_self["b"] = baseConf.HasInvite
