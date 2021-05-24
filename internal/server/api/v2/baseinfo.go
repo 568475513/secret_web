@@ -244,6 +244,11 @@ func GetBaseInfo(c *gin.Context) {
 
 	req.PaymentType = availableInfo["payment_type"].(int)
 	fmt.Println(req.PaymentType, baseConf.HasInvite, aliveInfo.PaymentType, available, "666")
+	res_self := make(map[string]interface{})
+	res_self["a"] = req.PaymentType
+	res_self["b"] = baseConf.HasInvite
+	res_self["c"] = aliveInfo.PaymentType
+	res_self["d"] = available
 	// 写入邀请关系
 	if baseInfoRep.GetInviteState(baseConf.HasInvite, req.PaymentType) && ((aliveInfo.PaymentType == enums.PaymentTypeFree) || available) {
 		inviteBusiness := marketing.InviteBusiness{AppId: aliveInfo.AppId, UserId: userId}
@@ -269,6 +274,7 @@ func GetBaseInfo(c *gin.Context) {
 
 	// 开始组装数据
 	data := make(map[string]interface{})
+	data["res_self"] = res_self
 	// 父级专栏信息列表
 	// data["parent_columns"] = products
 	// 直播权益信息
