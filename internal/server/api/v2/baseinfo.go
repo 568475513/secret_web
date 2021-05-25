@@ -170,7 +170,7 @@ func GetBaseInfo(c *gin.Context) {
 		return
 	}
 	// 公开课跳转
-	if aliveInfo.IsPublic == 0 && !available && userType == 0 && !util.IsQyApp(baseConf.VersionType) {
+	if aliveInfo.IsPublic == 0 && !available && userType == 0 {
 		app.FailWithMessage("内部课程，暂无权限", enums.FORBIDDEN, c)
 		return
 	}
