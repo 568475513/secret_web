@@ -1,13 +1,6 @@
 package v2
 
 import (
-	"fmt"
-	"strconv"
-	"time"
-
-	"github.com/gin-gonic/gin"
-	"github.com/opentracing/opentracing-go"
-
 	"abs/internal/server/repository/app_conf"
 	"abs/internal/server/repository/course"
 	"abs/internal/server/repository/data"
@@ -19,13 +12,19 @@ import (
 	"abs/pkg/enums"
 	"abs/pkg/util"
 
+	// service做变量初始化
+	"abs/service"
 	// Model层不可以直接调用，这里只能做变量初始化
 	malive "abs/models/alive"
 	mbusiness "abs/models/business"
 	muser "abs/models/user"
 
-	// service做变量初始化
-	"abs/service"
+	"fmt"
+	"strconv"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/opentracing/opentracing-go"
 )
 
 // @Summary 直播间基础信息
@@ -171,7 +170,7 @@ func GetBaseInfo(c *gin.Context) {
 		return
 	}
 	// 公开课跳转
-	if aliveInfo.IsPublic == 0 && !available && userType == 0 {
+	if aliveInfo.IsPublic == 0 && !available && userType == 0 && !util.IsQyApp(baseConf.VersionType) {
 		app.FailWithMessage("内部课程，暂无权限", enums.FORBIDDEN, c)
 		return
 	}
@@ -242,19 +241,6 @@ func GetBaseInfo(c *gin.Context) {
 	}
 	childSpan.Finish()
 
-	req.PaymentType = int(aliveInfo.PaymentType)
-	// 写入邀请关系
-	if baseInfoRep.GetInviteState(baseConf.HasInvite, req.PaymentType) && ((aliveInfo.PaymentType == enums.PaymentTypeFree) || available) {
-		inviteBusiness := marketing.InviteBusiness{AppId: aliveInfo.AppId, UserId: userId}
-		inviteBusiness.AddInviteCountUtilsNew(marketing.InviteUserInfo{
-			ShareUserId:  req.ShareUserId,
-			PaymentType:  2, // 这个payment_type有坑，对老代码妥协的结果
-			ResourceType: enums.ResourceTypeLive,
-			ResourceId:   req.ResourceId,
-			ProductId:    req.ProductId,
-		})
-	}
-
 	// 数据上报服务
 	childSpan = tracer.StartSpan("异步队列处理时间", opentracing.ChildOf(span.Context()))
 	dataAsyn := data.AsynData{AppId: req.AppId, UserId: userId, ResourceId: req.ResourceId, ProductId: req.ProductId, PaymentType: int(aliveInfo.PaymentType)}
@@ -268,6 +254,7 @@ func GetBaseInfo(c *gin.Context) {
 
 	// 开始组装数据
 	data := make(map[string]interface{})
+	data["version"] = "1.0.1"
 	// 父级专栏信息列表
 	// data["parent_columns"] = products
 	// 直播权益信息
@@ -332,6 +319,7 @@ func GetSecondaryInfo(c *gin.Context) {
 		appMsgSwitch int
 		isShow       int
 		blackInfo    service.UserBlackInfo
+		baseConf     *service.AppBaseConf
 	)
 	data := map[string]interface{}{"alive_id": aliveInfo.Id}
 	// 初始化用户实例
@@ -353,6 +341,10 @@ func GetSecondaryInfo(c *gin.Context) {
 		// 查询直播间是否被禁言
 		isShow = aliveRep.GetAliveImIsShow(aliveInfo.RoomId, userId)
 		return nil
+	}, func() (err error) {
+		// 获取店铺配置
+		baseConf, err = appRep.GetConfHubInfo()
+		return
 	})
 	// fmt.Println("GetSecondaryInfo的协程处理时间: ", time.Since(bT))
 	if err != nil {
@@ -360,17 +352,17 @@ func GetSecondaryInfo(c *gin.Context) {
 		return
 	}
 	baseInfoRep := course.Secondary{Alive: aliveInfo, UserInfo: &userInfo, BuzUri: c.GetString("buz_uri")}
-	//// 写入邀请关系
-	//if baseInfoRep.GetInviteState(baseConf.HasInvite, req.PaymentType) && aliveInfo.PaymentType == enums.PaymentTypeFree {
-	//	inviteBusiness := marketing.InviteBusiness{AppId: appId, UserId: userId}
-	//	inviteBusiness.AddInviteCountUtilsNew(marketing.InviteUserInfo{
-	//		ShareUserId:  req.ShareUserId,
-	//		PaymentType:  2, // 这个payment_type有坑，对老代码妥协的结果
-	//		ResourceType: enums.ResourceTypeLive,
-	//		ResourceId:   req.ResourceId,
-	//		ProductId:    req.ProductId,
-	//	})
-	//}
+	// 写入邀请关系
+	if baseInfoRep.GetInviteState(baseConf.HasInvite, req.PaymentType) && aliveInfo.PaymentType == enums.PaymentTypeFree {
+		inviteBusiness := marketing.InviteBusiness{AppId: appId, UserId: userId}
+		inviteBusiness.AddInviteCountUtilsNew(marketing.InviteUserInfo{
+			ShareUserId:  req.ShareUserId,
+			PaymentType:  2, // 这个payment_type有坑，对老代码妥协的结果
+			ResourceType: enums.ResourceTypeLive,
+			ResourceId:   req.ResourceId,
+			ProductId:    req.ProductId,
+		})
+	}
 	// 组装用户信息
 	userInfoMap["phone"] = userInfo.Phone
 	userInfoMap["wx_avatar"] = userInfo.WxAvatar
