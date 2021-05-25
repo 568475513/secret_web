@@ -332,7 +332,6 @@ func GetSecondaryInfo(c *gin.Context) {
 		appMsgSwitch int
 		isShow       int
 		blackInfo    service.UserBlackInfo
-		baseConf     *service.AppBaseConf
 	)
 	data := map[string]interface{}{"alive_id": aliveInfo.Id}
 	// 初始化用户实例
@@ -354,10 +353,6 @@ func GetSecondaryInfo(c *gin.Context) {
 		// 查询直播间是否被禁言
 		isShow = aliveRep.GetAliveImIsShow(aliveInfo.RoomId, userId)
 		return nil
-	}, func() (err error) {
-		// 获取店铺配置
-		baseConf, err = appRep.GetConfHubInfo()
-		return
 	})
 	// fmt.Println("GetSecondaryInfo的协程处理时间: ", time.Since(bT))
 	if err != nil {
