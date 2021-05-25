@@ -242,6 +242,19 @@ func GetBaseInfo(c *gin.Context) {
 	}
 	childSpan.Finish()
 
+	req.PaymentType = int(aliveInfo.PaymentType)
+	// 写入邀请关系
+	if baseInfoRep.GetInviteState(baseConf.HasInvite, req.PaymentType) && ((aliveInfo.PaymentType == enums.PaymentTypeFree) || available) {
+		inviteBusiness := marketing.InviteBusiness{AppId: aliveInfo.AppId, UserId: userId}
+		inviteBusiness.AddInviteCountUtilsNew(marketing.InviteUserInfo{
+			ShareUserId:  req.ShareUserId,
+			PaymentType:  2, // 这个payment_type有坑，对老代码妥协的结果
+			ResourceType: enums.ResourceTypeLive,
+			ResourceId:   req.ResourceId,
+			ProductId:    req.ProductId,
+		})
+	}
+
 	// 数据上报服务
 	childSpan = tracer.StartSpan("异步队列处理时间", opentracing.ChildOf(span.Context()))
 	dataAsyn := data.AsynData{AppId: req.AppId, UserId: userId, ResourceId: req.ResourceId, ProductId: req.ProductId, PaymentType: int(aliveInfo.PaymentType)}
@@ -319,7 +332,6 @@ func GetSecondaryInfo(c *gin.Context) {
 		appMsgSwitch int
 		isShow       int
 		blackInfo    service.UserBlackInfo
-		baseConf     *service.AppBaseConf
 	)
 	data := map[string]interface{}{"alive_id": aliveInfo.Id}
 	// 初始化用户实例
@@ -341,10 +353,6 @@ func GetSecondaryInfo(c *gin.Context) {
 		// 查询直播间是否被禁言
 		isShow = aliveRep.GetAliveImIsShow(aliveInfo.RoomId, userId)
 		return nil
-	}, func() (err error) {
-		// 获取店铺配置
-		baseConf, err = appRep.GetConfHubInfo()
-		return
 	})
 	// fmt.Println("GetSecondaryInfo的协程处理时间: ", time.Since(bT))
 	if err != nil {
@@ -352,17 +360,17 @@ func GetSecondaryInfo(c *gin.Context) {
 		return
 	}
 	baseInfoRep := course.Secondary{Alive: aliveInfo, UserInfo: &userInfo, BuzUri: c.GetString("buz_uri")}
-	// 写入邀请关系
-	if baseInfoRep.GetInviteState(baseConf.HasInvite, req.PaymentType) && aliveInfo.PaymentType == enums.PaymentTypeFree {
-		inviteBusiness := marketing.InviteBusiness{AppId: appId, UserId: userId}
-		inviteBusiness.AddInviteCountUtilsNew(marketing.InviteUserInfo{
-			ShareUserId:  req.ShareUserId,
-			PaymentType:  2, // 这个payment_type有坑，对老代码妥协的结果
-			ResourceType: enums.ResourceTypeLive,
-			ResourceId:   req.ResourceId,
-			ProductId:    req.ProductId,
-		})
-	}
+	//// 写入邀请关系
+	//if baseInfoRep.GetInviteState(baseConf.HasInvite, req.PaymentType) && aliveInfo.PaymentType == enums.PaymentTypeFree {
+	//	inviteBusiness := marketing.InviteBusiness{AppId: appId, UserId: userId}
+	//	inviteBusiness.AddInviteCountUtilsNew(marketing.InviteUserInfo{
+	//		ShareUserId:  req.ShareUserId,
+	//		PaymentType:  2, // 这个payment_type有坑，对老代码妥协的结果
+	//		ResourceType: enums.ResourceTypeLive,
+	//		ResourceId:   req.ResourceId,
+	//		ProductId:    req.ProductId,
+	//	})
+	//}
 	// 组装用户信息
 	userInfoMap["phone"] = userInfo.Phone
 	userInfoMap["wx_avatar"] = userInfo.WxAvatar
