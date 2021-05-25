@@ -254,7 +254,6 @@ func GetBaseInfo(c *gin.Context) {
 
 	// 开始组装数据
 	data := make(map[string]interface{})
-	data["version"] = "1.0.1"
 	// 父级专栏信息列表
 	// data["parent_columns"] = products
 	// 直播权益信息
