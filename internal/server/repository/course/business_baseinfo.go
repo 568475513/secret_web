@@ -623,12 +623,3 @@ func (b *BaseInfo) getAppExpireTime(profit map[string]interface{}) map[string]in
 
 	return result
 }
-
-// 获取邀请卡开关
-func (b *BaseInfo) GetInviteState(hasInvite int, paymentType int) (needInvite bool) {
-	if hasInvite == 1 &&
-		(b.Alive.PaymentType == e.PaymentTypeFree || (paymentType == e.PaymentTypeSingle && b.Alive.PaymentType == e.PaymentTypeSingle) || paymentType == e.PaymentTypeProduct) {
-		needInvite = true
-	}
-	return
-}
