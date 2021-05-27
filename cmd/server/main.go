@@ -6,11 +6,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/fvbock/endless"
+	"github.com/gin-gonic/gin"
 
-	"abs/pkg/conf"
 	"abs/cmd/server/routers"
+	"abs/pkg/conf"
 )
 
 // 启动服务
