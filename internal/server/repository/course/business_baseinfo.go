@@ -252,6 +252,7 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	aliveConf["is_coupon_on"] = aliveModule.IsCouponOn
 	aliveConf["is_card_on"] = aliveModule.IsCardOn
 	aliveConf["is_prize_on"] = aliveModule.IsPrizeOn
+	aliveConf["is_redirect_index"] = aliveModule.IsRedirectIndex
 	aliveConf["complete_time"] = aliveModule.CompleteTime
 	// 是否开启打赏， 0-关闭 1-开启
 	aliveConf["is_show_reward_on"] = aliveModule.IsShowRewardOn
