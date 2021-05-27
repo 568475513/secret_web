@@ -1,13 +1,6 @@
 package v2
 
 import (
-	"fmt"
-	"strconv"
-	"time"
-
-	"github.com/gin-gonic/gin"
-	"github.com/opentracing/opentracing-go"
-
 	"abs/internal/server/repository/app_conf"
 	"abs/internal/server/repository/course"
 	"abs/internal/server/repository/data"
@@ -19,13 +12,19 @@ import (
 	"abs/pkg/enums"
 	"abs/pkg/util"
 
+	// service做变量初始化
+	"abs/service"
 	// Model层不可以直接调用，这里只能做变量初始化
 	malive "abs/models/alive"
 	mbusiness "abs/models/business"
 	muser "abs/models/user"
 
-	// service做变量初始化
-	"abs/service"
+	"fmt"
+	"strconv"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/opentracing/opentracing-go"
 )
 
 // @Summary 直播间基础信息
