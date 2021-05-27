@@ -119,3 +119,32 @@ func GetSubscribeLivingAliveList(c *gin.Context) {
 
 	app.OkWithData(result, c)
 }
+
+//获取已订阅未开始的直播
+func GetSubscribeUnStartAliveList(c *gin.Context) {
+	var (
+		err       error
+		req       validator.GetSubscribeUnStartAliveListV2
+		aliveList []*alive.Alive
+	)
+
+	//校验请求参数
+	err = app.ParseQueryRequest(c, &req)
+	if err != nil {
+		return
+	}
+
+	//根据app_id获取未开始的直播
+	li := course.ListInfo{
+		UniversalUnionId: req.UniversalUnionId,
+	}
+	aliveList, err = li.GetUnStartAliveList(req.AppId, []string{"*"})
+
+	//筛选当前用户已经订阅的直播
+	subscribedALiveList := li.GetSubscribedALiveList(aliveList)
+
+	//将直播列表按app_id分组
+	result := li.ALiveListGroupByAppId(subscribedALiveList)
+
+	app.OkWithData(result, c)
+}

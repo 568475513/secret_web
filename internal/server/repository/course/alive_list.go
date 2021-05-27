@@ -32,6 +32,9 @@ const (
 
 	livingAliveListCacheKey  = "living_alive_list_by_time:%s:%s" //正在直播中的直播列表缓存key
 	livingAliveListCacheTime = "30"                              //正在直播中的直播列表缓存时间，单位s
+
+	unStartAliveListCacheKey  = "unstart_alive_list_by_time:%s:%s" //未开始的直播列表缓存key
+	unStartAliveListCacheTime = "30"                               //未开始的直播列表缓存时间，单位s
 )
 
 //根据直播开时间获取直播列表
@@ -176,4 +179,40 @@ func (l *ListInfo) ALiveListGroupByAppId(aliveList []*alive.Alive) map[string][]
 		result[aliveInfo.AppId] = append(result[aliveInfo.AppId], aliveInfo)
 	}
 	return result
+}
+
+//获取未开始的直播
+func (l *ListInfo) GetUnStartAliveList(appIds string, filter []string) ([]*alive.Alive, error) {
+	var (
+		err       error
+		aliveList []*alive.Alive
+	)
+	conn, _ := redis_alive.GetSubBusinessConn()
+	defer conn.Close()
+
+	//去缓存读数据
+	tempStr := strings.Join(filter, "")
+	md5Str := fmt.Sprintf("%x", md5.Sum([]byte(tempStr)))
+	cacheKey := fmt.Sprintf(unStartAliveListCacheKey, appIds, md5Str)
+	cacheData, err := redis.Bytes(conn.Do("get", cacheKey))
+	if err == nil {
+		if err = util.JsonDecode(cacheData, &aliveList); err != nil {
+			logging.Error(err)
+		}
+		return aliveList, nil
+	}
+
+	//无缓存则读数据库
+	aliveList, err = alive.GetUnStartAliveListByAppId(appIds, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	//写入缓存
+	if value, err := util.JsonEncode(aliveList); err == nil {
+		if _, err = conn.Do("SET", cacheKey, value, "EX", unStartAliveListCacheTime); err != nil {
+			logging.Error(err)
+		}
+	}
+	return aliveList, nil
 }
