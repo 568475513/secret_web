@@ -38,7 +38,7 @@ func GetMultipleSubscribe(universalUnionId string, resourceIds []string) ([]stri
 	request.SetTimeout(subscribeTimeOut * time.Millisecond)
 	err := request.ToJSON(&result)
 	if err != nil {
-		return nil, err
+		return []string{}, err
 	}
 	if result.Code != enums.SUCCESS {
 		return nil, errors.New(fmt.Sprintf("请求接口：%s错误:%s", showMultipleSubscribeUrl, result.Msg))
