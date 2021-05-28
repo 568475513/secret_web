@@ -105,7 +105,7 @@ func GetSubscribeLivingAliveList(c *gin.Context) {
 	li := course.ListInfo{
 		UniversalUnionId: req.UniversalUnionId,
 	}
-	aliveList, err = li.GetLivingAliveList(req.AppId, []string{"*"})
+	aliveList, err = li.GetLivingAliveList(req.AppIds, []string{"*"})
 	if err != nil {
 		app.FailWithMessage(err.Error(), enums.ERROR, c)
 		return
@@ -138,7 +138,7 @@ func GetSubscribeUnStartAliveList(c *gin.Context) {
 	li := course.ListInfo{
 		UniversalUnionId: req.UniversalUnionId,
 	}
-	aliveList, err = li.GetUnStartAliveList(req.AppId, []string{"*"})
+	aliveList, err = li.GetUnStartAliveList(req.AppIds, []string{"*"})
 
 	//筛选当前用户已经订阅的直播
 	subscribedALiveList := li.GetSubscribedALiveList(aliveList)

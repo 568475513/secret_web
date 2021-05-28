@@ -20,12 +20,12 @@ type GetSubscribeAliveNumByDateV2 struct {
 
 // v2/alive_list.go/GetSubscribeLivingAliveList
 type GetSubscribeLivingAliveListV2 struct {
-	AppId            string `form:"app_id" json:"app_id" binding:"required"`
+	AppIds           string `form:"app_ids" json:"app_id" binding:"required"`
 	UniversalUnionId string `form:"universal_union_id" json:"universal_union_id" binding:"required"`
 }
 
 // v2/alive_list.go/GetSubscribeLivingAliveList
 type GetSubscribeUnStartAliveListV2 struct {
-	AppId            string `form:"app_id" json:"app_id" binding:"required"`
+	AppIds           string `form:"app_ids" json:"app_id" binding:"required"`
 	UniversalUnionId string `form:"universal_union_id" json:"universal_union_id" binding:"required"`
 }
