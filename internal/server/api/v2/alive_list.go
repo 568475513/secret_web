@@ -103,6 +103,7 @@ func GetSubscribeLivingAliveList(c *gin.Context) {
 
 	//根据app_id获取正在直播中的直播
 	li := course.ListInfo{
+		AppId:            req.AppId,
 		UniversalUnionId: req.UniversalUnionId,
 	}
 	aliveList, err = li.GetLivingAliveList(req.AppIds, []string{"*"})
@@ -136,6 +137,7 @@ func GetSubscribeUnStartAliveList(c *gin.Context) {
 
 	//根据app_id获取未开始的直播
 	li := course.ListInfo{
+		AppId:            req.AppId,
 		UniversalUnionId: req.UniversalUnionId,
 	}
 	aliveList, err = li.GetUnStartAliveList(req.AppIds, []string{"*"})

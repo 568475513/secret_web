@@ -93,7 +93,7 @@ func (l *ListInfo) GetSubscribedALiveList(aliveList []*alive.Alive) []*alive.Ali
 		aliveIds = append(aliveIds, aliveInfo.Id)
 		filterList[aliveInfo.Id] = aliveInfo
 	}
-	subscribedAliveIds, err := service.GetMultipleSubscribe(l.UniversalUnionId, aliveIds)
+	subscribedAliveIds, err := service.GetMultipleSubscribe(l.AppId, l.UniversalUnionId, aliveIds)
 	if err == nil && len(subscribedAliveIds) > 0 {
 		for _, aliveId := range subscribedAliveIds {
 			aliveInfo, ok := filterList[aliveId]

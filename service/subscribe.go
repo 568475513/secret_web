@@ -28,9 +28,9 @@ type MultipleSubscribeData struct {
 }
 
 //查询多个资源的订阅关系
-func GetMultipleSubscribe(universalUnionId string, resourceIds []string) ([]string, error) {
+func GetMultipleSubscribe(appId string, universalUnionId string, resourceIds []string) ([]string, error) {
 	var result MultipleSubscribeResponse
-	request := Post(fmt.Sprintf("%s%s", os.Getenv("LB_PF_SUBSCRIBE_IN"), showMultipleSubscribeUrl))
+	request := Post(fmt.Sprintf("%s%s?app_id=%s", os.Getenv("LB_PF_SUBSCRIBE_IN"), showMultipleSubscribeUrl, appId))
 	request.SetParams(map[string]interface{}{
 		"universal_union_id": universalUnionId,
 		"resource_ids":       resourceIds,
