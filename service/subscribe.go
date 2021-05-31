@@ -4,6 +4,7 @@ import (
 	//内部包
 	"abs/pkg/app"
 	"abs/pkg/enums"
+	"abs/pkg/logging"
 	"errors"
 
 	//系统标准包
@@ -38,6 +39,7 @@ func GetMultipleSubscribe(universalUnionId string, resourceIds []string) ([]stri
 	request.SetTimeout(subscribeTimeOut * time.Millisecond)
 	err := request.ToJSON(&result)
 	if err != nil {
+		logging.Info(err)
 		return []string{}, err
 	}
 	if result.Code != enums.SUCCESS {
