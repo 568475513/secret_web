@@ -21,11 +21,11 @@ import (
 
 // http请求池配置
 const (
-	maxIdleConns = 32
+	maxIdleConns        = 32
 	maxIdleConnsPerHost = 32
-	idleConnTimeout = 10
-	dialerTimeout = 10
-	dialerKeepAlive = 60
+	idleConnTimeout     = 10
+	dialerTimeout       = 10
+	dialerKeepAlive     = 60
 )
 
 type XiaoeHttpSettings struct {
@@ -203,11 +203,11 @@ func (x *XiaoeHttpRequest) doRequest() (resp *http.Response, err error) {
 		Timeout: time.Duration(timeout) * time.Second,
 		// 连接池配置
 		Transport: &http.Transport{
-			MaxIdleConns: maxIdleConns,
+			MaxIdleConns:        maxIdleConns,
 			MaxIdleConnsPerHost: maxIdleConnsPerHost,
-			IdleConnTimeout: idleConnTimeout * time.Second,
+			IdleConnTimeout:     idleConnTimeout * time.Second,
 			DialContext: (&net.Dialer{
-				Timeout: dialerTimeout * time.Second,
+				Timeout:   dialerTimeout * time.Second,
 				KeepAlive: dialerKeepAlive * time.Second,
 			}).DialContext,
 		},
@@ -274,7 +274,9 @@ func (x *XiaoeHttpRequest) body(data interface{}) *XiaoeHttpRequest {
 func (x *XiaoeHttpRequest) Bytes() ([]byte, error) {
 	bT := time.Now()
 	resp, err := x.getResponse()
-	defer resp.Body.Close()
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	// 请求错误
 	if err != nil {
 		return nil, err
