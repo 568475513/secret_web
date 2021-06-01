@@ -1,12 +1,13 @@
 package service
 
 import (
-	"abs/pkg/app"
-	"abs/pkg/enums"
 	"errors"
 	"fmt"
 	"os"
 	"time"
+
+	"abs/pkg/app"
+	"abs/pkg/enums"
 )
 
 const (
@@ -25,7 +26,7 @@ type SvipBindResResponse struct {
 }
 
 type SvipBindResInfo struct {
-	SvipID         string `json:"svip_id"`
+	SvipId         string `json:"svip_id"`
 	RightsType     int    `json:"rights_type"`
 	IsSelectShow   int    `json:"is_select_show"`
 	SvipName       string `json:"svip_name"`

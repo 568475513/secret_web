@@ -52,16 +52,18 @@ func (s *Svip) GetResourceSvipRedirectV2() (redirect string) {
 	if err != nil {
 		logging.Error(err)
 	} else {
-		if len(relation) == 1 {
+		lenRel := len(relation)
+
+		if lenRel == 1 {
 			contentParam := util.ContentParam{
 				Type:         15,
 				ResourceType: 23,
 				ResourceId:   "",
-				ProductId:    relation[0].SvipID,
+				ProductId:    relation[0].SvipId,
 				AppId:        s.AppId,
 			}
 			redirect = util.ContentUrl(contentParam)
-		} else if len(relation) > 1 {
+		} else if lenRel > 1 {
 			contentParam := util.ContentParam{
 				ResourceType: s.ResourceType,
 				ResourceId:   s.ResourceId,
