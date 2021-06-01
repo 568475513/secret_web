@@ -25,12 +25,12 @@ type SvipBindResResponse struct {
 }
 
 type SvipBindResInfo struct {
-	SvipID         string `json:"shop_id"`
-	RightsType     string `json:"rights_type"`
-	IsSelectShow   string `json:"is_select_show"`
+	SvipID         string `json:"svip_id"`
+	RightsType     int    `json:"rights_type"`
+	IsSelectShow   int    `json:"is_select_show"`
 	SvipName       string `json:"svip_name"`
-	EffactiveRange string `json:"effactive_range"`
-	IsDiscount     string `json:"is_discount"`
+	EffactiveRange int    `json:"effactive_range"`
+	IsDiscount     int    `json:"is_discount"`
 }
 
 func (s *SvipService) GetSvipBindRes(resourceId string, resourceType int) ([]SvipBindResInfo, error) {
