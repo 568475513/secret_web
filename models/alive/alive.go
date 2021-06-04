@@ -106,7 +106,6 @@ type AliveModuleConf struct {
 	LookbackName    string `json:"lookback_name"`
 	LookbackTime    string `json:"lookback_time"`
 	IsRoundTableOn  uint8  `json:"is_round_table_on"`
-	IsRedPacketOn   uint8  `json:"is_red_packet_on"`
 }
 
 // 获取直播详情
