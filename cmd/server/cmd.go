@@ -5,6 +5,7 @@ import (
 
 	"abs/internal/server/rules"
 	"abs/models"
+	"abs/service"
 	"abs/pkg/cache"
 	"abs/pkg/conf"
 	"abs/pkg/job"
@@ -54,6 +55,8 @@ func initStep() {
 	cache.Init()
 	// 初始化验证器
 	rules.InitVali()
+	// 初始化http请求连接池
+	service.InitService()
 	// 初始化队列服务
 	job.MachineryStartServer(queue)
 }
