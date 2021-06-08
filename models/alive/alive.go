@@ -229,3 +229,20 @@ func GetUnStartAliveListByAppId(appIds string, s []string) ([]*Alive, error) {
 	}
 	return aliveList, nil
 }
+
+// 根据直播开始时间和直播类型查询直播列表
+func GetAliveListByZbStartTimeAndType(appIds string, startTime string, endTime string, aliveType []string, s []string) ([]*Alive, error) {
+	var aliveList []*Alive
+	appIdSlice := strings.Split(appIds, ",")
+	if count := len(appIdSlice); count > 0 && count <= 5 {
+		err := db.Table("t_alive").Select(s).
+			Where("app_id in (?) and zb_start_at>= ? and zb_start_at<=? and alive_type in (?)", appIdSlice, startTime, endTime, aliveType).
+			Find(&aliveList).Error
+		if err != nil && err != gorm.ErrRecordNotFound {
+			return nil, err
+		}
+	} else {
+		return nil, errors.New("app_id数量错误")
+	}
+	return aliveList, nil
+}

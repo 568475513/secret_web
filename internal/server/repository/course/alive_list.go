@@ -35,6 +35,9 @@ const (
 
 	unStartAliveListCacheKey  = "unstart_alive_list_by_time:%s:%s" //未开始的直播列表缓存key
 	unStartAliveListCacheTime = "30"                               //未开始的直播列表缓存时间，单位s
+
+	aliveListByTimeAndTypeCacheKey  = "alive_list_by_time_and_type:%s:%s:%s" //根据直播开时间和直播类型直播列表缓存key
+	aliveListByTimeAndTypeCacheTime = "30"                                   //根据直播开时间和直播类型直播列表缓存时间，单位s
 )
 
 //根据直播开时间获取直播列表
@@ -211,6 +214,51 @@ func (l *ListInfo) GetUnStartAliveList(appIds string, filter []string) ([]*alive
 	//写入缓存
 	if value, err := util.JsonEncode(aliveList); err == nil {
 		if _, err = conn.Do("SET", cacheKey, value, "EX", unStartAliveListCacheTime); err != nil {
+			logging.Error(err)
+		}
+	}
+	return aliveList, nil
+}
+
+//按时间区间查询指定直播类型的直播
+func (l *ListInfo) GetAliveListByZbStartTimeAndType(appIds string, aliveType []string, startTime time.Time, endTime time.Time, filter []string) ([]*alive.Alive, error) {
+	var (
+		err          error
+		aliveList    []*alive.Alive
+		startTimeStr = startTime.Format(util.TIME_LAYOUT)
+		endTimeStr   = endTime.Format(util.TIME_LAYOUT)
+	)
+
+	//时间范围限定为5天以内
+	timeRange := endTime.Unix() - startTime.Unix()
+	if timeRange <= 0 || timeRange > 3600*24*5 {
+		return nil, errors.New("startTime or endTime error")
+	}
+
+	conn, _ := redis_alive.GetSubBusinessConn()
+	defer conn.Close()
+
+	//去缓存读数据
+	tempStr := strings.Join(filter, "")
+	md5Str := fmt.Sprintf("%x", md5.Sum([]byte(tempStr)))
+	cacheKey := fmt.Sprintf(aliveListByTimeAndTypeCacheKey, appIds, strings.Join(aliveType, ""), md5Str)
+	cacheData, err := redis.Bytes(conn.Do("get", cacheKey))
+	if err == nil {
+		if err = util.JsonDecode(cacheData, &aliveList); err != nil {
+			logging.Error(err)
+		}
+		return aliveList, nil
+	}
+
+	//无缓存则读数据库
+	aliveList, err = alive.GetAliveListByZbStartTimeAndType(appIds, startTimeStr, endTimeStr, aliveType, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	//写入缓存
+	if value, err := util.JsonEncode(aliveList); err == nil {
+		if _, err = conn.Do("SET", cacheKey, value, "EX", aliveListByTimeAndTypeCacheTime); err != nil {
 			logging.Error(err)
 		}
 	}

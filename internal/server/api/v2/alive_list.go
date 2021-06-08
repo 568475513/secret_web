@@ -101,7 +101,7 @@ func GetSubscribeLivingAliveList(c *gin.Context) {
 		return
 	}
 
-	//根据app_id获取正在直播中的直播
+	//根据app_id获取正在直播中的推流直播
 	li := course.ListInfo{
 		AppId:            req.AppId,
 		UniversalUnionId: req.UniversalUnionId,
@@ -111,6 +111,16 @@ func GetSubscribeLivingAliveList(c *gin.Context) {
 		app.FailWithMessage(err.Error(), enums.ERROR, c)
 		return
 	}
+
+	//查询语音直播和录播直播
+	aliveListByType, err := li.GetAliveListByZbStartTimeAndType(req.AppIds, []string{"0", "1", "3"}, req.StartTime, req.EndTime, []string{"*"})
+	if err != nil {
+		app.FailWithMessage(err.Error(), enums.ERROR, c)
+		return
+	}
+
+	//合并直播列表
+	aliveList = append(aliveList, aliveListByType...)
 
 	//筛出当前用户已订阅的直播
 	subscribedALiveList := li.GetSubscribedALiveList(aliveList)
