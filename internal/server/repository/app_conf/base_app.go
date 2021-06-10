@@ -1,9 +1,13 @@
 package app_conf
 
 import (
+	"abs/models/alive"
 	"encoding/json"
 	"fmt"
+	"github.com/tencentyun/tls-sig-api-v2-golang/tencentyun"
 	"os"
+	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/gomodule/redigo/redis"
@@ -272,18 +276,37 @@ func (a *AppInfo) canUseFastLive(versionType int) int {
 }
 
 // 获取云通信配置
-func (a *AppInfo) GetCommunicationCloudInfo(identifier string) map[string]string {
+func (a *AppInfo) GetCommunicationCloudInfo(identifier string, appId string, resourceId string) map[string]string {
 	conf := map[string]string{
 		"user_sign":    "",
 		"sdk_app_id":   "",
 		"account_type": os.Getenv("AccountType"),
 	}
-	timeRestApi := service.TimeRestApi{
-		SdkAppId:   os.Getenv("AliveVideoAppId"),
-		Identifier: identifier,
+	//获取room_id
+	cacheAliveInfo, err := alive.GetAliveInfo(appId, resourceId, []string{
+		"id",
+		"app_id",
+		"room_id",
+	})
+	// 未查到在此处或者是旧群组
+	if err != nil || cacheAliveInfo.Id == "" || !strings.Contains(cacheAliveInfo.RoomId, "XET#") {
+		timeRestApi := service.TimeRestApi{
+			SdkAppId:   os.Getenv("AliveVideoAppId"),
+			Identifier: identifier,
+		}
+		conf["sdk_app_id"] = timeRestApi.SdkAppId
+		userSig, err := timeRestApi.GenerateUserSig()
+		if err != nil {
+			logging.Error(err)
+			return conf
+		}
+		conf["user_sign"] = userSig
+		return conf
 	}
-	conf["sdk_app_id"] = timeRestApi.SdkAppId
-	userSig, err := timeRestApi.GenerateUserSig()
+	conf["sdk_app_id"] = os.Getenv("WHITE_BOARD_SDK_APP_ID")
+	SdkAppId, _ := strconv.Atoi(conf["sdk_app_id"])
+	key := os.Getenv("WHITE_BOARD_SECRET_KEY")
+	userSig, err := tencentyun.GenUserSig(SdkAppId, key, identifier, 86400*180)
 	if err != nil {
 		logging.Error(err)
 		return conf

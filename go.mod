@@ -18,6 +18,7 @@ require (
 	github.com/openzipkin-contrib/zipkin-go-opentracing v0.4.5
 	github.com/openzipkin/zipkin-go v0.2.5
 	github.com/spf13/cobra v1.1.1
+	github.com/tencentyun/tls-sig-api-v2-golang v1.1.0
 	go.uber.org/zap v1.10.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 )
