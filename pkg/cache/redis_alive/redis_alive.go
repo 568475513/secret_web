@@ -2,8 +2,8 @@ package redis_alive
 
 import (
 	"fmt"
-	"time"
 	"os"
+	"time"
 
 	"github.com/gomodule/redigo/redis"
 )
@@ -12,9 +12,9 @@ var AliveRedisConn *redis.Pool
 
 const (
 	// 表示连接池空闲连接列表的长度限制，空闲列表是一个栈式的结构，先进后出
-	maxIdle = 32
+	maxIdle = 36
 	// 连接池的最大数据库连接数。设为0表示无限制。
-	maxActive = 320
+	maxActive = 600
 	// 空闲连接的超时设置，一旦超时，将会从空闲列表中摘除，该超时时间时间应该小于服务端的连接超时设置
 	idleTimeout = 180 * time.Second
 )
@@ -23,8 +23,8 @@ const (
 func Init() error {
 	if AliveRedisConn == nil {
 		AliveRedisConn = &redis.Pool{
-			MaxIdle: maxIdle,
-			MaxActive: maxActive,
+			MaxIdle:     maxIdle,
+			MaxActive:   maxActive,
 			IdleTimeout: idleTimeout,
 			Dial: func() (redis.Conn, error) {
 				c, err := redis.Dial("tcp", fmt.Sprintf("%s:%s", os.Getenv("REDIS_LIVEBUSINESS_RW_HOST"), os.Getenv("REDIS_LIVEBUSINESS_RW_PORT")))
