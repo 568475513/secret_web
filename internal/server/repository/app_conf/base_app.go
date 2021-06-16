@@ -345,7 +345,7 @@ func (a *AppInfo) GetCommunicationCloudInfo(identifier string, appId string, res
 		logging.Error(err)
 		return conf
 	}
-	if !strings.Contains(cacheAliveInfo.RoomId, "XET#") {
+	if strings.Contains(cacheAliveInfo.RoomId, "XET#") {
 		timeRestApi := service.TimeRestApi{
 			SdkAppId:   os.Getenv("AliveVideoAppId"),
 			Identifier: identifier,
