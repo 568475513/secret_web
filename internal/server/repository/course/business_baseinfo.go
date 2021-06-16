@@ -49,7 +49,7 @@ func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 	aliveInfoDetail["alive_id"] = b.Alive.Id
 	aliveInfoDetail["room_id"] = b.Alive.RoomId
 	var responseMap app.Response
-	request := service.Get(fmt.Sprintf("%sim/create_im_group", os.Getenv("LB_IM_GROUP_IN")))
+	request := service.Get(fmt.Sprintf("%sim/create_im_group", os.Getenv("LB_PF_ABS_IN")))
 	params := map[string]string{
 		"app_id":   b.AliveRep.AppId,
 		"alive_id": b.Alive.Id,
