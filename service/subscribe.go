@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	subscribeTimeOut         = 1000                               //超时设置，单位ms
-	showMultipleSubscribeUrl = "/api/subscribe/show_multiple_ids" //查询多个资源的订阅关系
+	subscribeTimeOut         = 1000                              //超时设置，单位ms
+	showMultipleSubscribeUrl = "api/subscribe/show_multiple_ids" //查询多个资源的订阅关系
 )
 
 type MultipleSubscribeResponse struct {
