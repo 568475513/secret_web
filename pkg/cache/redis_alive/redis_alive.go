@@ -2,8 +2,8 @@ package redis_alive
 
 import (
 	"fmt"
-	"time"
 	"os"
+	"time"
 
 	"github.com/gomodule/redigo/redis"
 )
@@ -23,8 +23,8 @@ const (
 func Init() error {
 	if AliveRedisConn == nil {
 		AliveRedisConn = &redis.Pool{
-			MaxIdle: maxIdle,
-			MaxActive: maxActive,
+			MaxIdle:     maxIdle,
+			MaxActive:   maxActive,
 			IdleTimeout: idleTimeout,
 			Dial: func() (redis.Conn, error) {
 				c, err := redis.Dial("tcp", fmt.Sprintf("%s:%s", os.Getenv("REDIS_LIVEBUSINESS_RW_HOST"), os.Getenv("REDIS_LIVEBUSINESS_RW_PORT")))

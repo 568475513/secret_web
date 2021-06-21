@@ -41,6 +41,7 @@ const (
 	VERSION_TYPE_ADVANCED         = 8   //旗舰版
 	VERSION_TYPE_TRAINING_TRY     = 170 // 企学院试用版
 	VERSION_TYPE_TRAINING_STD     = 171 // 企学院正式版
+	VERSION_TYPE_QLIVE            = 301 // 企业直播
 
 	// 直播删除状态
 	AliveStateDelete = 2

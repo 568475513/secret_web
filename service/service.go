@@ -21,11 +21,11 @@ import (
 
 // http请求池配置
 const (
-	maxIdleConns = 32
+	maxIdleConns        = 32
 	maxIdleConnsPerHost = 32
-	idleConnTimeout = 10
-	dialerTimeout = 10
-	dialerKeepAlive = 60
+	idleConnTimeout     = 10
+	dialerTimeout       = 10
+	dialerKeepAlive     = 60
 )
 
 // http pool
@@ -53,11 +53,11 @@ func InitService() {
 	client = http.Client{
 		Timeout: time.Duration(timeout) * time.Second,
 		Transport: &http.Transport{
-			MaxIdleConns: maxIdleConns,
+			MaxIdleConns:        maxIdleConns,
 			MaxIdleConnsPerHost: maxIdleConnsPerHost,
-			IdleConnTimeout: idleConnTimeout * time.Second,
+			IdleConnTimeout:     idleConnTimeout * time.Second,
 			DialContext: (&net.Dialer{
-				Timeout: dialerTimeout * time.Second,
+				Timeout:   dialerTimeout * time.Second,
 				KeepAlive: dialerKeepAlive * time.Second,
 			}).DialContext,
 		},
