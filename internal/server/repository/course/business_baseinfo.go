@@ -1,6 +1,7 @@
 package course
 
 import (
+	"abs/pkg/app"
 	"fmt"
 	"os"
 	"strings"
@@ -47,6 +48,25 @@ func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 	aliveInfoDetail["app_id"] = b.AliveRep.AppId
 	aliveInfoDetail["alive_id"] = b.Alive.Id
 	aliveInfoDetail["room_id"] = b.Alive.RoomId
+	var responseMap app.Response
+	request := service.Get(fmt.Sprintf("%sim/create_im_group", os.Getenv("LB_PF_ABS_IN")))
+	params := map[string]string{
+		"app_id":   b.AliveRep.AppId,
+		"alive_id": b.Alive.Id,
+		"room_id":  b.Alive.RoomId,
+	}
+	request.SetParams(params)
+	request.SetTimeout(1000 * time.Millisecond)
+	err := request.ToJSON(&responseMap)
+	if err != nil || responseMap.Code != e.SUCCESS {
+		logging.Error(err)
+	}
+	data, ok := responseMap.Data.(map[string]interface{})
+	if !ok {
+		logging.Error(fmt.Sprintf("请求abs IM群组灰度信息错误：%+v", responseMap))
+	} else {
+		aliveInfoDetail["room_id"] = data["room_id"]
+	}
 	// 直播间标题
 	aliveInfoDetail["title"] = b.Alive.Title.String
 	// 直播间描述
