@@ -169,7 +169,6 @@ func (a *AliveInfo) GetAliveModuleConf() (*alive.AliveModuleConf, error) {
 	if err == nil {
 		if err = util.JsonDecode(info, &cacheAliveModuleConf); err != nil {
 			logging.Error(err)
-			logging.LogToEs("GetAliveModuleConf", cacheAliveModuleConf)
 		}
 		return cacheAliveModuleConf, nil
 	}
@@ -289,7 +288,7 @@ func (a *AliveInfo) GetAliveStates(aliveInfo *alive.Alive) (aliveState int) {
 		}
 		// 直播已经开始（提前开始解决提前开始倒计时问题）
 		if aliveState != 0 {
-			if aliveInfo.ZbStartAt.Time.Add(60 * time.Second).After(now) {
+			if aliveInfo.ZbStartAt.Time.Add(60 * time.Second).Before(now) {
 				aliveInfo.ZbStartAt.Time = now
 			}
 			// 提前一分钟，避免客户端与服务器的时间差
