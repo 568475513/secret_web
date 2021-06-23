@@ -1,12 +1,14 @@
 package alive
 
 import (
-	// "strings"
-	// "time"
+	"abs/pkg/provider/json"
+	"abs/pkg/util"
+
+	"errors"
+	"strings"
+	"time"
 
 	"github.com/jinzhu/gorm"
-
-	"abs/pkg/provider/json"
 )
 
 type Alive struct {
@@ -71,7 +73,8 @@ type Alive struct {
 	CanRecord              uint8               `json:"can_record"`
 
 	// 非db数据
-	IsTry uint8 `json:"is_try"`
+	IsTry      uint8 `json:"is_try"`
+	AliveState int   `json:"alive_state"`
 }
 
 type AliveRole struct {
@@ -108,6 +111,10 @@ type AliveModuleConf struct {
 	IsRedirectIndex uint8  `json:"is_redirect_index"`
 	IsRoundTableOn  uint8  `json:"is_round_table_on"`
 }
+
+const (
+	StateLiving = 1 //直播中
+)
 
 // 获取直播详情
 func GetAliveInfo(appId string, aliveId string, s []string) (*Alive, error) {
@@ -172,4 +179,71 @@ func UpdateViewCount(appId, aliveId string, viewCount int) error {
 	return db.Model(&a).Where("app_id=? and id=? and view_count<?", appId, aliveId, viewCount).
 		Update("view_count", viewCount).
 		Limit(1).Error
+}
+
+// 根据直播开始时间查询直播列表
+func GetAliveListByZbStartTime(appId string, startTime string, endTime string, s []string) ([]*Alive, error) {
+	var aliveList []*Alive
+	err := db.Table("t_alive").Select(s).
+		Where("app_id=? and zb_start_at>= ? and zb_start_at<=?", appId, startTime, endTime).Find(&aliveList).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	return aliveList, nil
+}
+
+// 根据app_id获取正在直播的直播
+func GetLivingAliveListByAppId(appIds string, s []string) ([]*Alive, error) {
+	var (
+		aliveList []*Alive
+	)
+	appIdSlice := strings.Split(appIds, ",")
+	if count := len(appIdSlice); count > 0 && count <= 5 {
+		err := db.Table("t_alive").Select(s).
+			Where("app_id in (?) and  push_state=?", appIdSlice, StateLiving).
+			Find(&aliveList).Error
+		if err != nil && err != gorm.ErrRecordNotFound {
+			return nil, err
+		}
+	} else {
+		return nil, errors.New("app_id数量错误")
+	}
+	return aliveList, nil
+}
+
+// 根据app_id获取正在直播的直播
+func GetUnStartAliveListByAppId(appIds string, s []string) ([]*Alive, error) {
+	var (
+		aliveList []*Alive
+	)
+	nowTime := time.Now().Format(util.TIME_LAYOUT)
+	appIdSlice := strings.Split(appIds, ",")
+	if count := len(appIdSlice); count > 0 && count <= 5 {
+		err := db.Table("t_alive").Select(s).
+			Where("app_id in (?) and zb_start_at > ? and manual_stop_at is null", appIdSlice, nowTime).
+			Find(&aliveList).Error
+		if err != nil && err != gorm.ErrRecordNotFound {
+			return nil, err
+		}
+	} else {
+		return nil, errors.New("app_id数量错误")
+	}
+	return aliveList, nil
+}
+
+// 根据直播开始时间和直播类型查询直播列表
+func GetAliveListByZbStartTimeAndType(appIds string, startTime string, endTime string, aliveType []string, s []string) ([]*Alive, error) {
+	var aliveList []*Alive
+	appIdSlice := strings.Split(appIds, ",")
+	if count := len(appIdSlice); count > 0 && count <= 5 {
+		err := db.Table("t_alive").Select(s).
+			Where("app_id in (?) and zb_start_at>= ? and zb_start_at<=? and alive_type in (?)", appIdSlice, startTime, endTime, aliveType).
+			Find(&aliveList).Error
+		if err != nil && err != gorm.ErrRecordNotFound {
+			return nil, err
+		}
+	} else {
+		return nil, errors.New("app_id数量错误")
+	}
+	return aliveList, nil
 }

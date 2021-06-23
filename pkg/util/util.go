@@ -14,6 +14,7 @@ import (
 
 const (
 	TIME_LAYOUT = "2006-01-02 15:04:05"
+	DATE_LAYOUT = "2006-01-02"
 )
 
 // 返回项目根目录
@@ -186,4 +187,11 @@ func JudgeDate(versionType int, expireTime string) map[string]interface{} {
 	}
 
 	return result
+}
+
+//时间字符串转换为time
+func StringToTime(timeStr string, timeZone string) time.Time {
+	loc, _ := time.LoadLocation(timeZone)
+	theTime, _ := time.ParseInLocation(TIME_LAYOUT, timeStr, loc)
+	return theTime
 }
