@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/DeanThompson/ginpprof"
+	"github.com/gin-gonic/gin"
 
+	"abs/cmd/server/routers/groups"
+	"abs/internal/server/middleware"
 	e "abs/pkg/enums"
 	"abs/pkg/logging"
-	"abs/internal/server/middleware"
-	"abs/cmd/server/routers/groups"
 )
 
 // InitRouter initialize routing information
@@ -38,12 +38,13 @@ func InitRouter() *gin.Engine {
 	// 此处可写公共路由...
 	// 健康检测接口
 	r.GET("/health", func(c *gin.Context) {
-		c.String(e.SUCCESS, "health - " + fmt.Sprint(time.Now().Unix()))
+		c.String(e.SUCCESS, "health - "+fmt.Sprint(time.Now().Unix()))
 	})
 
 	// 加载其它路由组
 	group := r.Group("")
 	groups.AliveBaseRouter(group) // 注册直播基础路由组
+	groups.AliveAppRouter(group)  // 注册app接口路由组
 
 	// 性能分析 ...
 	// goPprof handel

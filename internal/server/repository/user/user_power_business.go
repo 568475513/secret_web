@@ -54,7 +54,7 @@ func (upb *userPowerBusiness) IsHaveSpecialColumnPower(productId string) (string
 
 // 内部课程权限判断
 func (upb *userPowerBusiness) IsInsideAliveAccess(resouceId string) (bool, error) {
-	return upb.service.IsResourceAccess(resouceId, true, 0)
+	return upb.service.IsResourceAccess(resouceId, false, 0)
 }
 
 // 加密、付费以及免费的课程权益判断
