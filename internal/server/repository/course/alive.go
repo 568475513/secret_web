@@ -169,7 +169,6 @@ func (a *AliveInfo) GetAliveModuleConf() (*alive.AliveModuleConf, error) {
 	if err == nil {
 		if err = util.JsonDecode(info, &cacheAliveModuleConf); err != nil {
 			logging.Error(err)
-			logging.LogToEs("GetAliveModuleConf", cacheAliveModuleConf)
 		}
 		return cacheAliveModuleConf, nil
 	}
