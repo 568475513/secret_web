@@ -1,9 +1,13 @@
 package util
 
 import (
+	"abs/pkg/logging"
+	"crypto/rand"
 	"fmt"
+	"github.com/tencentyun/tls-sig-api-v2-golang/tencentyun"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -186,4 +190,14 @@ func JudgeDate(versionType int, expireTime string) map[string]interface{} {
 	}
 
 	return result
+}
+
+// 创建群组
+func createGroup() bool {
+	SdkAppId, _ := strconv.Atoi(os.Getenv("WHITE_BOARD_SDK_APP_ID"))
+	key := os.Getenv("WHITE_BOARD_SECRET_KEY")
+	identifier := os.Getenv("WHITE_BOARD_ID")
+	userSig, err := tencentyun.GenUserSig(SdkAppId, key, identifier, 86400*180)
+	random := rand.Int()
+	return true
 }
