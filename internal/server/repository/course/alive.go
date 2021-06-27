@@ -1,10 +1,8 @@
 package course
 
 import (
-	"abs/pkg/cache/redis_im"
 	"fmt"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
@@ -539,55 +537,6 @@ func (a *AliveInfo) updatePv(resourceId string, resourceType int) {
 		}
 	}
 	redisConn.Do("set", pvCacheKey, pv)
-}
-
-func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
-	redisConn, err := redis_im.GetLiveGroupActionConn()
-	if err != nil {
-		logging.Error(err)
-	}
-	defer redisConn.Close()
-	room_id := a2.RoomId
-	hitImActiveCacheKey := fmt.Sprintf(hitImActive, a.AliveId[len(a.AliveId)-1:])
-	imGroupActiveCacheKey := fmt.Sprintf(imGroupActive, a.AliveId)
-	//rid, _ := redis.String(redisConn.Do("get", imGroupActiveCacheKey))
-	//if rid != "" {
-	//	room_id = rid
-	//}
-	if strings.Contains(room_id, "XET#") {
-		res, _ := redis.Bool(redisConn.Do("exists", imGroupActiveCacheKey))
-		if res {
-			res = false
-		}
-		rezscore, _ := redis.String(redisConn.Do("zscore", hitImActiveCacheKey, a.AliveId))
-		if rezscore == "" {
-
-		}
-	}
-	return ""
-}
-
-func (a *AliveInfo) hitJudgeActive(a2 *alive.Alive) bool {
-	redisConn, err := redis_im.GetLiveGroupActionConn()
-	if err != nil {
-		logging.Error(err)
-	}
-	defer redisConn.Close()
-	imGroupActiveCacheKey := fmt.Sprintf(imGroupActive, a.AliveId)
-	exists, err := redis.Bool(redisConn.Do("exists", imGroupActiveCacheKey))
-	if exists {
-		return false
-	}
-	hitImActiveCacheKey := fmt.Sprintf(hitImActive, a.AliveId[len(a.AliveId)-1:])
-	zScoreValue, err := redis.Bool(redisConn.Do("zScore", hitImActiveCacheKey))
-	expire := 86400 - (time.Now().Unix()+8*3600)%86400
-	if zScoreValue {
-		redisConn.Do("set", imGroupActiveCacheKey, expire)
-		redisConn.Do("zadd", hitImActiveCacheKey, a.AliveId, time.Now().Unix())
-		return false
-	}
-	util.StructJsonMap()
-
 }
 
 // Todo 老的获取直播播放链接@王桂钦
