@@ -82,13 +82,13 @@ func (a *AliveInfo) hitJudgeActive(redisConn redis.Conn, room_id string) bool {
 	zScoreValue, _ := redisConn.Do("zscore", hitImActiveCacheKey, a.AliveId)
 	expire := 86400 - (time.Now().Unix()+8*3600)%86400
 	if zScoreValue != nil {
-		redisConn.Do("set", imGroupActiveCacheKey, expire)
+		redisConn.Do("setex", imGroupActiveCacheKey, expire, room_id)
 		redisConn.Do("zadd", hitImActiveCacheKey, time.Now().Unix(), a.AliveId)
 		return false
 	}
 	res := createGroup(room_id)
 	if res {
-		redisConn.Do("set", imGroupActiveCacheKey, expire)
+		redisConn.Do("setex", imGroupActiveCacheKey, expire, room_id)
 		redisConn.Do("zadd", hitImActiveCacheKey, time.Now().Unix(), a.AliveId)
 		return true
 	}
