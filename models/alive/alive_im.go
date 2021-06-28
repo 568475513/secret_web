@@ -3,8 +3,6 @@ package alive
 import "github.com/jinzhu/gorm"
 
 type AliveImMiddler struct {
-	Model
-
 	AppId     string `json:"app_id"`
 	AliveId   string `json:"alive_id"`
 	OldRoomId string `json:"old_room_id"`

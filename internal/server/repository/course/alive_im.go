@@ -79,6 +79,7 @@ func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
 			OldRoomId: room_id,
 			NewRoomId: newRoomId,
 		}
+		logging.Info(aim)
 		err = alive.InsertImMiddle(aim)
 		logging.Info(aim)
 		if err != nil {
