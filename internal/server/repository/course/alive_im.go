@@ -136,7 +136,7 @@ func createGroup(GroupId string) bool {
 	requestData := map[string]string{
 		"Owner_Account": identifier,
 		"Type":          "AVChatRoom",
-		"GroupId":       "12445544",
+		"GroupId":       GroupId,
 		"Name":          "TestGroup",
 	}
 	requestDataJson, _ := util.JsonEncode(requestData)
