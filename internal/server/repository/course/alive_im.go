@@ -44,14 +44,24 @@ func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
 		a.hitJudgeActive(redisConn, room_id)
 		return room_id
 	}
-	new_room_id := a.getRandRoomId(10)
-	res := a.hitJudgeActive(redisConn, new_room_id)
+	AliveImMiddler, err := alive.GetRoomIdByAliveId(a.AppId, a.AliveId)
+	if err != nil {
+		logging.Error(err)
+		return room_id
+	}
+	var newRoomId string
+	if AliveImMiddler.NewRoomId != "" {
+		newRoomId = AliveImMiddler.NewRoomId
+	} else {
+		newRoomId = a.getRandRoomId(10)
+	}
+	res := a.hitJudgeActive(redisConn, newRoomId)
 	if res {
-		err = alive.UpdateTAliveRommId(a.AppId, a.AliveId, new_room_id)
+		err = alive.UpdateTAliveRommId(a.AppId, a.AliveId, newRoomId)
 		if err != nil {
 			logging.Error(err)
 		}
-		err = alive.UpdateForbidRoomId(a.AppId, room_id, new_room_id)
+		err = alive.UpdateForbidRoomId(a.AppId, room_id, newRoomId)
 		if err != nil {
 			logging.Error(err)
 		}
@@ -59,7 +69,7 @@ func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
 			AppId:     a.AppId,
 			AliveId:   a.AliveId,
 			OldRoomId: room_id,
-			NewRoomId: new_room_id,
+			NewRoomId: newRoomId,
 		}
 		err = alive.InsertImMiddle(aim)
 		if err != nil {

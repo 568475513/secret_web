@@ -1,5 +1,7 @@
 package alive
 
+import "github.com/jinzhu/gorm"
+
 type AliveImMiddler struct {
 	Model
 
@@ -19,8 +21,7 @@ func UpdateTAliveRommId(appId, aliveId, roomId string) error {
 
 // 更新禁言表room_id
 func UpdateForbidRoomId(appId, roomId, newRoomId string) error {
-	var af AliveForbid
-	return db.Model(&af).Where("app_id=? and room_id=? ", appId, roomId).
+	return db.Table("t_alive_forbid").Where("app_id=? and room_id=? ", appId, roomId).
 		Update("room_id", newRoomId).
 		Limit(1).Error
 }
@@ -32,4 +33,14 @@ func InsertImMiddle(aim AliveImMiddler) error {
 		return result.Error
 	}
 	return nil
+}
+
+// 通过t_alive_im_middle获取直播room_id
+func GetRoomIdByAliveId(appId, aliveId string) (*AliveImMiddler, error) {
+	var a AliveImMiddler
+	err := db.Table("t_alive_im_middle").Select("new_room_id").Where("app_id=? and alive_id=? ", appId, aliveId).First(&a).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	return &a, nil
 }
