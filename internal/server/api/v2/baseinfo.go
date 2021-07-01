@@ -296,7 +296,7 @@ func GetSecondaryInfo(c *gin.Context) {
 	appRep := app_conf.AppInfo{AppId: appId}
 	// 直播静态化查询操作
 	if req.StaticIsStart != "" { //如果携带固定参数则走静态页
-		ImInit := appRep.GetCommunicationCloudInfo(userId) //获取im配置
+		ImInit := appRep.GetCommunicationCloudInfo(userId, "", true) //获取im配置
 		userRep := ruser.UserBusinessConstrct(appId, userId)
 		userInfo, _ := userRep.GetUserInfo()
 		aliveStaticRep := course.AliveStatic{AppId: appId, UserId: userId}
@@ -383,7 +383,7 @@ func GetSecondaryInfo(c *gin.Context) {
 	// 共享文件列表链接
 	data["share_file_url"] = baseInfoRep.GetShareFileListUrl()
 	// 获取云通信配置
-	data["im_init"] = appRep.GetCommunicationCloudInfo(userId)
+	data["im_init"] = appRep.GetCommunicationCloudInfo(userId, aliveInfo.RoomId, false)
 	app.OkWithData(data, c)
 }
 
