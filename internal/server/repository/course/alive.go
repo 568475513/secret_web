@@ -38,6 +38,9 @@ const (
 	timeCacheKeyPre  = "alive_take_goods_pv_refresh_time:%s:%s:%s" // pv缓存上一次刷新时间键
 	allPvSetCacheKey = "alive_take_goods_pv_set:"                  // 所有带货商品pv集合缓存
 	expirationTime   = 300                                         // pv缓存有效时间，单位秒
+
+	hitImActive   = "active_im_group_all_cache_%s" // IM活跃群组
+	imGroupActive = "im_active_:%s"
 	// 不使用快直播名单
 	notUseFastLiveKey = "notUseFastLive"
 

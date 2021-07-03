@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"abs/pkg/cache/redis_im"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -61,6 +62,10 @@ func Init() {
 	}
 	// 灰度控制【直播专用】
 	if err := redis_gray.InitSpecialGary(); err != nil {
+		log.Fatal(err)
+	}
+	// IM【直播专用】
+	if err := redis_im.Init(); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(">>>初始化缓存连接池完成")
