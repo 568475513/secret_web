@@ -230,9 +230,9 @@ func GetBaseInfo(c *gin.Context) {
 	aliveConf["is_can_exceptional"] = roleInfo["is_can_exceptional"]
 
 	// 鹅直播主播昵称和名字信息
-	if (util.IsEliveApp(baseConf.VersionType)) {
-		roleRep := ruser.UserBusinessConstrct(appId, roleInfo["role_user_id"])
-		roleUserInfo, err = userRep.GetUserInfo()
+	if util.IsEliveApp(baseConf.VersionType) {
+		roleRep := ruser.UserBusinessConstrct(req.AppId, roleInfo["role_user_id"].(string))
+		roleUserInfo, _ := roleRep.GetUserInfo()
 		aliveInfoDetail["creator_avatar"] = roleUserInfo.WxAvatar
 		aliveInfoDetail["creator_name"] = roleUserInfo.WxNickname
 	}

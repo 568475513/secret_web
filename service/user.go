@@ -31,7 +31,7 @@ type UserServiceResponse struct {
 // 获取用户数据
 func (userService *UserService) RequestUserInfo() (UserServiceResponse, error) {
 	var result UserServiceResponse
-	request := Post(fmt.Sprintf("%s%s", os.Getenv("LB_SP_USERSERVICE_IN"), userInfoUrl))
+	request := Post(fmt.Sprintf("%s/%s", os.Getenv("LB_SP_USERSERVICE_IN"), userInfoUrl))
 	request.SetParams(map[string]string{
 		"gray_type": "0",
 		"gray_id":   "1",
