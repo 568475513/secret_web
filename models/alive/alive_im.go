@@ -34,9 +34,9 @@ func InsertImMiddle(aim AliveImMiddler) error {
 }
 
 // 通过t_alive_im_middle获取直播room_id
-func GetRoomIdByAliveId(appId, aliveId string) (*AliveImMiddler, error) {
+func GetRoomIdByAliveId(appId, aliveId, field string) (*AliveImMiddler, error) {
 	var a AliveImMiddler
-	err := db.Table("t_alive_im_middle").Select("new_room_id").Where("app_id=? and alive_id=? ", appId, aliveId).First(&a).Error
+	err := db.Table("t_alive_im_middle").Select(field).Where("app_id=? and alive_id=? ", appId, aliveId).First(&a).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
