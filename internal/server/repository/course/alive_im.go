@@ -46,7 +46,7 @@ func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
 	roomId := a2.RoomId
 	logging.Info(roomId)
 	//从新增的O端灰度获取 当前店铺是否在灰度名单
-	if redis_gray.InGrayShopSpecial("alive_im_gray_encryption", a.AppId) {
+	if redis_gray.InGrayShopSpecialHit("alive_im_gray_encryption", a.AppId) {
 		if strings.Contains(roomId, "XET#") {
 			newRoomId := roomId
 			AliveImMiddler, err := alive.GetRoomIdByAliveId(a.AppId, a.AliveId, "old_room_id")

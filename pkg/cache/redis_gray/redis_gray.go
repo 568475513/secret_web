@@ -207,3 +207,31 @@ func InGrayShopSpecial(garyKey, appId string) bool {
 
 	return reply
 }
+
+// 判断店铺是否在灰度名单,多一个反向逻辑【直播专用】
+func InGrayShopSpecialHit(garyKey, appId string) bool {
+	if garyKey == "" || appId == "" {
+		return false
+	}
+	conn := redisGraySpecialConn.Get()
+	defer conn.Close()
+
+	// 全网打开
+	if replyAll, _ := redis.Bool(conn.Do("SISMEMBER", garyKey, "-"+appId)); replyAll {
+		return false
+	}
+
+	// 全网打开
+	if replyAll, _ := redis.Bool(conn.Do("SISMEMBER", garyKey, "*")); replyAll {
+		return replyAll
+	}
+
+	// 指定查询
+	reply, err := redis.Bool(conn.Do("SISMEMBER", garyKey, appId))
+	if err != nil {
+		logging.Error(fmt.Sprintf("注意！！！InGrayShopSpecial有错误：%s", err.Error()))
+		return false
+	}
+
+	return reply
+}
