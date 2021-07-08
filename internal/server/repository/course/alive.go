@@ -198,7 +198,7 @@ func (a *AliveInfo) GetAliveRole(userId string) (isRole uint, roleInfo map[strin
 		"is_can_exceptional": 0,
 		"main_teacher":       "",
 		"main_user_id":       "",
-		"role_user_id":       ""
+		"role_user_id":       "",
 	}
 	aliveRoles, err := alive.GetAliveRole(a.AppId, a.AliveId)
 	if err != nil {
