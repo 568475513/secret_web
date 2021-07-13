@@ -1,5 +1,6 @@
 # 定义stage
 stages:
+  - build
   - deploy
   - tstbuild
   - tstdeploy
@@ -37,3 +38,8 @@ tst_deploy:
     # - ./alived.sh restart -d
   tags:
     - TEST_BUILD_DEPLOY
+    
+#同步现网代码到开发公共环境
+include:
+  - local: '.ci_temp/dev_comm.yml'
+

@@ -2,6 +2,9 @@ package course
 
 import (
 	"abs/models/alive"
+	"abs/pkg/cache/redis_alive"
+	"abs/pkg/cache/redis_default"
+	"abs/pkg/cache/redis_gray"
 	"abs/pkg/cache/redis_im"
 	"abs/pkg/logging"
 	"abs/pkg/util"
@@ -25,6 +28,12 @@ type ImCreateRes struct {
 
 const (
 	imCreateGroup = "https://console.tim.qq.com/v4/group_open_http_svc/create_group?sdkappid=%d&identifier=%s&usersig=%s&random=%d&contenttype=json"
+
+	aliveInfoKey3 = "alive:%s:%s"
+
+	aliveInfoKey2 = "aliveInfoKey:%s%s"
+
+	scriptSystemAliveInfoKey = "script_system_alive_info:%s:%s"
 )
 
 // 过滤旧版群组
@@ -34,21 +43,55 @@ func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
 		logging.Error(err)
 	}
 	defer redisConn.Close()
-	room_id := a2.RoomId
-	logging.Info(room_id)
+	roomId := a2.RoomId
+	logging.Info(roomId)
+	//从新增的O端灰度获取 当前店铺是否在灰度名单
+	if redis_gray.InGrayShopSpecialHit("alive_im_gray_encryption", a.AppId) {
+		if strings.Contains(roomId, "XET#") {
+			newRoomId := roomId
+			AliveImMiddler, err := alive.GetRoomIdByAliveId(a.AppId, a.AliveId, "old_room_id")
+			if err != nil {
+				logging.Error(err)
+				return newRoomId
+			}
+			logging.Info(AliveImMiddler)
+			if AliveImMiddler.OldRoomId != "" {
+				err = alive.UpdateTAliveRommId(a.AppId, a.AliveId, AliveImMiddler.OldRoomId)
+				logging.Info(err)
+				if err != nil {
+					logging.Error(err)
+					return newRoomId
+				}
+				go a.resetRoomIdCache()
+				imGroupActiveCacheKey := fmt.Sprintf(imGroupActive, a.AliveId)
+				redisConn.Do("del", imGroupActiveCacheKey)
+				hitImActiveCacheKey := fmt.Sprintf(hitImActive, a.AliveId[len(a.AliveId)-1:])
+				redisConn.Do("zrem", hitImActiveCacheKey, a.AliveId)
+
+				err = alive.UpdateForbidRoomId(a.AppId, roomId, AliveImMiddler.OldRoomId)
+				if err != nil {
+					logging.Error(err)
+				}
+				return AliveImMiddler.OldRoomId
+			}
+			return newRoomId
+		}
+		return roomId
+	}
+
 	imGroupActiveCacheKey := fmt.Sprintf(imGroupActive, a.AliveId)
 	rid, _ := redis.String(redisConn.Do("get", imGroupActiveCacheKey))
 	if rid != "" {
-		room_id = rid
+		roomId = rid
 	}
-	if strings.Contains(room_id, "XET#") {
-		a.hitJudgeActive(redisConn, room_id)
-		return room_id
+	if strings.Contains(roomId, "XET#") {
+		a.hitJudgeActive(redisConn, roomId)
+		return roomId
 	}
-	AliveImMiddler, err := alive.GetRoomIdByAliveId(a.AppId, a.AliveId)
+	AliveImMiddler, err := alive.GetRoomIdByAliveId(a.AppId, a.AliveId, "new_room_id")
 	if err != nil {
 		logging.Error(err)
-		return room_id
+		return roomId
 	}
 	logging.Info(AliveImMiddler)
 	var newRoomId string
@@ -65,30 +108,62 @@ func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
 		logging.Info(err)
 		if err != nil {
 			logging.Error(err)
-			return room_id
+			return roomId
 		}
 
-		err = alive.UpdateForbidRoomId(a.AppId, room_id, newRoomId)
+		err = alive.UpdateForbidRoomId(a.AppId, roomId, newRoomId)
 		if err != nil {
 			logging.Error(err)
-			return room_id
+			return roomId
 		}
 		aim := alive.AliveImMiddler{
 			AppId:     a.AppId,
 			AliveId:   a.AliveId,
-			OldRoomId: room_id,
+			OldRoomId: roomId,
 			NewRoomId: newRoomId,
 		}
+		go a.resetRoomIdCache()
 		logging.Info(aim)
 		err = alive.InsertImMiddle(aim)
 		logging.Info(aim)
 		if err != nil {
 			logging.Error(err)
-			return room_id
+			return roomId
 		}
 		return newRoomId
 	}
-	return room_id
+	return roomId
+}
+
+func (a *AliveInfo) resetRoomIdCache() {
+
+	defaultConn, _ := redis_default.GetLiveInfoConn()
+	defer defaultConn.Close()
+	scriptCacheKey := fmt.Sprintf(scriptSystemAliveInfoKey, a.AppId, a.AliveId)
+	_, err := defaultConn.Do("del", scriptCacheKey)
+	if err != nil {
+		logging.Error(err)
+	}
+
+	aliveBusinessConn, _ := redis_alive.GetLiveBusinessConn()
+	defer aliveBusinessConn.Close()
+	cacheKey := fmt.Sprintf(aliveInfoKey, a.AppId, a.AliveId)
+	_, err = aliveBusinessConn.Do("del", cacheKey)
+	if err != nil {
+		logging.Error(err)
+	}
+	cacheKey = fmt.Sprintf(aliveInfoKey2, a.AppId, a.AliveId)
+	_, err = aliveBusinessConn.Do("del", cacheKey)
+	if err != nil {
+		logging.Error(err)
+	}
+	cacheKey = fmt.Sprintf(aliveInfoKey3, a.AppId, a.AliveId)
+	_, err = aliveBusinessConn.Do("del", cacheKey)
+	if err != nil {
+		logging.Error(err)
+	}
+
+	return
 }
 
 //检测缓存

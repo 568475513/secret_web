@@ -4,6 +4,7 @@ import (
 	"abs/models/sub_business"
 	"abs/pkg/logging"
 	"abs/pkg/util"
+	"abs/service"
 )
 
 type Svip struct {
@@ -39,6 +40,35 @@ func (s *Svip) GetResourceSvipRedirect() (redirect string) {
 					break
 				}
 			}
+		}
+	}
+	return
+}
+
+// GetResourceSvipRedirectV2 超级会员三期 获取svip的跳转链接
+func (s *Svip) GetResourceSvipRedirectV2() (redirect string) {
+	ss := service.SvipService{AppId: s.AppId}
+	relation, err := ss.GetSvipBindRes(s.ResourceId, s.ResourceType)
+	if err != nil {
+		logging.Error(err)
+	} else {
+		lenRel := len(relation)
+
+		if lenRel == 1 {
+			contentParam := util.ContentParam{
+				Type:         15,
+				ResourceType: 23,
+				ResourceId:   "",
+				ProductId:    relation[0].SvipId,
+				AppId:        s.AppId,
+			}
+			redirect = util.ContentUrl(contentParam)
+		} else if lenRel > 1 {
+			contentParam := util.ContentParam{
+				ResourceType: s.ResourceType,
+				ResourceId:   s.ResourceId,
+			}
+			redirect = util.ParentColumnsUrl(contentParam)
 		}
 	}
 	return
