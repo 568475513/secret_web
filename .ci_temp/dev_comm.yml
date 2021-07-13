@@ -1,0 +1,29 @@
+#开发公共环境编译
+dev_common_build:
+  stage: build
+  only:
+    - tags
+  except:
+    - /.*\.t.*$/
+    - /.*\.r.*$/  
+  script: #前端项目请自定义编译命令
+    # 自定义编译步骤开始
+
+    # 自定义编译步骤结束
+    - sh /home/www/script/dev_package.sh #暂存编译后文件，请勿删除此行
+  tags:
+    - dev_comm_runner
+
+
+#开发公共环境部署
+dev_common_deploy:
+  stage: deploy
+  only:
+    - tags
+  except:
+    - /.*\.t.*$/
+    - /.*\.r.*$/  
+  script: #部署步骤已封装，特殊部署逻辑请联系运维配置
+    - sh /home/www/script/dev_deploy.sh
+  tags:
+    - dev_comm_runner
