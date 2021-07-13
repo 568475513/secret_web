@@ -1,9 +1,9 @@
 # 定义stage
 stages:
+  - build
   - deploy
   - tstbuild
   - tstdeploy
-  - build
 
 abs-go:
   stage: deploy
