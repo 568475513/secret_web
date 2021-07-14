@@ -24,6 +24,12 @@ func GetSubscribeAliveListByDate(c *gin.Context) {
 		aliveList []*alive.Alive
 	)
 
+	//校验user_id和universal_union_id
+	err = app.NoUserParseRequest(c)
+	if err != nil {
+		return
+	}
+
 	//校验，不通过就给爷爬
 	err = app.ParseQueryRequest(c, &req)
 	if err != nil {
@@ -34,7 +40,7 @@ func GetSubscribeAliveListByDate(c *gin.Context) {
 	li := course.ListInfo{
 		AppId:            req.AppId,
 		UniversalUnionId: req.UniversalUnionId,
-		UserId: req.UserID,
+		UserId:           req.UserID,
 	}
 	aliveList, err = li.GetALiveListByTime(req.StartTime, req.EndTime, []string{"*"})
 	if err != nil {
@@ -59,6 +65,12 @@ func GetSubscribeAliveNumByDate(c *gin.Context) {
 		aliveList []*alive.Alive
 	)
 
+	//校验user_id和universal_union_id
+	err = app.NoUserParseRequest(c)
+	if err != nil {
+		return
+	}
+
 	//校验请求参数
 	err = app.ParseQueryRequest(c, &req)
 	if err != nil {
@@ -69,7 +81,7 @@ func GetSubscribeAliveNumByDate(c *gin.Context) {
 	li := course.ListInfo{
 		AppId:            req.AppId,
 		UniversalUnionId: req.UniversalUnionId,
-		UserId: req.UserID,
+		UserId:           req.UserID,
 	}
 	aliveList, err = li.GetALiveListByTime(req.StartTime, req.EndTime, []string{"id", "zb_start_at"})
 	if err != nil {
@@ -97,6 +109,12 @@ func GetSubscribeLivingAliveList(c *gin.Context) {
 		aliveList []*alive.Alive
 	)
 
+	//校验user_id和universal_union_id
+	err = app.NoUserParseRequest(c)
+	if err != nil {
+		return
+	}
+
 	//校验请求参数
 	err = app.ParseQueryRequest(c, &req)
 	if err != nil {
@@ -107,7 +125,7 @@ func GetSubscribeLivingAliveList(c *gin.Context) {
 	li := course.ListInfo{
 		AppId:            req.AppId,
 		UniversalUnionId: req.UniversalUnionId,
-		UserId: req.UserID,
+		UserId:           req.UserID,
 	}
 	aliveList, err = li.GetLivingAliveList(req.AppIds, []string{"*"})
 	if err != nil {
@@ -142,6 +160,12 @@ func GetSubscribeUnStartAliveList(c *gin.Context) {
 		aliveList []*alive.Alive
 	)
 
+	//校验user_id和universal_union_id
+	err = app.NoUserParseRequest(c)
+	if err != nil {
+		return
+	}
+
 	//校验请求参数
 	err = app.ParseQueryRequest(c, &req)
 	if err != nil {
@@ -152,7 +176,7 @@ func GetSubscribeUnStartAliveList(c *gin.Context) {
 	li := course.ListInfo{
 		AppId:            req.AppId,
 		UniversalUnionId: req.UniversalUnionId,
-		UserId: req.UserID,
+		UserId:           req.UserID,
 	}
 	aliveList, err = li.GetUnStartAliveList(req.AppIds, []string{"*"})
 
