@@ -228,6 +228,14 @@ func GetBaseInfo(c *gin.Context) {
 	aliveInfoDetail["user_id"] = userId
 	aliveInfoDetail["user_title"] = roleInfo["user_title"]
 	aliveConf["is_can_exceptional"] = roleInfo["is_can_exceptional"]
+
+	// 鹅直播主播昵称和名字信息
+	if util.IsEliveApp(baseConf.VersionType) {
+		roleRep := ruser.UserBusinessConstrct(req.AppId, roleInfo["role_user_id"].(string))
+		roleUserInfo, _ := roleRep.GetUserInfo()
+		aliveInfoDetail["creator_avatar"] = roleUserInfo.WxAvatar
+		aliveInfoDetail["creator_name"] = roleUserInfo.WxNickname
+	}
 	// 补充老直播间链接 util.GetAliveRoomUrl(req.ResourceId, req.ProductId, req.ChannelId, req.AppId, enums.AliveRoomPage)
 	aliveInfoDetail["old_live_room_url"] = baseInfoRep.GetAliveRoomUrl(req)
 	// 获取播放连接【错误处理需要仓库层打印】
