@@ -8,8 +8,6 @@ import (
 	"abs/pkg/logging"
 	"abs/pkg/util"
 	"abs/service"
-	"log"
-
 	//第三方包
 	"github.com/gomodule/redigo/redis"
 
@@ -101,10 +99,9 @@ func (l *ListInfo) GetSubscribedALiveList(aliveList []*alive.Alive) []*alive.Ali
 	var err error
 	if l.UserId != "" {
 		subscribedAliveIds, err = service.GetMultipleSubscribeByUserId(l.AppId, l.UserId, aliveIds)
-	}else if l.UniversalUnionId != "" {
+	} else if l.UniversalUnionId != "" {
 		subscribedAliveIds, err = service.GetMultipleSubscribe(l.AppId, l.UniversalUnionId, aliveIds)
 	}
-	log.Println(subscribedAliveIds)
 
 	if err == nil && len(subscribedAliveIds) > 0 {
 		for _, aliveId := range subscribedAliveIds {

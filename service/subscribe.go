@@ -6,7 +6,6 @@ import (
 	"abs/pkg/enums"
 	"abs/pkg/logging"
 	"errors"
-	"log"
 
 	//系统标准包
 	"fmt"
@@ -64,10 +63,8 @@ func GetMultipleSubscribeByUserId(appId string, userID string, resourceIds []str
 	err := request.ToJSON(&result)
 	if err != nil {
 		logging.Info(err)
-		log.Println(err)
 		return nil, err
 	}
-	log.Println(result)
 	if result.Code != enums.SUCCESS {
 		return nil, errors.New(fmt.Sprintf("请求接口：%s错误:%s", showMultipleSubscribeUrl, result.Msg))
 	}
