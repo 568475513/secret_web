@@ -26,7 +26,7 @@ type GetSubscribeLivingAliveListV2 struct {
 	AppIds           string    `form:"app_ids" json:"app_ids" binding:"required"`
 	UniversalUnionId string    `form:"universal_union_id" json:"universal_union_id"`
 	UserID           string    `form:"user_id" json:"user_id"`
-	State            int       `form:"state" json:"state"` //1则查询该直播用户是否订阅，0则直接默认返回正在直播列表
+	State            int       `form:"state" json:"state"` //0则查询该直播用户是否订阅，1则直接返回正在直播列表
 	StartTime        time.Time `form:"start_time" json:"start_time" binding:"required" time_format:"2006-01-02 15:04:05"`
 	EndTime          time.Time `form:"end_time" json:"end_time" binding:"required" time_format:"2006-01-02 15:04:05"`
 }
