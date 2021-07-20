@@ -114,7 +114,8 @@ type AliveModuleConf struct {
 }
 
 const (
-	StateLiving = 1 //直播中
+	StateLiving    = 1 //直播中
+	SubscribeState = 1 //开启查询已订阅
 )
 
 // 获取直播详情
