@@ -1,15 +1,23 @@
 package v2
 
 import (
+	"abs/pkg/cache/redis_gray"
+	"abs/pkg/logging"
+	"abs/service"
 	"fmt"
-
 	"github.com/gin-gonic/gin"
+	"math/rand"
+	"net/url"
+	_ "net/url"
+	"os"
+	"path/filepath"
+	"time"
 
-	"abs/pkg/app"
-	"abs/pkg/enums"
 	"abs/internal/server/repository/course"
 	"abs/internal/server/repository/material"
 	"abs/internal/server/rules/validator"
+	"abs/pkg/app"
+	"abs/pkg/enums"
 )
 
 /**
@@ -53,4 +61,47 @@ func GetLookBack(c *gin.Context) {
 	data := lookBackRep.GetLookBackUrl(aliveInfo, aliveState, req.Client)
 
 	app.OkWithData(data, c)
+}
+
+func defenceDownload(appId,url string) string {
+	if redis_gray.InGrayShopSpecialHit("alive__gray_encryption", appId) {
+		conInfo := service.ConfHubServer{AppId: appId, WxAppType: 1}
+		result, err := conInfo.GetConf([]string{"base", "safe"})
+		if err != nil {
+			logging.Error(err)
+			return url
+		}
+		var whref string
+		if result.Safe["is_video_encrypt"].(bool) {
+			whref = "*.xiaoe-tech.com,*.xiaoeknow.com"
+		}else {
+			whref = ""
+		}
+		t := time.Now().AddDate(0,0,1).Unix()
+		exper := 0
+		replaceUrl := GetSignByVideoUrl(url,whref, t,exper)
+	}
+	return url
+}
+
+func GetSignByVideoUrl(urlPath,whref string ,t int64,exper int) string {
+	randStr := GetRandomLen(12)
+	key := os.Getenv("QCLOUD_VOD_ENCRYPT_KEY")
+	u,_ := url.Parse(urlPath)
+	dir := filepath.Dir(u.Path)
+	whrefEn := url.QueryEscape(whref)
+	baseUrl := os.Getenv("QCLOUD_VOD_MAIN_URL")
+	keyUrl := os.Getenv("QCLOUD_VOD_ENCRYPT_KEY_URL2")
+	url :=
+}
+
+func GetRandomLen(len int) string {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	bytes := make([]byte, len)
+	for i := 0; i < len; i++ {
+		b := r.Intn(26) + 65
+		bytes[i] = byte(b)
+		fmt.Println(string(byte(b)))
+	}
+	return string(bytes)
 }
