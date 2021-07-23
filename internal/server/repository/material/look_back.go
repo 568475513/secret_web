@@ -136,13 +136,16 @@ func (lb *LookBack) GetLookBackUrl(aliveInfo *alive.Alive, aliveState, appType i
 		}
 	}
 
-	data["aliveVideoUrl"] = defenceDownload(lb.AppId, aliveVideoUrl)
-	data["miniAliveVideoUrl"] = defenceDownload(lb.AppId, miniAliveVideoUrl)
+	data["aliveVideoUrl"] = aliveVideoUrl
+	data["miniAliveVideoUrl"] = miniAliveVideoUrl
 	data["aliveReviewUrl"] = aliveReviewUrl
 	data["aliveVideoUrlEncrypt"] = aliveVideoUrlEncrypt
-	data["aliveVideoMp4Url"] = defenceDownload(lb.AppId, aliveVideoMp4Url)
+	data["aliveVideoMp4Url"] = aliveVideoMp4Url
 	data = lb.ReplaceLookBackUrl(data)
-
+	// 作一修复
+	data["aliveVideoUrl"] = defenceDownload(lb.AppId, data["aliveVideoUrl"])
+	data["miniAliveVideoUrl"] = defenceDownload(lb.AppId, data["miniAliveVideoUrl"])
+	data["aliveVideoMp4Url"] = defenceDownload(lb.AppId, data["aliveVideoMp4Url"])
 	return data
 }
 
