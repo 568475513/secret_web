@@ -68,7 +68,7 @@ func GetLookBack(c *gin.Context) {
 }
 
 func defenceDownload(appId, url string) string {
-	if redis_gray.InGrayShopSpecialHit("alive__gray_encryption", appId) {
+	if redis_gray.InGrayShopSpecialHit("lookback_video_encrypt_gray", appId) {
 		conInfo := service.ConfHubServer{AppId: appId, WxAppType: 1}
 		result, err := conInfo.GetConf([]string{"base", "safe"})
 		if err != nil {
