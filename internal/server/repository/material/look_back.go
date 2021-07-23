@@ -372,7 +372,7 @@ func GetSignByVideoUrl(urlPath, whref, t, exper string) string {
 	baseUrl := os.Getenv("QCLOUD_VOD_MAIN_URL")
 	keyUrl := os.Getenv("QCLOUD_VOD_ENCRYPT_KEY_URL2")
 	replaceUrl := strings.Replace(urlPath, baseUrl, keyUrl, 1)
-	if strings.Contains(replaceUrl, "https") {
+	if !strings.Contains(replaceUrl, "https") {
 		replaceUrl = strings.Replace(replaceUrl, "http", "https", 1)
 	}
 	signStr := fmt.Sprintf("%x", sign)
