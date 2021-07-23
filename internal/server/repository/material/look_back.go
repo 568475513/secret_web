@@ -1,14 +1,18 @@
 package material
 
 import (
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"github.com/gomodule/redigo/redis"
+	"math/rand"
 	"net/url"
+	"os"
+	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
-
-	"github.com/gomodule/redigo/redis"
 
 	"abs/models/alive"
 	"abs/models/business"
@@ -132,11 +136,11 @@ func (lb *LookBack) GetLookBackUrl(aliveInfo *alive.Alive, aliveState, appType i
 		}
 	}
 
-	data["aliveVideoUrl"] = aliveVideoUrl
-	data["miniAliveVideoUrl"] = miniAliveVideoUrl
+	data["aliveVideoUrl"] = defenceDownload(lb.AppId, aliveVideoUrl)
+	data["miniAliveVideoUrl"] = defenceDownload(lb.AppId, miniAliveVideoUrl)
 	data["aliveReviewUrl"] = aliveReviewUrl
 	data["aliveVideoUrlEncrypt"] = aliveVideoUrlEncrypt
-	data["aliveVideoMp4Url"] = aliveVideoMp4Url
+	data["aliveVideoMp4Url"] = defenceDownload(lb.AppId, aliveVideoMp4Url)
 	data = lb.ReplaceLookBackUrl(data)
 
 	return data
@@ -330,4 +334,60 @@ func (lb *LookBack) GetLookbackExpire(isLookback int, lookbackTime string) (map[
 	}
 
 	return redisLookbackInfo, nil
+}
+
+func defenceDownload(appId, url string) string {
+	if !strings.Contains(url, "http") {
+		return url
+	}
+	if redis_gray.InGrayShopSpecialHit("lookback_video_encrypt_gray", appId) {
+		//conInfo := service.ConfHubServer{AppId: appId, WxAppType: 1}
+		//result, err := conInfo.GetConf([]string{"base", "safe"})
+		//if err != nil {
+		//	logging.Error(err)
+		//	return url
+		//}
+		var whref string
+		if redis_gray.InGrayShopSpecialHit("lookback_video_referer_gray", appId) {
+			whref = "*.xiaoe-tech.com,*.xiaoeknow.com"
+		} else {
+			whref = ""
+		}
+		t := time.Now().AddDate(0, 0, 1).Unix()
+		exper := "0"
+		replaceUrl := GetSignByVideoUrl(url, whref, strconv.FormatInt(t, 16), exper)
+		return replaceUrl
+	}
+	return url
+}
+
+func GetSignByVideoUrl(urlPath, whref, t, exper string) string {
+	randStr := GetRandomLen(12)
+	key := os.Getenv("QCLOUD_VOD_ENCRYPT_KEY")
+	u, _ := url.Parse(urlPath)
+	dir := filepath.Dir(u.Path)
+	sign := md5.Sum([]byte(key + dir + t + exper + randStr + whref))
+	whrefEn := url.QueryEscape(whref)
+	baseUrl := os.Getenv("QCLOUD_VOD_MAIN_URL")
+	keyUrl := os.Getenv("QCLOUD_VOD_ENCRYPT_KEY_URL2")
+	replaceUrl := strings.Replace(urlPath, baseUrl, keyUrl, 1)
+	if strings.Contains(replaceUrl, "https") {
+		replaceUrl = strings.Replace(replaceUrl, "http", "https", 1)
+	}
+	signStr := fmt.Sprintf("%x", sign)
+	if whrefEn == "" {
+		return replaceUrl + "?t=" + t + "&exper=" + exper + "&us=" + randStr + "&sign=" + signStr
+	}
+	return replaceUrl + "?t=" + t + "&exper=" + exper + "&us=" + randStr + "&whref=" + whrefEn + "&sign=" + signStr
+}
+
+func GetRandomLen(len int) string {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	bytes := make([]byte, len)
+	for i := 0; i < len; i++ {
+		b := r.Intn(26) + 65
+		bytes[i] = byte(b)
+		fmt.Println(string(byte(b)))
+	}
+	return string(bytes)
 }
