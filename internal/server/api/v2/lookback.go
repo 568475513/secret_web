@@ -1,15 +1,13 @@
 package v2
 
 import (
-	"fmt"
-
-	"github.com/gin-gonic/gin"
-
-	"abs/pkg/app"
-	"abs/pkg/enums"
 	"abs/internal/server/repository/course"
 	"abs/internal/server/repository/material"
 	"abs/internal/server/rules/validator"
+	"abs/pkg/app"
+	"abs/pkg/enums"
+	"fmt"
+	"github.com/gin-gonic/gin"
 )
 
 /**
