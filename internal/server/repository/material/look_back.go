@@ -366,6 +366,7 @@ func GetSignByVideoUrl(urlPath, whref, t, exper string) string {
 	key := os.Getenv("QCLOUD_VOD_ENCRYPT_KEY")
 	u, _ := url.Parse(urlPath)
 	dir := filepath.Dir(u.Path)
+	dir = strings.Replace(dir, "\\", "/", -1) + "/"
 	sign := md5.Sum([]byte(key + dir + t + exper + randStr + whref))
 	whrefEn := url.QueryEscape(whref)
 	baseUrl := os.Getenv("QCLOUD_VOD_MAIN_URL")
