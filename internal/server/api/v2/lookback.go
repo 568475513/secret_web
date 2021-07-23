@@ -8,7 +8,6 @@ import (
 	"abs/pkg/enums"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	_ "net/url"
 )
 
 /**
