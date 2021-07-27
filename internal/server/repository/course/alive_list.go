@@ -102,6 +102,8 @@ func (l *ListInfo) GetSubscribedALiveList(aliveList []*alive.Alive) []*alive.Ali
 	} else if l.UniversalUnionId != "" {
 		subscribedAliveIds, err = service.GetMultipleSubscribe(l.AppId, l.UniversalUnionId, aliveIds)
 	}
+	//去重
+	subscribedAliveIds = util.DuplicateRemovalByArrString(subscribedAliveIds)
 
 	if err == nil && len(subscribedAliveIds) > 0 {
 		for _, aliveId := range subscribedAliveIds {

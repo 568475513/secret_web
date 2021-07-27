@@ -195,3 +195,21 @@ func StringToTime(timeStr string, timeZone string) time.Time {
 	theTime, _ := time.ParseInLocation(TIME_LAYOUT, timeStr, loc)
 	return theTime
 }
+
+//[]string去重
+func DuplicateRemovalByArrString(s []string) []string {
+	var result []string // 存放结果
+	for i := range s {
+		flag := true
+		for j := range result {
+			if s[i] == result[j] {
+				flag = false // 存在重复元素，标识为false
+				break
+			}
+		}
+		if flag { // 标识为false，不添加进结果
+			result = append(result, s[i])
+		}
+	}
+	return result
+}
