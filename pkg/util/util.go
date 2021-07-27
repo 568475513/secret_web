@@ -80,6 +80,13 @@ func IsQyApp(versionType int) bool {
 
 	return false
 }
+// 是否是鹅直播店铺
+func IsEliveApp(versionType int) bool {
+	if versionType == e.VERSION_TYPE_ELIVE {
+		return true
+	}
+	return false
+}
 
 // 获取H5域名
 func GetH5Domain(appId string, contentPage bool) string {
