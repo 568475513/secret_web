@@ -105,7 +105,7 @@ type AliveModuleConf struct {
 	IsPrizeOn       uint8  `json:"is_prize_on"`
 	MessageAhead    int    `json:"message_ahead"`
 	AliveMode       uint8  `json:"alive_mode"`
-	CompleteTime    uint8  `json:"complete_time"`
+	CompleteTime    uint16 `json:"complete_time"`
 	LookbackName    string `json:"lookback_name"`
 	LookbackTime    string `json:"lookback_time"`
 	IsRedirectIndex uint8  `json:"is_redirect_index"`
