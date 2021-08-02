@@ -272,6 +272,8 @@ func (a *AppInfo) canUseFastLive(versionType int) int {
 		return 1
 	case enums.VERSION_TYPE_QLIVE:
 		return 1
+	case enums.VERSION_TYPE_ELIVE:
+		return 1
 	}
 	return 0
 }
