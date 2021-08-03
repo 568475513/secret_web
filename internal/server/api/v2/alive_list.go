@@ -24,6 +24,12 @@ func GetSubscribeAliveListByDate(c *gin.Context) {
 		aliveList []*alive.Alive
 	)
 
+	//校验user_id和universal_union_id
+	err = app.NoUserParseRequest(c)
+	if err != nil {
+		return
+	}
+
 	//校验，不通过就给爷爬
 	err = app.ParseQueryRequest(c, &req)
 	if err != nil {
@@ -34,6 +40,7 @@ func GetSubscribeAliveListByDate(c *gin.Context) {
 	li := course.ListInfo{
 		AppId:            req.AppId,
 		UniversalUnionId: req.UniversalUnionId,
+		UserId:           req.UserID,
 	}
 	aliveList, err = li.GetALiveListByTime(req.StartTime, req.EndTime, []string{"*"})
 	if err != nil {
@@ -58,6 +65,12 @@ func GetSubscribeAliveNumByDate(c *gin.Context) {
 		aliveList []*alive.Alive
 	)
 
+	//校验user_id和universal_union_id
+	err = app.NoUserParseRequest(c)
+	if err != nil {
+		return
+	}
+
 	//校验请求参数
 	err = app.ParseQueryRequest(c, &req)
 	if err != nil {
@@ -68,6 +81,7 @@ func GetSubscribeAliveNumByDate(c *gin.Context) {
 	li := course.ListInfo{
 		AppId:            req.AppId,
 		UniversalUnionId: req.UniversalUnionId,
+		UserId:           req.UserID,
 	}
 	aliveList, err = li.GetALiveListByTime(req.StartTime, req.EndTime, []string{"id", "zb_start_at"})
 	if err != nil {
@@ -87,13 +101,19 @@ func GetSubscribeAliveNumByDate(c *gin.Context) {
 	app.OkWithData(result, c)
 }
 
-//获取用户已订阅且正在直播中的直播列表
-func GetSubscribeLivingAliveList(c *gin.Context) {
+//获取正在直播中的直播列表（通过state字段判断是否用户已订阅）
+func GetLivingAliveList(c *gin.Context) {
 	var (
 		err       error
 		req       validator.GetSubscribeLivingAliveListV2
 		aliveList []*alive.Alive
 	)
+
+	//校验user_id和universal_union_id
+	err = app.NoUserParseRequest(c)
+	if err != nil {
+		return
+	}
 
 	//校验请求参数
 	err = app.ParseQueryRequest(c, &req)
@@ -105,6 +125,7 @@ func GetSubscribeLivingAliveList(c *gin.Context) {
 	li := course.ListInfo{
 		AppId:            req.AppId,
 		UniversalUnionId: req.UniversalUnionId,
+		UserId:           req.UserID,
 	}
 	aliveList, err = li.GetLivingAliveList(req.AppIds, []string{"*"})
 	if err != nil {
@@ -122,11 +143,13 @@ func GetSubscribeLivingAliveList(c *gin.Context) {
 	//合并直播列表
 	aliveList = append(aliveList, aliveListByType...)
 
-	//筛出当前用户已订阅的直播
-	subscribedALiveList := li.GetSubscribedALiveList(aliveList)
+	if req.State == alive.SubscribeState {
+		//筛出当前用户已订阅的直播
+		aliveList = li.GetSubscribedALiveList(aliveList)
+	}
 
 	//将直播列表按app_id分组
-	result := li.ALiveListGroupByAppId(subscribedALiveList)
+	result := li.ALiveListGroupByAppId(aliveList)
 
 	app.OkWithData(result, c)
 }
@@ -139,6 +162,12 @@ func GetSubscribeUnStartAliveList(c *gin.Context) {
 		aliveList []*alive.Alive
 	)
 
+	//校验user_id和universal_union_id
+	err = app.NoUserParseRequest(c)
+	if err != nil {
+		return
+	}
+
 	//校验请求参数
 	err = app.ParseQueryRequest(c, &req)
 	if err != nil {
@@ -149,6 +178,7 @@ func GetSubscribeUnStartAliveList(c *gin.Context) {
 	li := course.ListInfo{
 		AppId:            req.AppId,
 		UniversalUnionId: req.UniversalUnionId,
+		UserId:           req.UserID,
 	}
 	aliveList, err = li.GetUnStartAliveList(req.AppIds, []string{"*"})
 
