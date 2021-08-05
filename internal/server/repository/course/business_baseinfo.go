@@ -3,6 +3,7 @@ package course
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -113,6 +114,8 @@ func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 		"resource_id":   b.Alive.Id,
 		"product_id":    "",
 	})
+	//拼接直播间链接
+	aliveInfoDetail["alive_room_url"] = util.GetNewAliveRoom(b.Alive.AppId, b.Alive.Id, strconv.Itoa(e.PaymentTypeSingle), b.Alive.ProductId.String)
 
 	return aliveInfoDetail
 }
@@ -241,11 +244,11 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 		aliveConf["is_show_view_count"] = 0
 	}
 	/**
-     * @Description: 隐藏人次服务过期，重新显示人次
-     * @param versionState["alive_show_man_time_is_remind"].(int)
-     * @return {
-     */
-	if (versionState["alive_show_man_time_is_remind"].(int) != 1 && versionState["alive_show_man_time_is_remind"].(int) != 0 && b.Alive.ConfigShowViewCount == 1 && b.UserType == 0 ) {
+	 * @Description: 隐藏人次服务过期，重新显示人次
+	 * @param versionState["alive_show_man_time_is_remind"].(int)
+	 * @return {
+	 */
+	if versionState["alive_show_man_time_is_remind"].(int) != 1 && versionState["alive_show_man_time_is_remind"].(int) != 0 && b.Alive.ConfigShowViewCount == 1 && b.UserType == 0 {
 		aliveConf["is_show_view_count"] = 0
 	}
 

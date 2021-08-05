@@ -234,3 +234,18 @@ func GetMiniProgramVersion(client, userAgent string) (version int) {
 	}
 	return
 }
+
+// 获取直播间2.0链接
+func GetNewAliveRoom(appId string, aliveId string, paymentType string, productId string) string {
+	aliveRoomUrl := url.URL{
+		Scheme: "https",
+		Host:   GetH5Domain(appId, true),
+		Path:   fmt.Sprintf("/v2/course/alive/%s", aliveId),
+	}
+	query := aliveRoomUrl.Query()
+	query.Add("app_id", appId)
+	query.Add("pro_id", productId)
+	query.Add("type", paymentType)
+	aliveRoomUrl.RawQuery = query.Encode()
+	return aliveRoomUrl.String()
+}
