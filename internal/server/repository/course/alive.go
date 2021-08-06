@@ -289,7 +289,7 @@ func (a *AliveInfo) GetAliveStates(aliveInfo *alive.Alive) (aliveState int) {
 		aliveState = a.GetAliveState(aliveInfo.ZbStartAt.Time, aliveInfo.ZbStopAt.Time, aliveInfo.ManualStopAt.Time, aliveInfo.RewindTime.Time, aliveInfo.PushState)
 		// 互动状态默认互动时间为五分钟
 		if aliveState == enums.AliveTypePush {
-			aliveInfo.ZbStopAt.Time = aliveInfo.ZbStopAt.Time.Add(300 * time.Second)
+			aliveInfo.ZbStopAt.Time = aliveInfo.ZbStopAt.Time.Add(60 * time.Second)
 		}
 		// 直播已经开始（提前开始解决提前开始倒计时问题）
 		if aliveState != 0 {
