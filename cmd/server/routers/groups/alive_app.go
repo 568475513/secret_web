@@ -19,4 +19,6 @@ func AliveAppRouter(Router *gin.RouterGroup) {
 	apiRouterV2.GET("get.living.alive.list", v2.GetSubscribeLivingAliveList)
 	//获取已经订阅的未开始直播
 	apiRouterV2.GET("get.unstart.alive.list", v2.GetSubscribeUnStartAliveList)
+	//获取主业务接口
+	apiRouterV2.GET("base_info", v2.GetBaseInfo)
 }
