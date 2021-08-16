@@ -2,8 +2,8 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
 	"errors"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	// "github.com/gin-gonic/gin/binding"
@@ -41,22 +41,33 @@ func handleParamsError(c *gin.Context, err error) {
 	if err != nil {
 		var errStr string
 		switch err.(type) {
-			case validator.ValidationErrors:
-				errStr = err.Error()
-			case *json.UnmarshalTypeError:
-				unmarshalTypeError := err.(*json.UnmarshalTypeError)
-				errStr = fmt.Errorf("%s [类型错误，期望类型] %s", unmarshalTypeError.Field, unmarshalTypeError.Type.String()).Error()
-			default:
-				// logging.Error("unknown error：" + err.Error())
-				errStr = errors.New("参数校验[unknown error]").Error()
+		case validator.ValidationErrors:
+			errStr = err.Error()
+		case *json.UnmarshalTypeError:
+			unmarshalTypeError := err.(*json.UnmarshalTypeError)
+			errStr = fmt.Errorf("%s [类型错误，期望类型] %s", unmarshalTypeError.Field, unmarshalTypeError.Type.String()).Error()
+		default:
+			// logging.Error("unknown error：" + err.Error())
+			errStr = errors.New("参数校验[unknown error]").Error()
 		}
 		// 此处错误信息该修正下
 		FailWithParameter(errStr, c)
 	}
 }
 
+// 没有用户标识参数上传的错误
+func NoUserParseRequest(c *gin.Context) (err error) {
+	userId := c.Query("user_id")
+	universalUnionId := c.Query("universal_union_id")
+	if userId == "" && universalUnionId == "" {
+		FailWithParameter("用户参数未上传（user_id或者universal_union_id）", c)
+		return errors.New("用户参数未上传（user_id或者universal_union_id）")
+	}
+	return
+}
+
 // 获取AppId
-func GetAppId(c *gin.Context) (string) {
+func GetAppId(c *gin.Context) string {
 	appId := c.GetString("app_id")
 	if appId == "" {
 		// 兼容非网关
@@ -66,7 +77,7 @@ func GetAppId(c *gin.Context) (string) {
 }
 
 // 获取UserId
-func GetUserId(c *gin.Context) (string) {
+func GetUserId(c *gin.Context) string {
 	userId := c.GetString("user_id")
 	anonUserId := c.GetString("anon_user_id")
 	if len(userId) > 0 {

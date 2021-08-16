@@ -14,8 +14,9 @@ import (
 )
 
 const (
-	subscribeTimeOut         = 1000                              //超时设置，单位ms
-	showMultipleSubscribeUrl = "api/subscribe/show_multiple_ids" //查询多个资源的订阅关系
+	subscribeTimeOut                 = 1000                                 //超时设置，单位ms
+	showMultipleSubscribeUrl         = "api/subscribe/show_multiple_ids"    //查询多个资源的订阅关系
+	showMultipleSubscribeByUserIdUrl = "api/subscribeApp/show_multiple_ids" //查询多个资源的订阅关系 By user_id
 )
 
 type MultipleSubscribeResponse struct {
@@ -41,6 +42,28 @@ func GetMultipleSubscribe(appId string, universalUnionId string, resourceIds []s
 	if err != nil {
 		logging.Info(err)
 		return []string{}, err
+	}
+	if result.Code != enums.SUCCESS {
+		return nil, errors.New(fmt.Sprintf("请求接口：%s错误:%s", showMultipleSubscribeUrl, result.Msg))
+	}
+	return result.Data.Id, nil
+}
+
+//查询多个资源的订阅关系 by user_id
+func GetMultipleSubscribeByUserId(appId string, userID string, resourceIds []string) ([]string, error) {
+	var result MultipleSubscribeResponse
+	request := Post(fmt.Sprintf("%s%s", os.Getenv("LB_PF_SUBSCRIBE_IN"), showMultipleSubscribeByUserIdUrl))
+	request.SetParams(map[string]interface{}{
+		"app_id":       appId,
+		"user_id":      userID,
+		"resource_ids": resourceIds,
+	})
+	request.SetHeader("Content-Type", "application/json")
+	request.SetTimeout(subscribeTimeOut * time.Millisecond)
+	err := request.ToJSON(&result)
+	if err != nil {
+		logging.Info(err)
+		return nil, err
 	}
 	if result.Code != enums.SUCCESS {
 		return nil, errors.New(fmt.Sprintf("请求接口：%s错误:%s", showMultipleSubscribeUrl, result.Msg))
