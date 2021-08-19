@@ -29,6 +29,8 @@ type ImCreateRes struct {
 const (
 	imCreateGroup = "https://console.tim.qq.com/v4/group_open_http_svc/create_group?sdkappid=%d&identifier=%s&usersig=%s&random=%d&contenttype=json"
 
+	imInfoGroup = "https://console.tim.qq.com/v4/group_open_http_svc/get_group_info?sdkappid=%d&identifier=%s&usersig=%s&random=%d&contenttype=json"
+
 	aliveInfoKey3 = "alive:%s:%s"
 
 	aliveInfoKey2 = "aliveInfoKey:%s%s"
@@ -76,6 +78,7 @@ func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
 			}
 			return newRoomId
 		}
+		roomId = fitlerOldRoom(a.AppId,a.AliveId,roomId)
 		return roomId
 	}
 
@@ -134,6 +137,70 @@ func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
 	}
 	return roomId
 }
+
+func fitlerOldRoom(appId string, aliveId string, roomId string) string {
+	if strings.Contains(roomId, "@TGS#") {
+		hitJudgeActiveOld(appId,aliveId,roomId)
+	}
+	return roomId
+}
+
+func hitJudgeActiveOld(appId string, aliveId string, roomId string) string {
+	redisConn, err := redis_im.GetLiveGroupActionConn()
+	if err != nil {
+		logging.Error(err)
+	}
+	defer redisConn.Close()
+	imGroupActiveCacheKey := fmt.Sprintf(oldImGroupActive, aliveId)
+	rid, _ := redis.String(redisConn.Do("get", imGroupActiveCacheKey))
+	if rid != "" {
+		return roomId
+	}
+
+	hitImActiveCacheKey := fmt.Sprintf(hitImActive, aliveId[len(aliveId)-1:])
+	zScoreValue, _ := redisConn.Do("zscore", hitImActiveCacheKey, aliveId)
+	expire := 86400 - (time.Now().Unix()+8*3600)%86400
+	if zScoreValue != nil {
+		redisConn.Do("setex", imGroupActiveCacheKey, expire, roomId)
+		redisConn.Do("zadd", hitImActiveCacheKey, time.Now().Unix(), aliveId)
+		return roomId
+	}
+	roomIdNow,err := getGroupOldRoomId(appId,aliveId,roomId)
+	if err == nil {
+		redisConn.Do("setex", imGroupActiveCacheKey, expire, roomIdNow)
+		redisConn.Do("zadd", hitImActiveCacheKey, time.Now().Unix(), aliveId)
+		return roomIdNow
+	}
+	return roomIdNow
+}
+
+func getGroupOldRoomId(appId string, aliveId string, roomId string) (string,error) {
+	judgeRoomIdIsExist(roomId)
+}
+
+func judgeRoomIdIsExist(roomId string) bool {
+	timeRestApi := service.TimeRestApi{
+		SdkAppId:   os.Getenv("AliveVideoAppId"),
+		Identifier: os.Getenv("AliveVideoAdminId"),
+	}
+	userSig, _ := timeRestApi.GenerateUserSig()
+	random := getRandInt(4294967295)
+	requestUrl := fmt.Sprintf(imInfoGroup, timeRestApi.SdkAppId, timeRestApi.Identifier, userSig, random)
+	requestData := map[string]string{
+		"GroupIdList": timeRestApi.Identifier
+	}
+
+	requestDataJson, _ := util.JsonEncode(requestData)
+	var responseMap ImCreateRes
+	request := service.Post(requestUrl)
+	fmt.Println(requestData)
+	request.SetParams(requestDataJson)
+	request.SetTimeout(1000 * time.Millisecond)
+	err := request.ToJSON(&responseMap)
+	logging.Info(responseMap)
+}
+
+
 
 func (a *AliveInfo) resetRoomIdCache() {
 
@@ -248,3 +315,5 @@ func (a *AliveInfo) getRandRoomId(len int) string {
 	}
 	return "XET#" + string(bytes)
 }
+
+

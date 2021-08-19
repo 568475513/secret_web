@@ -39,8 +39,9 @@ const (
 	allPvSetCacheKey = "alive_take_goods_pv_set:"                  // 所有带货商品pv集合缓存
 	expirationTime   = 300                                         // pv缓存有效时间，单位秒
 
-	hitImActive   = "active_im_group_all_cache_%s" // IM活跃群组
-	imGroupActive = "im_active_:%s"
+	hitImActive      = "active_im_group_all_cache_%s" // IM活跃群组
+	imGroupActive    = "im_active_:%s"
+	oldImGroupActive = "old_im_active_:%s"
 	// 不使用快直播名单
 	notUseFastLiveKey = "notUseFastLive"
 
