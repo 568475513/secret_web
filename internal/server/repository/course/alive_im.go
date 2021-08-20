@@ -81,12 +81,11 @@ func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
 				if err != nil {
 					logging.Error(err)
 				}
-				return AliveImMiddler.OldRoomId
+				return fitlerOldRoom(a.AppId, a.AliveId, AliveImMiddler.OldRoomId)
 			}
 			return newRoomId
 		}
-		roomId = fitlerOldRoom(a.AppId, a.AliveId, roomId)
-		return roomId
+		return fitlerOldRoom(a.AppId, a.AliveId, roomId)
 	}
 
 	imGroupActiveCacheKey := fmt.Sprintf(imGroupActive, a.AliveId)
@@ -147,7 +146,7 @@ func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
 
 func fitlerOldRoom(appId string, aliveId string, roomId string) string {
 	if strings.Contains(roomId, "@TGS#") {
-		hitJudgeActiveOld(appId, aliveId, roomId)
+		return hitJudgeActiveOld(appId, aliveId, roomId)
 	}
 	return roomId
 }
@@ -156,6 +155,7 @@ func hitJudgeActiveOld(appId string, aliveId string, roomId string) string {
 	redisConn, err := redis_im.GetLiveGroupActionConn()
 	if err != nil {
 		logging.Error(err)
+		return roomId
 	}
 	defer redisConn.Close()
 	imGroupActiveCacheKey := fmt.Sprintf(oldImGroupActive, aliveId)
@@ -172,22 +172,51 @@ func hitJudgeActiveOld(appId string, aliveId string, roomId string) string {
 		redisConn.Do("zadd", hitImActiveCacheKey, time.Now().Unix(), aliveId)
 		return roomId
 	}
-	roomIdNow, err := getGroupOldRoomId(appId, aliveId, roomId)
+	groupId, err := getGroupOldRoomId(appId, aliveId, roomId)
 	if err == nil {
-		redisConn.Do("setex", imGroupActiveCacheKey, expire, roomIdNow)
+		redisConn.Do("setex", imGroupActiveCacheKey, expire, groupId)
 		redisConn.Do("zadd", hitImActiveCacheKey, time.Now().Unix(), aliveId)
-		return roomIdNow
+		return groupId
 	}
-	return roomIdNow
+	return groupId
 }
 
+// 这abs_go日志和异常警示消息体
 func getGroupOldRoomId(appId string, aliveId string, roomId string) (string, error) {
 	isExist := judgeRoomIdIsExist(roomId)
 	if isExist {
 		return roomId, nil
 	}
 	// 群组id已解散，需要建立一新的，并同步入库返回
+	groupId, err := createOldGroup(roomId)
+	if err != nil {
+		// 没成，再来一次
+		groupId, err = createOldGroup(roomId)
+		if err != nil {
+			return groupId, err
+		}
+	}
+	isOk := changeRoomIdData(appId, aliveId, roomId, groupId)
+	if isOk {
+		return groupId, nil
+	}
+	return roomId, nil
+}
 
+func changeRoomIdData(appId string, aliveId string, roomId string, groupId string) bool {
+	err := alive.UpdateTAliveRommId(appId, aliveId, groupId)
+	logging.Info(err)
+	if err != nil {
+		logging.Error(err)
+		return false
+	}
+
+	err = alive.UpdateForbidRoomId(appId, roomId, groupId)
+	if err != nil {
+		logging.Error(err)
+		return false
+	}
+	return true
 }
 
 func judgeRoomIdIsExist(roomId string) bool {
@@ -318,6 +347,37 @@ func createGroup(GroupId string) bool {
 		return true
 	}
 	return false
+}
+
+// 创建旧群组
+func createOldGroup(GroupId string) (string, error) {
+	timeRestApi := service.TimeRestApi{
+		SdkAppId:   os.Getenv("AliveVideoAppId"),
+		Identifier: os.Getenv("AliveVideoAdminId"),
+	}
+	userSig, _ := timeRestApi.GenerateUserSig()
+	random := getRandInt(4294967295)
+	requestUrl := fmt.Sprintf(imCreateGroup, timeRestApi.SdkAppId, timeRestApi.Identifier, userSig, random)
+	requestData := map[string]string{
+		"Owner_Account": timeRestApi.Identifier,
+		"Type":          "AVChatRoom",
+		"Name":          "TestGroup",
+	}
+	requestDataJson, _ := util.JsonEncode(requestData)
+	var responseMap ImCreateRes
+	request := service.Post(requestUrl)
+	fmt.Println(requestData)
+	request.SetParams(requestDataJson)
+	request.SetTimeout(1000 * time.Millisecond)
+	err := request.ToJSON(&responseMap)
+	logging.Info(responseMap)
+	if err != nil {
+		return GroupId, err
+	}
+	if responseMap.ErrorCode == 0 {
+		return responseMap.GroupId, nil
+	}
+	return GroupId, err
 }
 
 // 获取随机不重复群组id
