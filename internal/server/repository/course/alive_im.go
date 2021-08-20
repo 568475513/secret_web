@@ -26,6 +26,13 @@ type ImCreateRes struct {
 	GroupId      string `json:"GroupId"`
 }
 
+type ImInfoRes struct {
+	ActionStatus string      `json:"ActionStatus"`
+	ErrorInfo    string      `json:"ErrorInfo"`
+	ErrorCode    int         `json:"ErrorCode"`
+	GroupInfo    interface{} `json:"GroupInfo"`
+}
+
 const (
 	imCreateGroup = "https://console.tim.qq.com/v4/group_open_http_svc/create_group?sdkappid=%d&identifier=%s&usersig=%s&random=%d&contenttype=json"
 
@@ -78,7 +85,7 @@ func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
 			}
 			return newRoomId
 		}
-		roomId = fitlerOldRoom(a.AppId,a.AliveId,roomId)
+		roomId = fitlerOldRoom(a.AppId, a.AliveId, roomId)
 		return roomId
 	}
 
@@ -140,7 +147,7 @@ func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
 
 func fitlerOldRoom(appId string, aliveId string, roomId string) string {
 	if strings.Contains(roomId, "@TGS#") {
-		hitJudgeActiveOld(appId,aliveId,roomId)
+		hitJudgeActiveOld(appId, aliveId, roomId)
 	}
 	return roomId
 }
@@ -165,7 +172,7 @@ func hitJudgeActiveOld(appId string, aliveId string, roomId string) string {
 		redisConn.Do("zadd", hitImActiveCacheKey, time.Now().Unix(), aliveId)
 		return roomId
 	}
-	roomIdNow,err := getGroupOldRoomId(appId,aliveId,roomId)
+	roomIdNow, err := getGroupOldRoomId(appId, aliveId, roomId)
 	if err == nil {
 		redisConn.Do("setex", imGroupActiveCacheKey, expire, roomIdNow)
 		redisConn.Do("zadd", hitImActiveCacheKey, time.Now().Unix(), aliveId)
@@ -174,8 +181,13 @@ func hitJudgeActiveOld(appId string, aliveId string, roomId string) string {
 	return roomIdNow
 }
 
-func getGroupOldRoomId(appId string, aliveId string, roomId string) (string,error) {
-	judgeRoomIdIsExist(roomId)
+func getGroupOldRoomId(appId string, aliveId string, roomId string) (string, error) {
+	isExist := judgeRoomIdIsExist(roomId)
+	if isExist {
+		return roomId, nil
+	}
+	// 群组id已解散，需要建立一新的，并同步入库返回
+
 }
 
 func judgeRoomIdIsExist(roomId string) bool {
@@ -186,21 +198,25 @@ func judgeRoomIdIsExist(roomId string) bool {
 	userSig, _ := timeRestApi.GenerateUserSig()
 	random := getRandInt(4294967295)
 	requestUrl := fmt.Sprintf(imInfoGroup, timeRestApi.SdkAppId, timeRestApi.Identifier, userSig, random)
-	requestData := map[string]string{
-		"GroupIdList": timeRestApi.Identifier
+	GroupIdList := []string{roomId}
+	requestData := map[string][]string{
+		"GroupIdList": GroupIdList,
 	}
-
 	requestDataJson, _ := util.JsonEncode(requestData)
-	var responseMap ImCreateRes
+	var responseMap ImInfoRes
 	request := service.Post(requestUrl)
-	fmt.Println(requestData)
 	request.SetParams(requestDataJson)
 	request.SetTimeout(1000 * time.Millisecond)
 	err := request.ToJSON(&responseMap)
 	logging.Info(responseMap)
+	if err != nil {
+		return false
+	}
+	if responseMap.ErrorCode == 0 {
+		return true
+	}
+	return false
 }
-
-
 
 func (a *AliveInfo) resetRoomIdCache() {
 
@@ -315,5 +331,3 @@ func (a *AliveInfo) getRandRoomId(len int) string {
 	}
 	return "XET#" + string(bytes)
 }
-
-
