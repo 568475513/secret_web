@@ -164,7 +164,7 @@ func hitJudgeActiveOld(appId string, aliveId string, roomId string) string {
 		return roomId
 	}
 
-	hitImActiveCacheKey := fmt.Sprintf(hitImActive, aliveId[len(aliveId)-1:])
+	hitImActiveCacheKey := fmt.Sprintf(oldHitImActive, aliveId[len(aliveId)-1:])
 	zScoreValue, _ := redisConn.Do("zscore", hitImActiveCacheKey, aliveId)
 	expire := 86400 - (time.Now().Unix()+8*3600)%86400
 	if zScoreValue != nil {
@@ -366,12 +366,13 @@ func createOldGroup(GroupId string) (string, error) {
 	requestDataJson, _ := util.JsonEncode(requestData)
 	var responseMap ImCreateRes
 	request := service.Post(requestUrl)
-	fmt.Println(requestData)
+	logging.Info(requestData)
 	request.SetParams(requestDataJson)
 	request.SetTimeout(1000 * time.Millisecond)
 	err := request.ToJSON(&responseMap)
 	logging.Info(responseMap)
 	if err != nil {
+		logging.Error(err)
 		return GroupId, err
 	}
 	if responseMap.ErrorCode == 0 {
