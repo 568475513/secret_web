@@ -226,11 +226,14 @@ func judgeRoomIdIsExist(roomId string) bool {
 	}
 	userSig, _ := timeRestApi.GenerateUserSig()
 	random := getRandInt(4294967295)
-	requestUrl := fmt.Sprintf(imInfoGroup, timeRestApi.SdkAppId, timeRestApi.Identifier, userSig, random)
+	SdkAppId, _ := strconv.Atoi(os.Getenv("AliveVideoAppId"))
+	requestUrl := fmt.Sprintf(imInfoGroup, SdkAppId, timeRestApi.Identifier, userSig, random)
 	GroupIdList := []string{roomId}
 	requestData := map[string][]string{
 		"GroupIdList": GroupIdList,
 	}
+	logging.Info(userSig)
+	logging.Info(requestUrl)
 	requestDataJson, _ := util.JsonEncode(requestData)
 	var responseMap ImInfoRes
 	request := service.Post(requestUrl)
@@ -357,7 +360,8 @@ func createOldGroup(GroupId string) (string, error) {
 	}
 	userSig, _ := timeRestApi.GenerateUserSig()
 	random := getRandInt(4294967295)
-	requestUrl := fmt.Sprintf(imCreateGroup, timeRestApi.SdkAppId, timeRestApi.Identifier, userSig, random)
+	SdkAppId, _ := strconv.Atoi(os.Getenv("WHITE_BOARD_SDK_APP_ID"))
+	requestUrl := fmt.Sprintf(imCreateGroup, SdkAppId, timeRestApi.Identifier, userSig, random)
 	requestData := map[string]string{
 		"Owner_Account": timeRestApi.Identifier,
 		"Type":          "AVChatRoom",
