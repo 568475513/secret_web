@@ -30,7 +30,11 @@ type ImInfoRes struct {
 	ActionStatus string      `json:"ActionStatus"`
 	ErrorInfo    string      `json:"ErrorInfo"`
 	ErrorCode    int         `json:"ErrorCode"`
-	GroupInfo    interface{} `json:"GroupInfo"`
+	GroupInfo    []GroupInfo `json:"GroupInfo"`
+}
+
+type GroupInfo struct {
+	ErrorCode int `json:"ErrorCode"`
 }
 
 const (
@@ -232,7 +236,6 @@ func judgeRoomIdIsExist(roomId string) bool {
 	requestData := map[string][]string{
 		"GroupIdList": GroupIdList,
 	}
-	logging.Info(userSig)
 	requestUrl = strings.Replace(requestUrl, "\n", "", -1)
 	logging.Info(requestUrl)
 	requestDataJson, _ := util.JsonEncode(requestData)
@@ -242,10 +245,11 @@ func judgeRoomIdIsExist(roomId string) bool {
 	request.SetTimeout(1000 * time.Millisecond)
 	err := request.ToJSON(&responseMap)
 	logging.Info(responseMap)
+	logging.Info(responseMap.GroupInfo)
 	if err != nil {
 		return false
 	}
-	if responseMap.ErrorCode == 0 {
+	if responseMap.ErrorCode == 0 && responseMap.GroupInfo[0].ErrorCode == 0 {
 		return true
 	}
 	return false
@@ -368,6 +372,7 @@ func createOldGroup(GroupId string) (string, error) {
 		"Type":          "AVChatRoom",
 		"Name":          "TestGroup",
 	}
+	requestUrl = strings.Replace(requestUrl, "\n", "", -1)
 	requestDataJson, _ := util.JsonEncode(requestData)
 	var responseMap ImCreateRes
 	request := service.Post(requestUrl)
