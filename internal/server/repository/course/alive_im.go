@@ -233,6 +233,7 @@ func judgeRoomIdIsExist(roomId string) bool {
 		"GroupIdList": GroupIdList,
 	}
 	logging.Info(userSig)
+	requestUrl = strings.Replace(requestUrl, "\n", "", -1)
 	logging.Info(requestUrl)
 	requestDataJson, _ := util.JsonEncode(requestData)
 	var responseMap ImInfoRes
