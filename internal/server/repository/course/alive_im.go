@@ -365,7 +365,7 @@ func createOldGroup(GroupId string) (string, error) {
 	}
 	userSig, _ := timeRestApi.GenerateUserSig()
 	random := getRandInt(4294967295)
-	SdkAppId, _ := strconv.Atoi(os.Getenv("WHITE_BOARD_SDK_APP_ID"))
+	SdkAppId, _ := strconv.Atoi(os.Getenv("AliveVideoAppId"))
 	requestUrl := fmt.Sprintf(imCreateGroup, SdkAppId, timeRestApi.Identifier, userSig, random)
 	requestData := map[string]string{
 		"Owner_Account": timeRestApi.Identifier,
@@ -373,6 +373,7 @@ func createOldGroup(GroupId string) (string, error) {
 		"Name":          "TestGroup",
 	}
 	requestUrl = strings.Replace(requestUrl, "\n", "", -1)
+	logging.Info(requestUrl)
 	requestDataJson, _ := util.JsonEncode(requestData)
 	var responseMap ImCreateRes
 	request := service.Post(requestUrl)
