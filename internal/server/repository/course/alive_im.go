@@ -2,6 +2,7 @@ package course
 
 import (
 	"abs/models/alive"
+	"abs/models/data"
 	"abs/pkg/cache/redis_alive"
 	"abs/pkg/cache/redis_default"
 	"abs/pkg/cache/redis_gray"
@@ -117,18 +118,23 @@ func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
 	res := a.hitJudgeActive(redisConn, newRoomId)
 	logging.Info(res)
 	if res {
-		err = alive.UpdateTAliveRommId(a.AppId, a.AliveId, newRoomId)
-		logging.Info(err)
-		if err != nil {
-			logging.Error(err)
+		isOk := changeRoomIdData(a.AppId, a.AliveId, roomId, newRoomId)
+		if !isOk {
 			return roomId
 		}
-
-		err = alive.UpdateForbidRoomId(a.AppId, roomId, newRoomId)
-		if err != nil {
-			logging.Error(err)
-			return roomId
-		}
+		//
+		//err = alive.UpdateTAliveRommId(a.AppId, a.AliveId, newRoomId)
+		//logging.Info(err)
+		//if err != nil {
+		//	logging.Error(err)
+		//	return roomId
+		//}
+		//
+		//err = alive.UpdateForbidRoomId(a.AppId, roomId, newRoomId)
+		//if err != nil {
+		//	logging.Error(err)
+		//	return roomId
+		//}
 		aim := alive.AliveImMiddler{
 			AppId:     a.AppId,
 			AliveId:   a.AliveId,
@@ -208,7 +214,20 @@ func getGroupOldRoomId(appId string, aliveId string, roomId string) (string, err
 }
 
 func changeRoomIdData(appId string, aliveId string, roomId string, groupId string) bool {
-	err := alive.UpdateTAliveRommId(appId, aliveId, groupId)
+	dataGroup := data.GroupIm{
+		AppId:   appId,
+		AliveId: aliveId,
+		RoomId:  roomId,
+		GroupId: groupId,
+	}
+	err := data.InsertImGroupIdRecord(dataGroup)
+	logging.Info(err)
+	if err != nil {
+		logging.Error(err)
+		return false
+	}
+
+	err = alive.UpdateTAliveRommId(appId, aliveId, groupId)
 	logging.Info(err)
 	if err != nil {
 		logging.Error(err)
@@ -218,7 +237,7 @@ func changeRoomIdData(appId string, aliveId string, roomId string, groupId strin
 	err = alive.UpdateForbidRoomId(appId, roomId, groupId)
 	if err != nil {
 		logging.Error(err)
-		return false
+		return true
 	}
 	return true
 }
