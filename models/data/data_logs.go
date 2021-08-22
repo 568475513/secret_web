@@ -8,7 +8,7 @@ type GroupIm struct {
 }
 
 func InsertImGroupIdRecord(dataGroup GroupIm) error {
-	result := db.Table("db_ex_logs.old_im_room_change").Create(&dataGroup)
+	result := db.Table("db_ex_statistics.old_im_room_change").Create(&dataGroup)
 	if result.Error != nil {
 		return result.Error
 	}
