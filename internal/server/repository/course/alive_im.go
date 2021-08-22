@@ -2,7 +2,7 @@ package course
 
 import (
 	"abs/models/alive"
-	"abs/models/data"
+	"abs/models/logs"
 	"abs/pkg/cache/redis_alive"
 	"abs/pkg/cache/redis_default"
 	"abs/pkg/cache/redis_gray"
@@ -214,13 +214,13 @@ func getGroupOldRoomId(appId string, aliveId string, roomId string) (string, err
 }
 
 func changeRoomIdData(appId string, aliveId string, roomId string, groupId string) bool {
-	dataGroup := data.GroupIm{
+	dataGroup := logs.GroupIm{
 		AppId:   appId,
 		AliveId: aliveId,
 		RoomId:  roomId,
 		GroupId: groupId,
 	}
-	err := data.InsertImGroupIdRecord(dataGroup)
+	err := logs.InsertImGroupIdRecord(dataGroup)
 	logging.Info(err)
 	if err != nil {
 		logging.Error(err)
