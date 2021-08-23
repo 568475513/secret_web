@@ -186,6 +186,15 @@ func UpdateViewCount(appId, aliveId string, viewCount int) error {
 // 根据直播开始时间查询直播列表
 func GetAliveListByZbStartTime(appId string, startTime string, endTime string, s []string) ([]*Alive, error) {
 	var aliveList []*Alive
+	if strings.ToLower(appId) == "apptcvluyvg2205" {
+		err := db.Table("t_alive").Select(s).
+			Where("app_id=? and zb_start_at>= ? and zb_start_at<=? and id<>'l_611b7849e4b0bf64300726f6'", appId, startTime, endTime).Find(&aliveList).Error
+		if err != nil && err != gorm.ErrRecordNotFound {
+			return nil, err
+		}
+		return aliveList, nil
+	}
+
 	err := db.Table("t_alive").Select(s).
 		Where("app_id=? and zb_start_at>= ? and zb_start_at<=?", appId, startTime, endTime).Find(&aliveList).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
