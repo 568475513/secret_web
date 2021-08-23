@@ -58,3 +58,10 @@ func GetRoomIdByAliveId(appId, aliveId, field string) (*AliveImMiddler, error) {
 	}
 	return &a, nil
 }
+
+// 更新中间表
+func UpdateImMiddleRoomId(appId, aliveId, groupId string) error {
+	return db.Table("t_alive_im_middle").Where("app_id=? and alive_id=? ", appId, aliveId).
+		Update("old_room_id", groupId).
+		Limit(1).Error
+}

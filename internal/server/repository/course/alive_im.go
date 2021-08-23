@@ -69,22 +69,26 @@ func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
 			}
 			logging.Info(AliveImMiddler)
 			if AliveImMiddler.OldRoomId != "" {
-				err = alive.UpdateTAliveRommId(a.AppId, a.AliveId, AliveImMiddler.OldRoomId)
-				logging.Info(err)
-				if err != nil {
-					logging.Error(err)
-					return newRoomId
-				}
 				go a.resetRoomIdCache()
 				imGroupActiveCacheKey := fmt.Sprintf(imGroupActive, a.AliveId)
 				redisConn.Do("del", imGroupActiveCacheKey)
 				hitImActiveCacheKey := fmt.Sprintf(hitImActive, a.AliveId[len(a.AliveId)-1:])
 				redisConn.Do("zrem", hitImActiveCacheKey, a.AliveId)
-
-				err = alive.UpdateForbidRoomId(a.AppId, roomId, AliveImMiddler.OldRoomId)
-				if err != nil {
-					logging.Error(err)
+				// 入库
+				isOk := changeRoomIdData(a.AppId, a.AliveId, roomId, AliveImMiddler.OldRoomId)
+				if !isOk {
+					return newRoomId
 				}
+				//err = alive.UpdateTAliveRommId(a.AppId, a.AliveId, AliveImMiddler.OldRoomId)
+				//logging.Info(err)
+				//if err != nil {
+				//	logging.Error(err)
+				//	return newRoomId
+				//}
+				//err = alive.UpdateForbidRoomId(a.AppId, roomId, AliveImMiddler.OldRoomId)
+				//if err != nil {
+				//	logging.Error(err)
+				//}
 				return fitlerOldRoom(a.AppId, a.AliveId, AliveImMiddler.OldRoomId)
 			}
 			return newRoomId
@@ -169,13 +173,16 @@ func hitJudgeActiveOld(appId string, aliveId string, roomId string) string {
 	defer redisConn.Close()
 	imGroupActiveCacheKey := fmt.Sprintf(oldImGroupActive, aliveId)
 	rid, _ := redis.String(redisConn.Do("get", imGroupActiveCacheKey))
+	expire := 86400 - (time.Now().Unix()+8*3600)%86400
 	if rid != "" {
+		if rid != roomId {
+			redisConn.Do("setex", imGroupActiveCacheKey, expire, roomId)
+		}
 		return roomId
 	}
 
 	hitImActiveCacheKey := fmt.Sprintf(oldHitImActive, aliveId[len(aliveId)-1:])
 	zScoreValue, _ := redisConn.Do("zscore", hitImActiveCacheKey, aliveId)
-	expire := 86400 - (time.Now().Unix()+8*3600)%86400
 	if zScoreValue != nil {
 		redisConn.Do("setex", imGroupActiveCacheKey, expire, roomId)
 		redisConn.Do("zadd", hitImActiveCacheKey, time.Now().Unix(), aliveId)
@@ -202,14 +209,14 @@ func getGroupOldRoomId(appId string, aliveId string, roomId string) (string, err
 		// 没成，再来一次
 		groupId, err = createOldGroup(roomId)
 		if err != nil {
-			return groupId, err
+			return roomId, err
 		}
 	}
 	isOk := changeRoomIdData(appId, aliveId, roomId, groupId)
 	if isOk {
 		return groupId, nil
 	}
-	return roomId, nil
+	return groupId, nil
 }
 
 func changeRoomIdData(appId string, aliveId string, roomId string, groupId string) bool {
@@ -231,6 +238,16 @@ func changeRoomIdData(appId string, aliveId string, roomId string, groupId strin
 	if err != nil {
 		logging.Error(err)
 		return false
+	}
+
+	// 旧群组改变需要同步一下中间表
+	if strings.Contains(groupId, "@TGS#") {
+		err = alive.UpdateImMiddleRoomId(appId, aliveId, groupId)
+		logging.Info(err)
+		if err != nil {
+			logging.Error(err)
+			return false
+		}
 	}
 
 	err = alive.UpdateForbidRoomId(appId, roomId, groupId)
