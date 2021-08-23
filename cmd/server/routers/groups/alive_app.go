@@ -21,4 +21,12 @@ func AliveAppRouter(Router *gin.RouterGroup) {
 	apiRouterV2.GET("get.unstart.alive.list", v2.GetSubscribeUnStartAliveList)
 	//获取主业务接口
 	apiRouterV2.GET("base_info", v2.GetBaseInfo)
+	// 获取次级业务接口
+	apiRouterV2.GET("secondary_info", v2.GetSecondaryInfo)
+	// 获取直播回放链接接口
+	apiRouterV2.GET("get_lookback_url", v2.GetLookBack)
+	// 获取课件使用记录接口
+	apiRouterV2.GET("get_courseware_records", v2.GetCourseWareRecords)
+	// 获取课件列表数据接口
+	apiRouterV2.GET("get_courseware_info", v2.GetCourseWareInfo)
 }
