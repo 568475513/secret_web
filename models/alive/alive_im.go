@@ -9,6 +9,13 @@ type AliveImMiddler struct {
 	NewRoomId string `json:"new_room_id"`
 }
 
+type AliveImRecord struct {
+	AppId   string `json:"app_id"`
+	AliveId string `json:"alive_id"`
+	RoomId  string `json:"room_id"`
+	GroupId string `json:"group_id"`
+}
+
 // 更新t_alive room_id
 func UpdateTAliveRommId(appId, aliveId, roomId string) error {
 	var a Alive
@@ -33,6 +40,15 @@ func InsertImMiddle(aim AliveImMiddler) error {
 	return nil
 }
 
+// 插入表t_record_im_change room_id
+func InsertImGroupIdRecord(aim AliveImRecord) error {
+	result := db.Table("t_record_im_change").Create(&aim)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
 // 通过t_alive_im_middle获取直播room_id
 func GetRoomIdByAliveId(appId, aliveId, field string) (*AliveImMiddler, error) {
 	var a AliveImMiddler
@@ -41,4 +57,11 @@ func GetRoomIdByAliveId(appId, aliveId, field string) (*AliveImMiddler, error) {
 		return nil, err
 	}
 	return &a, nil
+}
+
+// 更新中间表
+func UpdateImMiddleRoomId(appId, aliveId, groupId string) error {
+	return db.Table("t_alive_im_middle").Where("app_id=? and alive_id=? ", appId, aliveId).
+		Update("old_room_id", groupId).
+		Limit(1).Error
 }
