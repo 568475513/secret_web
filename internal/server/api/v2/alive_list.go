@@ -146,6 +146,8 @@ func GetLivingAliveList(c *gin.Context) {
 	if req.State == alive.SubscribeState {
 		//筛出当前用户已订阅的直播
 		aliveList = li.GetSubscribedALiveList(aliveList)
+	} else {
+		aliveList = li.GetAliveStateALiveList(aliveList)
 	}
 
 	//将直播列表按app_id分组

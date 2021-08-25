@@ -124,6 +124,19 @@ func (l *ListInfo) GetSubscribedALiveList(aliveList []*alive.Alive) []*alive.Ali
 	return result
 }
 
+//从给定的直播列表修改其直播状态
+func (l *ListInfo) GetAliveStateALiveList(aliveList []*alive.Alive) []*alive.Alive {
+	for _, aliveInfo := range aliveList {
+		//获取直播状态
+		a := AliveInfo{
+			aliveInfo.AppId,
+			aliveInfo.Id,
+		}
+		aliveInfo.AliveState = a.GetAliveStates(aliveInfo)
+	}
+	return aliveList
+}
+
 //按时间将直播列表分组
 func (l *ListInfo) ALiveListGroupByTime(aliveList []*alive.Alive) map[string][]*alive.Alive {
 	var result = make(map[string][]*alive.Alive)
