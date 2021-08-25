@@ -79,16 +79,6 @@ func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
 				if !isOk {
 					return newRoomId
 				}
-				//err = alive.UpdateTAliveRommId(a.AppId, a.AliveId, AliveImMiddler.OldRoomId)
-				//logging.Info(err)
-				//if err != nil {
-				//	logging.Error(err)
-				//	return newRoomId
-				//}
-				//err = alive.UpdateForbidRoomId(a.AppId, roomId, AliveImMiddler.OldRoomId)
-				//if err != nil {
-				//	logging.Error(err)
-				//}
 				return fitlerOldRoom(a.AppId, a.AliveId, AliveImMiddler.OldRoomId)
 			}
 			return newRoomId
@@ -125,19 +115,6 @@ func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
 		if !isOk {
 			return roomId
 		}
-		//
-		//err = alive.UpdateTAliveRommId(a.AppId, a.AliveId, newRoomId)
-		//logging.Info(err)
-		//if err != nil {
-		//	logging.Error(err)
-		//	return roomId
-		//}
-		//
-		//err = alive.UpdateForbidRoomId(a.AppId, roomId, newRoomId)
-		//if err != nil {
-		//	logging.Error(err)
-		//	return roomId
-		//}
 		aim := alive.AliveImMiddler{
 			AppId:     a.AppId,
 			AliveId:   a.AliveId,
