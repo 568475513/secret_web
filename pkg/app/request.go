@@ -79,6 +79,9 @@ func GetAppId(c *gin.Context) string {
 // 获取UserId
 func GetUserId(c *gin.Context) string {
 	userId := c.GetString("user_id")
+	if len(userId) <= 0 {
+		userId = c.DefaultQuery("user_id", c.DefaultPostForm("user_id", ""))
+	}
 	anonUserId := c.GetString("anon_user_id")
 	if len(userId) > 0 {
 		return userId
