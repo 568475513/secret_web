@@ -115,6 +115,9 @@ func (a *AliveInfo) GetAliveRommId(a2 *alive.Alive) string {
 		if !isOk {
 			return roomId
 		}
+		if AliveImMiddler.NewRoomId != "" {
+			return newRoomId
+		}
 		aim := alive.AliveImMiddler{
 			AppId:     a.AppId,
 			AliveId:   a.AliveId,
