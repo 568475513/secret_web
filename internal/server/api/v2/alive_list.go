@@ -16,6 +16,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// app需要的字段
+var aliveListInfo = []string{
+	"id",
+	"app_id",
+	"room_id",
+	"title",
+	"alive_type",
+	"zb_start_at",
+	"zb_stop_at",
+	"img_url",
+	"img_url_compressed",
+	"is_lookback",
+	"play_url",
+	"push_state",
+	"create_mode",
+}
+
 //根据时间获取用户已订阅直播列表
 func GetSubscribeAliveListByDate(c *gin.Context) {
 	var (
@@ -42,7 +59,7 @@ func GetSubscribeAliveListByDate(c *gin.Context) {
 		UniversalUnionId: req.UniversalUnionId,
 		UserId:           req.UserID,
 	}
-	aliveList, err = li.GetALiveListByTime(req.StartTime, req.EndTime, []string{"*"})
+	aliveList, err = li.GetALiveListByTime(req.StartTime, req.EndTime, aliveListInfo)
 	if err != nil {
 		app.FailWithMessage(fmt.Sprintf("查询直播列表错误:%s", err.Error()), enums.ERROR, c)
 		return
@@ -127,14 +144,14 @@ func GetLivingAliveList(c *gin.Context) {
 		UniversalUnionId: req.UniversalUnionId,
 		UserId:           req.UserID,
 	}
-	aliveList, err = li.GetLivingAliveList(req.AppIds, []string{"*"})
+	aliveList, err = li.GetLivingAliveList(req.AppIds, aliveListInfo)
 	if err != nil {
 		app.FailWithMessage(err.Error(), enums.ERROR, c)
 		return
 	}
 
 	//查询语音直播和录播直播
-	aliveListByType, err := li.GetAliveListByZbStartTimeAndType(req.AppIds, []string{"0", "1", "3"}, req.StartTime, req.EndTime, []string{"*"})
+	aliveListByType, err := li.GetAliveListByZbStartTimeAndType(req.AppIds, []string{"0", "1", "3"}, req.StartTime, req.EndTime, aliveListInfo)
 	if err != nil {
 		app.FailWithMessage(err.Error(), enums.ERROR, c)
 		return
@@ -182,7 +199,7 @@ func GetSubscribeUnStartAliveList(c *gin.Context) {
 		UniversalUnionId: req.UniversalUnionId,
 		UserId:           req.UserID,
 	}
-	aliveList, err = li.GetUnStartAliveList(req.AppIds, []string{"*"})
+	aliveList, err = li.GetUnStartAliveList(req.AppIds, aliveListInfo)
 
 	//筛选当前用户已经订阅的直播
 	subscribedALiveList := li.GetSubscribedALiveList(aliveList)
