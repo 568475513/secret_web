@@ -82,3 +82,11 @@ func HsetNxString(key, hashKey string, data interface{}, time int) error {
 
 	return nil
 }
+
+
+func HEXISTS(key, hashKey string) (v bool, err error)  {
+	conn := AliveStaticRedisConn.Get()
+	defer conn.Close()
+	v, err = redis.Bool(conn.Do("HEXISTS", key, hashKey))
+	return
+}

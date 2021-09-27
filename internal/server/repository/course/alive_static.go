@@ -56,7 +56,7 @@ const (
 )
 
 //直播静态化切换主流程
-func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interface{}, err error) {
+func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interface{},staticSwitch bool, err error) {
 
 	StaticRedisCon, err := alive_static.GetStaticRedisCon()
 	if err != nil {
@@ -65,7 +65,7 @@ func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interf
 	defer StaticRedisCon.Close()
 	RoomData = make(map[string]interface{})
 
-	if c.CheckAliveStaticSwitch(StaticRedisCon) {
+	if staticSwitch =  c.CheckAliveStaticSwitch(StaticRedisCon);staticSwitch {
 		staticDataValues, err := redis.Values(StaticRedisCon.Do("HGETALL", fmt.Sprintf(currentDayAliveInfo, c.AppId, c.AliveId))) //获取直播静态数据
 		staticData := &StaticData{}
 		if err := redis.ScanStruct(staticDataValues, staticData); err != nil {
@@ -115,9 +115,9 @@ func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interf
 					// 直播剩余时长（秒）
 					"remainder_time": "",
 					// 推流直播开始时间
-					"pushzb_start_at": "",
+					"pushzb_start_at": staticData.ZbStartAt,
 					// 推流直播结束时间
-					"pushzb_stop_at": "",
+					"pushzb_stop_at": staticData.ZbStopAt,
 					// 直播开始时间（时间戳：秒）
 					"zb_start_at": staticData.ZbStartAt,
 					// 直播结束时间（时间戳：秒）
@@ -167,8 +167,9 @@ func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interf
 				RoomData["share_info"] = ""
 				RoomData["caption_define"] = ""
 				RoomData["index_url"] = ""
+				RoomData["is_static_switch"] = true
 
-				return RoomData, err
+				return RoomData,staticSwitch, err
 			}
 		}
 
@@ -187,11 +188,12 @@ func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interf
 			RoomData["share_info"] = ""
 			RoomData["caption_define"] = ""
 			RoomData["index_url"] = ""
+			RoomData["is_static_switch"] = true
 
-			return RoomData, err
+			return RoomData,staticSwitch, err
 		}
 	}
-	return RoomData, err
+	return RoomData,staticSwitch, err
 }
 
 //检查是否开启直播静态化开关

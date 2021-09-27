@@ -49,7 +49,7 @@ const (
 )
 
 // 用户权益请求
-func (ava *AvailableService) IsResourceAvailable(params ResourceAvailable) (expireAt string, available bool) {
+func (ava *AvailableService) IsResourceAvailable(params ResourceAvailable) (expireAt string, available bool, err error) {
 	// 企业微信全部免费！
 	if !util.IsQyApp(params.VersionType) && params.AgentType == e.AGENT_TYPE_WW {
 		available = true

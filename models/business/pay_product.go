@@ -57,7 +57,7 @@ func GetPayProductState(appId string, resourceId string) (*PayProducts, error) {
 }
 
 // 获取指定id的专栏资源
-func GetPayProductByIds(appId string, ids string) ([]*PayProducts, error) {
+func GetPayProductByIds(appId string, ids []string) ([]*PayProducts, error) {
 	var pp []*PayProducts
 	err := db.Select([]string{"id",
 		"app_id",
@@ -79,7 +79,7 @@ func GetPayProductByIds(appId string, ids string) ([]*PayProducts, error) {
 		"resource_count",
 		"recycle_bin_state",
 		"state",
-		"img_url"}).Where("app_id=? and state!=? and id in (?)", appId, 2, ids).First(&pp).Error
+		"img_url"}).Where("app_id=? and state!=? and id in (?)", appId, 2, ids).Find(&pp).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
