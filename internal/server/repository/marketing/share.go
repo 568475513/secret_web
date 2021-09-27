@@ -39,6 +39,7 @@ func (share *Share) GetShareInfo(available, availableProduct bool, shareInfo Sha
 		availShareInfo, err := business.GetAvailShareInfo(share.AppId, e.ResourceTypeLive, share.Alive.Id, share.ProductId, share.UserId)
 		if err != nil {
 			logging.Error(err)
+			return ShareInfo{}
 		}
 		if availShareInfo.Id != 0 {
 			// 如果已经领取了，取出分享人id，并查询领取人数

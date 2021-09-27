@@ -1,8 +1,8 @@
 package sub_business
 
 import (
+	"abs/pkg/logging"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -39,7 +39,8 @@ func Init() {
 		DataBase))
 
 	if err != nil {
-		log.Fatalf("SubBusiness models.Init err: %v", err)
+		logging.Error(fmt.Sprintf("SubBusiness models.Init err: %v", err.Error()))
+		//log.Fatalf("SubBusiness models.Init err: %v", err)
 	}
 
 	db.SingularTable(true)

@@ -65,8 +65,9 @@ type AppBaseConf struct {
 	// profit
 	Profit map[string]interface{} `json:"profit"`
 	// pc
-	IsEnable int `json:"is_enable"` //是否启用PC：0-否，1-是
-	IsValid  int `json:"is_valid"`  //PC功能包是否在有效期内：0-否，1-是
+	IsEnable            int `json:"is_enable"`             //是否启用PC：0-否，1-是
+	IsValid             int `json:"is_valid"`              //PC功能包是否在有效期内：0-否，1-是
+	IsPrivacyProtection int `json:"is_privacy_protection"` //隐私保护开关：0-否，1-是
 	// domain
 	PcCustomDomain string `json:"pc_custom_domain"` //pc店铺自定义域名(无schema前缀)
 }

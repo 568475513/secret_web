@@ -91,7 +91,7 @@ func (p *Product) GetParentColumns(relations []*business.ProResRelation) (produc
 			rids = append(rids, v.ProductId)
 		}
 
-		products, err = business.GetPayProductByIds(p.AppId, strings.Join(rids, ","))
+		products, err = business.GetPayProductByIds(p.AppId, rids)
 		if err != nil {
 			logging.Error(err)
 			return

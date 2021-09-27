@@ -10,8 +10,8 @@ import (
 	"abs/internal/server/rules/validator"
 	"abs/pkg/app"
 	"abs/pkg/enums"
+	"abs/pkg/logging"
 	"abs/pkg/util"
-
 	// service做变量初始化
 	"abs/service"
 	// Model层不可以直接调用，这里只能做变量初始化
@@ -33,7 +33,7 @@ func GetBaseInfo(c *gin.Context) {
 		err error
 		req validator.BaseInfoRuleV2
 	)
-	userId := app.GetUserId(c)
+	userId := app.GetUserId(c)//u_60a211b56ace0_oWlPQsXXHZ
 	req.AppId = app.GetAppId(c)
 	if err = app.ParseRequest(c, &req); err != nil {
 		return
@@ -48,6 +48,7 @@ func GetBaseInfo(c *gin.Context) {
 	childSpan := tracer.StartSpan("获取直播详情内容", opentracing.ChildOf(span.Context()))
 	aliveRep := course.AliveInfo{AppId: req.AppId, AliveId: req.ResourceId}
 	aliveInfo, err := aliveRep.GetAliveInfo()
+
 	childSpan.Finish()
 	if err != nil {
 		app.FailWithMessage(fmt.Sprintf("获取直播基础信息错误:%s", err.Error()), enums.ERROR, c)
@@ -60,7 +61,7 @@ func GetBaseInfo(c *gin.Context) {
 
 	// 直播静态化查询操作
 	aliveStaticRep := course.AliveStatic{AppId: req.AppId, AliveId: req.ResourceId, UserId: userId, Type: req.Type}
-	aliveStaticData, err := aliveStaticRep.AliveStaticMain(c.GetInt("agent_type"))
+	aliveStaticData, staticSwitch,err := aliveStaticRep.AliveStaticMain(c.GetInt("agent_type"))
 	if len(aliveStaticData) > 0 {
 		app.OkWithData(aliveStaticData, c)
 		return
@@ -71,8 +72,10 @@ func GetBaseInfo(c *gin.Context) {
 	aliveRelations, err := proRep.GetResourceRelation()
 	childSpan.Finish()
 	if err != nil {
-		app.FailWithMessage(fmt.Sprintf("获取直播专栏关联信息错误:%s", err.Error()), enums.ERROR, c)
-		return
+		//错误信息记录日志 不直接返回
+		logging.Error(fmt.Sprintf("获取直播专栏关联信息错误:%s", err.Error()))
+		//app.FailWithMessage(fmt.Sprintf("获取直播专栏关联信息错误:%s", err.Error()), enums.ERROR, c)
+		//return
 	}
 
 	// 协程组查询数据包
@@ -90,8 +93,10 @@ func GetBaseInfo(c *gin.Context) {
 		roleInfo         map[string]interface{}
 		userType         uint
 	)
+
 	// 初始化权益实例
-	ap := ruser.UserPowerBusiness(req.AppId, userId, c.GetInt("agent_type"))
+	ap := ruser.UserPowerBusiness(
+		req.AppId, userId, req.ResourceId, strconv.Itoa(enums.ResourceTypeLive), c.GetInt("agent_type"))
 	// 初始化店铺配置相关
 	appRep := app_conf.AppInfo{AppId: req.AppId}
 	// 此处需要补充致命错误输出后立刻返回
@@ -120,37 +125,14 @@ func GetBaseInfo(c *gin.Context) {
 		return nil
 	}, func() (err error) {
 		// 用户权益
-		if aliveInfo.IsPublic == 0 {
-			goSpan := tracer.StartSpan("用户内部培训权益", opentracing.ChildOf(childSpan.Context()))
-			defer goSpan.Finish()
-			available, err = ap.IsInsideAliveAccess(req.ResourceId)
-		} else {
-			if aliveInfo.PaymentType == enums.PaymentTypeFree && aliveInfo.HavePassword != 1 && aliveInfo.State == 0 {
-				available = true
-			} else {
-				if aliveInfo.HavePassword == 1 {
-					goSpan := tracer.StartSpan("用户密码直播权益", opentracing.ChildOf(childSpan.Context()))
-					defer goSpan.Finish()
-					available, err = ap.IsEncryAliveAccess(req.ResourceId)
-				} else {
-					goSpan := tracer.StartSpan("用户权益", opentracing.ChildOf(childSpan.Context()))
-					defer goSpan.Finish()
-					expireAt, available = ap.IsHaveAlivePower(req.ResourceId, strconv.Itoa(enums.ResourceTypeLive), true)
-				}
-			}
+		if aliveInfo.IsPublic != 0 &&
+							aliveInfo.PaymentType == enums.PaymentTypeFree &&
+							aliveInfo.HavePassword != 1 &&
+							aliveInfo.State == 0 {
+			available = true
+			return nil
 		}
-		return
-	}, func() (err error) {
-		if aliveInfo.PaymentType == enums.PaymentTypeFree && aliveInfo.HavePassword != 1 {
-			// 目前这里只是针对免费直播不进行查询专栏的订购关系，赋默认值, 默认值为false，这个参数目前只用于微信初始化接口，慎用其他地方
-			availableProduct = false
-		} else {
-			// 专栏权益
-			goSpan := tracer.StartSpan("专栏权益", opentracing.ChildOf(childSpan.Context()))
-			defer goSpan.Finish()
-			// 如果该资源或者当前专栏不可用 查询分享者信息
-			_, availableProduct = ap.IsHaveSpecialColumnPower(req.ProductId)
-		}
+		available, err = ap.IsAliveAccess()
 		return nil
 	}, func() (err error) {
 		// 直播异步操作
@@ -162,12 +144,15 @@ func GetBaseInfo(c *gin.Context) {
 		aliveRep.IncreasePv(c.Request.Referer(), aliveInfo.Id, int(aliveInfo.AliveType))
 		return nil
 	})
+
 	childSpan.Finish()
 	// fmt.Println("BaseInfo的协程处理时间: ", time.Since(bT))
 	// 错误处理【需要扔掉一些不要的】
 	if err != nil {
-		app.FailWithMessage(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), enums.ERROR, c)
-		return
+		//错误记录日志 不抛出异常
+		logging.Error(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)))
+		//app.FailWithMessage(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), enums.ERROR, c)
+		//return
 	}
 	// 公开课跳转
 	if aliveInfo.IsPublic == 0 && !available && userType == 0 && !util.IsQyApp(baseConf.VersionType) {
@@ -270,6 +255,8 @@ func GetBaseInfo(c *gin.Context) {
 	data["alive_info"] = aliveInfoDetail
 	// 直播播放信息
 	data["alive_play"] = alivePlayInfo
+	//直播静态化开关
+	data["is_static_switch"] = staticSwitch
 	// 直播配置信息
 	data["alive_conf"] = aliveConf
 	// 直播分享邀请免费听逻辑

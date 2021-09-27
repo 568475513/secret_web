@@ -162,6 +162,10 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	aliveConf["reward_switch"] = baseConf.HasReward
 	// 邀请功能是否开启 0-不可用 1-可用
 	aliveConf["has_invite"] = baseConf.HasInvite
+	//店铺名称为空 conf_hub服务异常,邀请功能置 1 (默认值)
+	if baseConf.ShopName == "" {
+		aliveConf["has_invite"] = 1
+	}
 	// 版本信息
 	aliveConf["version_type"] = baseConf.VersionType
 	// 是否显示关联售卖界面，默认1-显示，0-不显示
@@ -176,6 +180,8 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	aliveConf["if_push"] = b.Alive.IfPush
 	// 播放器 0-默认播放器 1-自研播放器 (默认0)
 	aliveConf["video_player_type"] = baseConf.VideoPlayerType
+	// 隐私保护开关 0-关闭 1-开启
+	aliveConf["is_privacy_protection"] = baseConf.IsPrivacyProtection
 	// 标准版是否可用 0-不可用  1-可用
 	versionUse := 1
 	// 标准版或试用版过期

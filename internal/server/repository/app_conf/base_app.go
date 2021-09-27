@@ -226,9 +226,10 @@ func (a *AppInfo) handleConfResult(result service.ConfHubInfo) *service.AppBaseC
 		RelateSellInfo:      int(result.H5Custom["relate_sell_info"].(float64)),
 		VideoPlayerType:     int(result.H5Custom["video_player_type"].(float64)),
 		// 新增在这里加
-		PcCustomDomain: result.Domain["pc_custom_domain"].(string),
-		IsEnable:       int(result.Pc["is_enable"].(float64)),
-		IsValid:        int(result.Pc["is_valid"].(float64)),
+		PcCustomDomain:      result.Domain["pc_custom_domain"].(string),
+		IsEnable:            int(result.Pc["is_enable"].(float64)),
+		IsValid:             int(result.Pc["is_valid"].(float64)),
+		IsPrivacyProtection: int(result.Live["is_privacy_protection"].(float64)),
 		// EnableWebRtc:   int(result.Live["enable_web_rtc"].(float64)), //暂时不能这么用，有的店铺没有这个开关，或者开关=nil（就很智障）
 		// 是否只有H5观看
 		OnlyH5Play: int(result.Safe["only_h5_play"].(float64)),

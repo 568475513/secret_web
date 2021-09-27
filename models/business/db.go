@@ -1,8 +1,8 @@
 package business
 
 import (
+	"abs/pkg/logging"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -47,7 +47,8 @@ func Init() {
 		DataBase))
 
 	if err != nil {
-		log.Fatalf("Business models.Init err: %v", err)
+		logging.Error(fmt.Sprintf("Business models.Init err: %v", err.Error()))
+		//log.Fatalf("Business models.Init err: %v", err)
 	}
 
 	db.SingularTable(true)
@@ -74,7 +75,8 @@ func InitRw() {
 		DataBase))
 
 	if err != nil {
-		log.Fatalf("Business model.InitRw err: %v", err)
+		logging.Error(fmt.Sprintf("Business model.InitRw err: %v", err.Error()))
+		//log.Fatalf("Business model.InitRw err: %v", err)
 	}
 
 	dbRw.SingularTable(true)

@@ -3,6 +3,7 @@ package cache
 import (
 	"abs/pkg/cache/redis_default"
 	"abs/pkg/cache/redis_im"
+	"abs/pkg/logging"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -50,28 +51,34 @@ func Init() {
 	}
 	// 直播静态redis
 	if err := alive_static.Init(); err != nil {
-		log.Fatal(err)
+		logging.Error(fmt.Sprintf("alive_static redis.Init err: %v", err.Error()))
+		//log.Fatal(err)
 	}
 	// 不知道新旧的请问abner!!!
 	// 灰度控制【新】
 	if err := redis_gray.Init(); err != nil {
-		log.Fatal(err)
+		logging.Error(fmt.Sprintf("redis_gray redis.Init err: %v", err.Error()))
+		//log.Fatal(err)
 	}
 	// 灰度控制【旧】
 	if err := redis_gray.InitOldGary(); err != nil {
-		log.Fatal(err)
+		logging.Error(fmt.Sprintf("redis_gray old redis.Init err: %v", err.Error()))
+		//log.Fatal(err)
 	}
 	// 灰度控制【直播专用】
 	if err := redis_gray.InitSpecialGary(); err != nil {
-		log.Fatal(err)
+		logging.Error(fmt.Sprintf("redis_gray.InitSpecialGary Init err: %v", err.Error()))
+		//log.Fatal(err)
 	}
 	// IM【直播专用】
 	if err := redis_im.Init(); err != nil {
-		log.Fatal(err)
+		logging.Error(fmt.Sprintf("redis_im.Init err: %v", err.Error()))
+		//log.Fatal(err)
 	}
 	// 默认业务库【直播专用】
 	if err := redis_default.Init(); err != nil {
-		log.Fatal(err)
+		logging.Error(fmt.Sprintf("redis_default.Init err: %v", err.Error()))
+		//log.Fatal(err)
 	}
 	fmt.Println(">>>初始化缓存连接池完成")
 }
