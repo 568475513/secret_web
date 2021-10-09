@@ -161,6 +161,7 @@ func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interf
 				}
 				RoomData["alive_conf"] = map[string]interface{}{
 					"alive_mode":       0,
+					"is_picture_on":    0,
 					"show_on_wall":     1,
 					"alive_type_state": 1,
 				}
