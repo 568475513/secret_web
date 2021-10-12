@@ -2,7 +2,6 @@ package business
 
 import (
 	"database/sql"
-
 	"github.com/jinzhu/gorm"
 )
 
@@ -16,7 +15,6 @@ type InviteUser struct {
 	ProductId    string         `json:"product_id"`
 	ShareUserId  string         `json:"share_user_id"`
 	InviteCount  int            `json:"invite_count"`
-	CreatedAt    string         `json:"created_at"`
 }
 
 type InviteRelation struct {

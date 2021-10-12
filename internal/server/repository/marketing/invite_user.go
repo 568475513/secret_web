@@ -145,9 +145,9 @@ func (businesss *InviteBusiness) initRanking(conn redis.Conn, appId string, reso
 }
 
 // 获取排行分数
-func (businesss *InviteBusiness) getRankingScore(inviteCount int, createdAt string) string {
+func (businesss *InviteBusiness) getRankingScore(inviteCount int, createdAt time.Time) string {
 	local, _ := time.LoadLocation("Asia/Shanghai")
-	stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", createdAt, local)
+	stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", time.Unix(createdAt.Unix(), 0).Format("2006-01-02 15:04:05"), local)
 	var bt bytes.Buffer
 	bt.WriteString(strconv.Itoa(inviteCount))
 	bt.WriteString(strconv.FormatInt(MaxTime - stamp.Unix(),10))
