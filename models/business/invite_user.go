@@ -16,6 +16,7 @@ type InviteUser struct {
 	ProductId    string         `json:"product_id"`
 	ShareUserId  string         `json:"share_user_id"`
 	InviteCount  int            `json:"invite_count"`
+	CreatedAt    string         `json:"created_at"`
 }
 
 type InviteRelation struct {
@@ -69,22 +70,31 @@ func GetInviteUserByInvitedUser(inviteRelation InviteRelation) (*InviteRelation,
 }
 
 // 查询单个分享用户的关联
-func GetInviteUserByShareUser(inviteUser InviteUser) ([]*InviteUser, error) {
-	var iu []*InviteUser
-	err := db.Select("share_user_id").Where(
-		"app_id=? and share_user_id = ? and payment_type=? and resource_id=? and resource_type=? and product_id=?",
-		inviteUser.AppId,
-		inviteUser.ShareUserId,
-		inviteUser.PaymentType,
-		inviteUser.ResourceId,
-		inviteUser.ResourceType,
-		inviteUser.ProductId).Find(&iu).Error
+func GetInviteUserByShareUser(appId string, shareUserId string, resourceId string) (*InviteUser, error) {
+	var iu InviteUser
+	err := db.Select("share_user_id,invite_count,created_at").Where(
+		"app_id=? and share_user_id = ? and resource_id=?",
+		appId, shareUserId, resourceId).First(&iu).Error
 
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
 
-	return iu, err
+	return &iu, err
+}
+
+// 查询单个直播间所有邀请人数据
+func GetInviteUsersByResourceId(appId string, resourceId string) ([]*InviteUser, error) {
+	var inviteUsers []*InviteUser
+	err := db.Select("share_user_id,invite_count,created_at").Where(
+		"app_id=? and resource_id=?",
+		appId, resourceId).Find(&inviteUsers).Error
+
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+
+	return inviteUsers, err
 }
 
 // 添加一条InviteUser的数据

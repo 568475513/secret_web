@@ -130,3 +130,16 @@ func GetForbiddenUserConn() (redis.Conn, error) {
 
 	return conn, nil
 }
+
+// 获取直播其它业务连接【database = 4】
+func GetBusinessConn() (redis.Conn, error) {
+	conn := AliveRedisConn.Get()
+
+	_, err := conn.Do("SELECT", 4)
+	fmt.Println("直播redis连接 DB=4", err)
+	if err != nil {
+		return conn, err
+	}
+
+	return conn, nil
+}
