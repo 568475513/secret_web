@@ -110,12 +110,7 @@ func (businesss *InviteBusiness) updateOrCreateRanking(inviteUserInfo InviteUser
 			logging.Error(err)
 			return false
 		}
-		stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", inviteUser.CreatedAt, time.Local)
-		var bt bytes.Buffer
-		bt.WriteString(strconv.Itoa(inviteUser.InviteCount))
-		bt.WriteString(strconv.FormatInt(MaxTime - stamp.Unix(),10))
-		score := bt.String()
-		conn.Send("ZADD", cacheKey, score, inviteUserInfo.ShareUserId)
+		conn.Send("ZADD", cacheKey, businesss.getRankingScore(inviteUser.InviteCount, inviteUser.CreatedAt), inviteUserInfo.ShareUserId)
 		conn.Send("EXPIRE", cacheKey, 3600*24*3)
 		conn.Flush()
 	}
@@ -151,7 +146,8 @@ func (businesss *InviteBusiness) initRanking(conn redis.Conn, appId string, reso
 
 // 获取排行分数
 func (businesss *InviteBusiness) getRankingScore(inviteCount int, createdAt string) string {
-	stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", createdAt, time.Local)
+	local, _ := time.LoadLocation("Asia/Shanghai")
+	stamp, _ := time.ParseInLocation("2006-01-02 15:04:05", createdAt, local)
 	var bt bytes.Buffer
 	bt.WriteString(strconv.Itoa(inviteCount))
 	bt.WriteString(strconv.FormatInt(MaxTime - stamp.Unix(),10))
