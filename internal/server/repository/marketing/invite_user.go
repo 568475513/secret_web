@@ -85,10 +85,8 @@ func (businesss *InviteBusiness) AddInviteCountUtilsNew(inviteUserInfo InviteUse
 // 更新或生成排行榜
 func (businesss *InviteBusiness) updateOrCreateRanking(inviteUserInfo InviteUserInfo) bool {
 	if !redis_gray.InGrayShopNew("abs:alive_ic_gr:invite_gray_shop", businesss.AppId) {
-		fmt.Println("不在灰度名单，不处理")
 		return false
 	}
-	fmt.Println("开始生成或更新排行榜")
 
 	conn, _ := redis_alive.GetBusinessConn()
 	defer conn.Close()
@@ -100,19 +98,26 @@ func (businesss *InviteBusiness) updateOrCreateRanking(inviteUserInfo InviteUser
 	}
 	if !exists {
 		// 排行榜不存在，直接生成排行榜
-		fmt.Println("开始生成排行榜")
 		businesss.initRanking(conn, businesss.AppId, inviteUserInfo.ResourceId)
 	}else {
 		// 排行榜存在，更新指定用户的排名
-		fmt.Println("开始更新排行榜")
 		inviteUser,err := business.GetInviteUserByShareUser(businesss.AppId, inviteUserInfo.ShareUserId, inviteUserInfo.ResourceId)
 		if err != nil {
 			logging.Error(err)
 			return false
 		}
-		conn.Send("ZADD", cacheKey, businesss.getRankingScore(inviteUser.InviteCount, inviteUser.CreatedAt), inviteUserInfo.ShareUserId)
-		conn.Send("EXPIRE", cacheKey, 3600*24*3)
-		conn.Flush()
+		err = conn.Send("ZADD", cacheKey, businesss.getRankingScore(inviteUser.InviteCount, inviteUser.CreatedAt), inviteUserInfo.ShareUserId)
+		if err != nil {
+			logging.Error(err)
+		}
+		err = conn.Send("EXPIRE", cacheKey, 3600*24*3)
+		if err != nil {
+			logging.Error(err)
+		}
+		err = conn.Flush()
+		if err != nil {
+			logging.Error(err)
+		}
 	}
 	return true
 }
@@ -125,22 +130,32 @@ func (businesss *InviteBusiness) initRanking(conn redis.Conn, appId string, reso
 		return false
 	}
 	cacheKey := businesss.getRankingKeyName(appId, resourceId)
-	fmt.Println("排行榜缓存key",cacheKey)
 
 	sTime := time.Now().Unix()
 
 	count := 0
 	for _, val := range inviteUsers {
 		count++
-		conn.Send("ZADD", cacheKey, businesss.getRankingScore(val.InviteCount, val.CreatedAt), val.ShareUserId)
+		err = conn.Send("ZADD", cacheKey, businesss.getRankingScore(val.InviteCount, val.CreatedAt), val.ShareUserId)
+		if err != nil {
+			logging.Error(err)
+		}
 		if count % 200 == 0 {
-			conn.Flush()
+			err = conn.Flush()
+			if err != nil {
+				logging.Error(err)
+			}
 		}
 	}
-	conn.Send("EXPIRE", cacheKey, 3600*24*3)
-	e := conn.Flush()
-	fmt.Println("排行榜处理完成", e)
-	fmt.Println("生成排行榜耗时s", time.Now().Unix() - sTime)
+	err = conn.Send("EXPIRE", cacheKey, 3600*24*3)
+	if err != nil {
+		logging.Error(err)
+	}
+	err = conn.Flush()
+	if err != nil {
+		logging.Error(err)
+	}
+	logging.Info(fmt.Sprintf("生成排行榜耗时%s秒", time.Now().Unix() - sTime))
 	return true
 }
 
