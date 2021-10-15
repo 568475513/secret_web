@@ -46,6 +46,9 @@ const (
 	// 不使用快直播名单
 	notUseFastLiveKey = "notUseFastLive"
 
+	// 直播间排行榜
+	aLiveRankingKey = "abs:alive_ic_grkn_%s_%s"
+
 	// 缓存时间控制(秒)
 	// 直播详情
 	aliveInfoCacheTime = "60"
