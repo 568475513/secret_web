@@ -192,7 +192,7 @@ func (lb *LookBack) GetLookBackFile(appId string, aliveId string) (*alive.AliveL
 	}
 	defer conn.Close()
 
-	cacheKey := fmt.Sprintf(aliveLookBackKey, lb.AppId, lb.AliveId)
+	cacheKey := fmt.Sprintf(aliveLookBackKey, appId, aliveId)
 	info, err := redis.Bytes(conn.Do("GET", cacheKey))
 	if err != nil {
 		logging.Warn(err)
