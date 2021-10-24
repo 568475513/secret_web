@@ -40,6 +40,7 @@ type LiveUrl struct {
 	AliveVideoMoreSharpness   []map[string]interface{} `json:"alive_video_more_sharpness"`    //普通直播多清晰度
 	PcAliveVideoMoreSharpness []map[string]interface{} `json:"pc_alive_video_more_sharpness"` //pc普通直播多清晰度
 	AliveFastMoreSharpness    []map[string]interface{} `json:"alive_fast_more_sharpness"`     //快直播多清晰度
+	AliveRecordedInfo         map[string]interface{}   `json:"alive_recorded_info"`           //录播直播下发信息
 }
 
 // 组装直播的基本信息
@@ -371,6 +372,20 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 	} else {
 		liveUrl.MiniAliveVideoUrl = fmt.Sprintf("https://%s/%s.m3u8?%d", util.GetH5Domain(b.AliveRep.AppId, true), b.AliveRep.AliveId, timeStamp)
 		liveUrl.AliveVideoUrl = liveUrl.MiniAliveVideoUrl
+		// todo 录播底层优化-直播链接下发逻辑 start
+		/**
+		 * 先通过是否存在channel_id判断是否走伪直播逻辑
+		 * 通过直播状态值判断是否存在转推任务,因为推流了这边会由记录为1
+		 * redis也没有那么及时key 设置为 alive_recorded_{channel_id}
+		 */
+		liveUrl.AliveRecordedInfo = map[string]interface{}{
+			"isTaskExist":      b.Alive.State == 1,
+			"isExistChannelId": b.Alive.AliveType == e.AliveTypeVideo && b.Alive.ChannelId != "",
+			"alive_rtmp":       "rtmp://" + os.Getenv("LIVE_PLAY_HOST") + b.Alive.ChannelId,
+			"alive_flv":        "http://" + os.Getenv("LIVE_PLAY_HOST") + b.Alive.ChannelId + ".flv",
+			"alive_hls":        "http://" + os.Getenv("LIVE_PLAY_HOST") + b.Alive.ChannelId + ".m3u8",
+		}
+		// todo 录播底层优化-直播链接下发逻辑 end
 		isGrayBool := redis_gray.InGrayShop("video_alive_not_use_cos", b.AliveRep.AppId)
 		// play_url不为空--不为小程序--不在O端名单内
 		if !isGrayBool && b.Alive.PlayUrl != "" && agentType != 14 {
