@@ -1,6 +1,7 @@
 package course
 
 import (
+	"abs/pkg/cache/redis_im"
 	"fmt"
 	"os"
 	"strconv"
@@ -378,12 +379,28 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		 * 通过直播状态值判断是否存在转推任务,因为推流了这边会由记录为1
 		 * redis也没有那么及时key 设置为 alive_recorded_{channel_id}
 		 */
+		isUsePullStream := b.GetNowRecordedIsPush()
+		var aliveRecordedMoreSharpnes map[int]interface{}
+		if isUsePullStream {
+			recordedUrl := "http://" + os.Getenv("LIVE_PLAY_HOST") + b.Alive.ChannelId + ".m3u8"
+			aliveRecordedMoreSharpnes = map[int]interface{}{
+				0: map[string]interface{}{
+					"definition_name": "原画",
+					"definition_p":    "default",
+					"url":             b.getPlayUrlBySharpness("default", recordedUrl, b.Alive.ChannelId),
+					"encrypt":         "",
+				},
+				1: map[string]interface{}{
+					"definition_name": "流畅",
+					"definition_p":    "fluent",
+					"url":             b.getPlayUrlBySharpness("fluent", recordedUrl, b.Alive.ChannelId),
+					"encrypt":         "",
+				},
+			}
+		}
 		liveUrl.AliveRecordedInfo = map[string]interface{}{
-			"isTaskExist":      b.Alive.State == 1,
-			"isExistChannelId": b.Alive.AliveType == e.AliveTypeVideo && b.Alive.ChannelId != "",
-			"alive_rtmp":       "rtmp://" + os.Getenv("LIVE_PLAY_HOST") + b.Alive.ChannelId,
-			"alive_flv":        "http://" + os.Getenv("LIVE_PLAY_HOST") + b.Alive.ChannelId + ".flv",
-			"alive_hls":        "http://" + os.Getenv("LIVE_PLAY_HOST") + b.Alive.ChannelId + ".m3u8",
+			"isUsePullStream":              isUsePullStream,
+			"alive_recorded_more_sharpnes": aliveRecordedMoreSharpnes,
 		}
 		// todo 录播底层优化-直播链接下发逻辑 end
 		isGrayBool := redis_gray.InGrayShop("video_alive_not_use_cos", b.AliveRep.AppId)
@@ -659,3 +676,52 @@ func (b *BaseInfo) getAppExpireTime(profit map[string]interface{}) map[string]in
 
 	return result
 }
+
+// todo 录播底层优化-直播链接下发逻辑-func start
+/**
+1、判断是否有channel_id，无则返回 false
+2、判断是否在灰度，不在灰度则不使用伪直播 false
+3、判断推流状态是否为1 ，为1说明已经在推了，true
+4、redis查询拉流转推任务状态,数据为空则查mysql数据，目前判断redis使用情况不到3%
+*/
+func (b *BaseInfo) GetNowRecordedIsPush() bool {
+	if b.Alive.ChannelId == "" {
+		return false
+	}
+	isGrayBool := redis_gray.InGrayShopSpecialHit("recorded_use_retweet", b.AliveRep.AppId)
+	if !isGrayBool {
+		return false
+	}
+	if b.Alive.PushState == 1 {
+		return true
+	}
+	redisConn, err := redis_im.GetLiveGroupActionConn()
+	if err != nil {
+		logging.Error(err)
+	}
+	defer redisConn.Close()
+	expire := 5
+	if b.Alive.ZbStartAt.Time.Add(300 * time.Second).Before(time.Now()) {
+		expire = 30
+	}
+	existTaskCacheKey := fmt.Sprintf("alive_is_exist_task_%s", b.AliveRep.AliveId)
+	data, _ := redis.String(redisConn.Do("get", existTaskCacheKey))
+	if data == "" {
+		// redis没有数据，查mysql
+		info, err := alive.GetRecordedRetweetTaskInfo(b.AliveRep.AppId, b.AliveRep.AliveId, "task_id,task_state")
+		if err != nil {
+			return false
+		}
+		data = "0"
+		if info.TaskId != "" && info.TaskState == 4 {
+			data = "1"
+		}
+		redisConn.Do("setex", existTaskCacheKey, expire, data)
+	}
+	if data == "1" {
+		return true
+	}
+	return false
+}
+
+// todo 录播底层优化-直播链接下发逻辑-func end
