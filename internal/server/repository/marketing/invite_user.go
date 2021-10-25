@@ -50,6 +50,9 @@ func (businesss *InviteBusiness) AddInviteCountUtilsNew(inviteUserInfo InviteUse
 	if inviteUserInfo.PaymentType == e.PaymentTypeSingle {
 		inviteUserInfo.ProductId = ""
 	}
+	if inviteUserInfo.ShareUserId == "undefined" {
+		inviteUserInfo.ShareUserId = ""
+	}
 	inviteUserInfoPo := businesss.transformInviteUserPo(inviteUserInfo)
 	if inviteUserInfo.ShareUserId == "" || businesss.UserId == "" || businesss.UserId == inviteUserInfo.ShareUserId {
 		return
