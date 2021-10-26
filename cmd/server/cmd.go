@@ -31,7 +31,7 @@ var Cmd = &cobra.Command{
 
 // init server cmd
 func init() {
-	Cmd.Flags().IntVar(&port, "port", 9982, "listen port")
+	Cmd.Flags().IntVar(&port, "port", 9797, "listen port")
 	Cmd.Flags().StringVar(&env, "env", "local", "conf environmental science")
 	Cmd.Flags().StringVar(&queue, "queue", "abs_machinery_tasks", "job default queue")
 }

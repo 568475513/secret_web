@@ -41,7 +41,8 @@ type LiveUrl struct {
 	AliveVideoMoreSharpness   []map[string]interface{} `json:"alive_video_more_sharpness"`    //普通直播多清晰度
 	PcAliveVideoMoreSharpness []map[string]interface{} `json:"pc_alive_video_more_sharpness"` //pc普通直播多清晰度
 	AliveFastMoreSharpness    []map[string]interface{} `json:"alive_fast_more_sharpness"`     //快直播多清晰度
-	AliveRecordedInfo         map[string]interface{}   `json:"alive_recorded_info"`           //录播直播下发信息
+	ReCordedUsePullStream     bool                     `json:"recorded_use_pull_stream"`      //录播直播是否伪直播
+	ReCordedMoreSharpness     map[int]interface{}      `json:"recorded_more_sharpness"`       //录播伪直播下发信息
 }
 
 // 组装直播的基本信息
@@ -398,10 +399,8 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 				},
 			}
 		}
-		liveUrl.AliveRecordedInfo = map[string]interface{}{
-			"isUsePullStream":              isUsePullStream,
-			"alive_recorded_more_sharpnes": aliveRecordedMoreSharpnes,
-		}
+		liveUrl.ReCordedUsePullStream = isUsePullStream
+		liveUrl.ReCordedMoreSharpness = aliveRecordedMoreSharpnes
 		// todo 录播底层优化-直播链接下发逻辑 end
 		isGrayBool := redis_gray.InGrayShop("video_alive_not_use_cos", b.AliveRep.AppId)
 		// play_url不为空--不为小程序--不在O端名单内
@@ -704,7 +703,7 @@ func (b *BaseInfo) GetNowRecordedIsPush() bool {
 	if b.Alive.ZbStartAt.Time.Add(300 * time.Second).Before(time.Now()) {
 		expire = 30
 	}
-	existTaskCacheKey := fmt.Sprintf("alive_is_exist_task_%s", b.AliveRep.AliveId)
+	existTaskCacheKey := fmt.Sprintf("alive_exist_retweet_task_%s", b.AliveRep.AliveId)
 	data, _ := redis.String(redisConn.Do("get", existTaskCacheKey))
 	if data == "" {
 		// redis没有数据，查mysql
