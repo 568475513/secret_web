@@ -42,7 +42,6 @@ type LiveUrl struct {
 	PcAliveVideoMoreSharpness []map[string]interface{} `json:"pc_alive_video_more_sharpness"` //pc普通直播多清晰度
 	AliveFastMoreSharpness    []map[string]interface{} `json:"alive_fast_more_sharpness"`     //快直播多清晰度
 	ReCordedUsePullStream     bool                     `json:"recorded_use_pull_stream"`      //录播直播是否伪直播
-	ReCordedMoreSharpness     []map[string]interface{} `json:"recorded_more_sharpness"`       //录播伪直播下发信息
 }
 
 // 组装直播的基本信息
@@ -381,16 +380,16 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		 * redis也没有那么及时key 设置为 alive_recorded_{channel_id}
 		 */
 		isUsePullStream := b.GetNowRecordedIsPush()
-		liveUrl.ReCordedMoreSharpness = make([]map[string]interface{}, 2)
+		liveUrl.AliveVideoMoreSharpness = make([]map[string]interface{}, 2)
 		if isUsePullStream {
 			recordedUrl := "http://" + os.Getenv("LIVE_PLAY_HOST") + b.Alive.ChannelId + ".m3u8"
-			liveUrl.ReCordedMoreSharpness[0] = map[string]interface{}{
+			liveUrl.AliveVideoMoreSharpness[0] = map[string]interface{}{
 				"definition_name": "原画",
 				"definition_p":    "default",
 				"url":             b.getPlayUrlBySharpness("default", recordedUrl, b.Alive.ChannelId),
 				"encrypt":         "",
 			}
-			liveUrl.ReCordedMoreSharpness[1] = map[string]interface{}{
+			liveUrl.AliveVideoMoreSharpness[1] = map[string]interface{}{
 				"definition_name": "流畅",
 				"definition_p":    "fluent",
 				"url":             b.getPlayUrlBySharpness("fluent", recordedUrl, b.Alive.ChannelId),
