@@ -111,7 +111,8 @@ type AliveModuleConf struct {
 	IsRedirectIndex uint8  `json:"is_redirect_index"`
 	IsRoundTableOn  uint8  `json:"is_round_table_on"`
 	IsRedPacketOn   uint8  `json:"is_red_packet_on"`
-	IsPictureOn   uint8  `json:"is_picture_on"`
+	IsPictureOn     uint8  `json:"is_picture_on"`
+	IsAuditFirstOn  uint8  `json:"is_audit_first_on"`
 }
 
 const (
