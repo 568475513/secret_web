@@ -493,7 +493,7 @@ func (a *AliveInfo) updatePv(resourceId string, resourceType int) {
 	defer redisConn.Close()
 	pvCacheKey := fmt.Sprintf(pvCacheKeyPre, a.AppId, a.AliveId, resourceId)
 	pvRefreshCacheKey := fmt.Sprintf(timeCacheKeyPre, a.AppId, a.AliveId, resourceId)
-	pvSetValue := fmt.Sprintf("%s:%s:%s", a.AppId, a.AliveId, resourceId)
+	pvSetValue := fmt.Sprintf("%s%s%s", a.AppId, a.AliveId, resourceId)
 	pv := 1
 
 	isExist, err := redis.Int(redisConn.Do("sismember", allPvSetCacheKey, pvSetValue))
