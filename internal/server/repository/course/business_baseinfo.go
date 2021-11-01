@@ -382,8 +382,8 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		 * redis也没有那么及时key 设置为 alive_recorded_{channel_id}
 		 */
 		isUsePullStream := b.GetNowRecordedIsPush()
-		liveUrl.AliveVideoMoreSharpness = make([]map[string]interface{}, 2)
 		if isUsePullStream {
+			liveUrl.AliveVideoMoreSharpness = make([]map[string]interface{}, 2)
 			recordedUrl := "http://" + os.Getenv("LIVE_PLAY_HOST") + b.Alive.ChannelId + ".m3u8"
 			liveUrl.AliveVideoMoreSharpness[0] = map[string]interface{}{
 				"definition_name": "原画",
