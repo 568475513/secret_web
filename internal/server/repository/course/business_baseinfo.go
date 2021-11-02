@@ -197,7 +197,7 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 
 	//PC网校自定义域名
 	aliveConf["pc_network_school_index_url"] = baseConf.PcCustomDomain
-
+	aliveConf["is_open_promoter"] = aliveModule.IsOpenPromoter
 	// 版本过期信息
 	versionState := b.getAppExpireTime(baseConf.Profit)
 	aliveIsRemind := 0
