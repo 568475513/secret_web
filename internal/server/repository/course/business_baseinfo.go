@@ -96,7 +96,12 @@ func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 	aliveInfoDetail["manual_stop_at"] = b.Alive.ManualStopAt
 	aliveInfoDetail["view_count"] = b.Alive.ViewCount
 	aliveInfoDetail["comment_count"] = b.Alive.CommentCount
-	aliveInfoDetail["push_url"] = b.Alive.PushUrl
+	// 只有讲师才需要push_url
+	if b.UserType == 1 {
+		aliveInfoDetail["push_url"] = b.Alive.PushUrl
+	} else {
+		aliveInfoDetail["push_url"] = ""
+	}
 	aliveInfoDetail["push_ahead"] = b.Alive.PushAhead
 	aliveInfoDetail["can_select"] = b.Alive.CanSelect
 	aliveInfoDetail["org_content"] = b.Alive.OrgContent
