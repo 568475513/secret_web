@@ -710,7 +710,7 @@ func (b *BaseInfo) GetNowRecordedIsPush() bool {
 			return false
 		}
 		data = "0"
-		if info.TaskId != "" && info.TaskState == 4 {
+		if info.TaskId != "" && info.TaskState != 2 {
 			data = "1"
 		}
 		redisConn.Do("setex", existTaskCacheKey, expire, data)
