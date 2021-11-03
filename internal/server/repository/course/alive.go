@@ -545,14 +545,6 @@ func (a *AliveInfo) updatePv(resourceId string, resourceType int) {
 	redisConn.Do("set", pvCacheKey, pv)
 }
 
-// 录播底层优化 下发时间计算
-func (a *AliveInfo) GetAliveRecordedPushEndTime(start time.Time, total int64, stop time.Time) string {
-	if start.Add(time.Duration(total) * 1e9).Before(stop) {
-		return start.Add(time.Duration(total) * 1e9).Format("2006-01-02 15:04:05")
-	}
-	return stop.Format("2006-01-02 15:04:05")
-}
-
 // Todo 老的获取直播播放链接@王桂钦
 // 直播链接返回结构体
 // type LiveUrl struct {

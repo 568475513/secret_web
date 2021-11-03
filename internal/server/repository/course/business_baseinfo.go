@@ -120,7 +120,7 @@ func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 	aliveInfoDetail["alive_room_url"] = util.GetNewAliveRoom(b.Alive.AppId, b.Alive.Id, strconv.Itoa(e.PaymentTypeSingle), b.Alive.ProductId.String)
 
 	// 录播底层优化新增 - 预期视频或推流的结束时间
-	aliveInfoDetail["record_push_end_time"] = b.AliveRep.GetAliveRecordedPushEndTime(b.Alive.ZbStartAt.Time, b.Alive.VideoLength, b.Alive.ZbStopAt.Time)
+	aliveInfoDetail["record_push_end_time"] = b.Alive.ZbStartAt.Time.Add(time.Duration(b.Alive.VideoLength) * 1e9).Format("2006-01-02 15:04:05")
 	return aliveInfoDetail
 }
 
