@@ -34,10 +34,10 @@ const (
 	aliveViewCountNew    = "alive_view_count_new:%s:%s"    // 直播访问量
 	forbiddenUserListKey = "forbidden_user_list_key:%s:%s" // 直播禁言
 	// 带货PV
-	pvCacheKeyPre    = "alive_take_goods_pv:%s:%s:%s"              // pv缓存键
-	timeCacheKeyPre  = "alive_take_goods_pv_refresh_time:%s:%s:%s" // pv缓存上一次刷新时间键
-	allPvSetCacheKey = "alive_take_goods_pv_set:"                  // 所有带货商品pv集合缓存
-	expirationTime   = 300                                         // pv缓存有效时间，单位秒
+	pvCacheKeyPre    = "alive_take_goods_pv:%s:%s:%s:"              // pv缓存键
+	timeCacheKeyPre  = "alive_take_goods_pv_refresh_time:%s:%s:%s:" // pv缓存上一次刷新时间键
+	allPvSetCacheKey = "alive_take_goods_pv_set:"                   // 所有带货商品pv集合缓存
+	expirationTime   = 300                                          // pv缓存有效时间，单位秒
 
 	hitImActive      = "active_im_group_all_cache_%s"     // IM活跃群组
 	oldHitImActive   = "old_active_im_group_all_cache_%s" // IM活跃群组
@@ -480,7 +480,7 @@ func (a *AliveInfo) IncreasePv(referer, resourceId string, resourceType int) boo
 	if aliveId == "" || liveRoom != "1" {
 		return false
 	}
-	a.updatePv(resourceId, resourceType)
+	a.updatePv(aliveId, resourceType)
 	return true
 }
 
@@ -491,11 +491,11 @@ func (a *AliveInfo) updatePv(resourceId string, resourceType int) {
 		logging.Error(err)
 	}
 	defer redisConn.Close()
-	pvCacheKey := fmt.Sprintf(pvCacheKeyPre, a.AppId, a.AliveId, resourceId)
-	pvRefreshCacheKey := fmt.Sprintf(timeCacheKeyPre, a.AppId, a.AliveId, resourceId)
-	pvSetValue := fmt.Sprintf("%s:%s:%s", a.AppId, a.AliveId, resourceId)
+	pvCacheKey := fmt.Sprintf(pvCacheKeyPre, a.AppId, resourceId, a.AliveId)
+	pvRefreshCacheKey := fmt.Sprintf(timeCacheKeyPre, a.AppId, resourceId, a.AliveId)
+	pvSetValue := fmt.Sprintf("%s:%s:%s", a.AppId, resourceId, a.AliveId)
 	pv := 1
-
+	currentTime := time.Now().Unix()
 	isExist, err := redis.Int(redisConn.Do("sismember", allPvSetCacheKey, pvSetValue))
 	if err != nil {
 		logging.Error(err)
@@ -503,7 +503,7 @@ func (a *AliveInfo) updatePv(resourceId string, resourceType int) {
 	}
 	if isExist == 0 {
 		//无缓存的情况（被脚本消费了，或者是第一次带货访问）
-		pvInfo, err := alive.GetTaskGoodsInfo(a.AppId, a.AliveId, resourceId, []string{"view_count"})
+		pvInfo, err := alive.GetTaskGoodsInfo(a.AppId, resourceId, a.AliveId, []string{"view_count"})
 		if err != nil {
 			logging.Error(err)
 			return
@@ -512,8 +512,8 @@ func (a *AliveInfo) updatePv(resourceId string, resourceType int) {
 			//初始化pv记录
 			tgd := alive.TaskGoodsDetail{
 				AppId:        a.AppId,
-				AliveId:      a.AliveId,
-				ResourceId:   resourceId,
+				AliveId:      resourceId,
+				ResourceId:   a.AliveId,
 				ResourceType: resourceType,
 				ViewCount:    1,
 				State:        1,
@@ -527,19 +527,20 @@ func (a *AliveInfo) updatePv(resourceId string, resourceType int) {
 			pv = pvInfo.ViewCount + 1
 		}
 		redisConn.Do("sadd", allPvSetCacheKey, pvSetValue)
-		redisConn.Do("set", pvRefreshCacheKey, time.Now().Second())
+		redisConn.Do("set", pvRefreshCacheKey, currentTime)
 	} else {
 		//有缓存的情况
 		pv, _ = redis.Int(redisConn.Do("get", pvCacheKey))
-		pvRefreshTime, _ := redis.Int(redisConn.Do("get", pvRefreshCacheKey))
-		if time.Now().Second()-pvRefreshTime >= expirationTime {
+		pv = pv + 1
+		pvRefreshTime, _ := redis.Int64(redisConn.Do("get", pvRefreshCacheKey))
+		if currentTime-pvRefreshTime >= expirationTime {
 			//到了刷新时间则更新到数据库，并更新缓存刷新时间
-			err = alive.UpdateTaskGoodsViewCount(a.AppId, a.AliveId, resourceId, pv)
+			err = alive.UpdateTaskGoodsViewCount(a.AppId, resourceId, a.AliveId, pv)
 			if err != nil {
 				logging.Error(err)
 				return
 			}
-			redisConn.Do("set", pvRefreshCacheKey, time.Now().Second())
+			redisConn.Do("set", pvRefreshCacheKey, currentTime)
 		}
 	}
 	redisConn.Do("set", pvCacheKey, pv)
