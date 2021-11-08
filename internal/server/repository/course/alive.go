@@ -278,7 +278,7 @@ func (a *AliveInfo) GetAliveLookBackStates(aliveInfo *alive.Alive) (aliveState i
 		aliveState = a.GetAliveState(aliveInfo.ZbStartAt.Time, aliveInfo.ZbStopAt.Time, aliveInfo.ManualStopAt.Time, aliveInfo.RewindTime.Time, aliveInfo.PushState)
 	} else if aliveInfo.AliveType == enums.AliveTypeVideo {
 		// 视频直播状态
-		aliveState = a.GetAliveStateUtils(aliveInfo.ZbStartAt.Time, aliveInfo.VideoLength, aliveInfo.ManualStopAt.Time, aliveInfo.ZbStopAt.Time)
+		aliveState = a.GetAliveStateUtils(aliveInfo.ZbStartAt.Time, aliveInfo.VideoLength, aliveInfo.ManualStopAt.Time, aliveInfo.ZbStopAt.Time, aliveInfo.PushState)
 	} else {
 		// 语音或ppt直播
 		aliveState = a.GetAliveStateForOthers(aliveInfo.ZbStartAt.Time, aliveInfo.ManualStopAt.Time, aliveInfo.ZbStopAt.Time)
@@ -307,7 +307,7 @@ func (a *AliveInfo) GetAliveStates(aliveInfo *alive.Alive) (aliveState int) {
 		}
 	} else if aliveInfo.AliveType == enums.AliveTypeVideo {
 		// 视频直播状态
-		aliveState = a.GetAliveStateUtils(aliveInfo.ZbStartAt.Time, aliveInfo.VideoLength, aliveInfo.ManualStopAt.Time, aliveInfo.ZbStopAt.Time)
+		aliveState = a.GetAliveStateUtils(aliveInfo.ZbStartAt.Time, aliveInfo.VideoLength, aliveInfo.ManualStopAt.Time, aliveInfo.ZbStopAt.Time, aliveInfo.PushState)
 	} else {
 		// 语音或ppt直播
 		aliveState = a.GetAliveStateForOthers(aliveInfo.ZbStartAt.Time, aliveInfo.ManualStopAt.Time, aliveInfo.ZbStopAt.Time)
@@ -356,7 +356,12 @@ func (a *AliveInfo) GetAliveState(start time.Time, stop time.Time, mst time.Time
 }
 
 // 视频直播状态
-func (a *AliveInfo) GetAliveStateUtils(start time.Time, total int64, mst time.Time, stop time.Time) (state int) {
+func (a *AliveInfo) GetAliveStateUtils(start time.Time, total int64, mst time.Time, stop time.Time, pstate uint8) (state int) {
+	if mst.IsZero() && pstate == 1 {
+		state = 1
+		return
+	}
+
 	now := time.Now()
 	if now.After(start) {
 		state = 1 //播放已开始
