@@ -363,7 +363,6 @@ func (x *XiaoeHttpRequest) ToJSON2(v interface{}) error {
 	if err != nil {
 		return err
 	}
-
 	return util.JsonDecode(data, v)
 }
 
