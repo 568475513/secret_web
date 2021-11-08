@@ -356,6 +356,17 @@ func (x *XiaoeHttpRequest) ToJSON(v interface{}) error {
 	return util.JsonDecode(data, v)
 }
 
+// 获取json格式返回
+func (x *XiaoeHttpRequest) ToJSON2(v interface{}) error {
+	data, err := x.Bytes()
+	fmt.Println("111111" + string(data) + "111111")
+	if err != nil {
+		return err
+	}
+
+	return util.JsonDecode(data, v)
+}
+
 // 获取map格式的返回
 func (x *XiaoeHttpRequest) ToMap() (map[string]interface{}, error) {
 	var data map[string]interface{}
