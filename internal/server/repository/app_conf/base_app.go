@@ -311,3 +311,19 @@ func (a *AppInfo) GetCommunicationCloudInfo(identifier string, roomId string, fu
 	conf["user_sign"] = userSig
 	return conf
 }
+
+//企学院店铺用户是否有权限观看直播
+func (a *AppInfo) TrainingIsRedirect(AppId, UserId string) (isRedirect bool, err error) {
+
+	result := service.TrainingResp{}
+	trainServer := service.TrainingReq{AppId: AppId, UserId: UserId}
+	result, err = trainServer.AuthCheck()
+	if err != nil {
+		logging.Error(err)
+		return false, nil
+	}
+	if !result.Data.Isauth {
+		return true, nil
+	}
+	return
+}
