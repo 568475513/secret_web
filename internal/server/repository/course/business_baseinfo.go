@@ -705,14 +705,14 @@ func (b *BaseInfo) GetNowRecordedIsPush() bool {
 	data, _ := redis.String(redisConn.Do("get", existTaskCacheKey))
 	if data == "" {
 		// redis没有数据，查mysql
-		info, err := alive.GetRecordedRetweetTaskInfo(b.AliveRep.AppId, b.AliveRep.AliveId, "task_id,task_state")
+		info, errVod := alive.GetRecordedRetweetTaskInfo(b.AliveRep.AppId, b.AliveRep.AliveId, "task_id,task_state")
+		if errVod != nil {
+			return false
+		}
 		data = "0"
-		if err == nil || info != nil {
+		if (info.TaskId != "" && info.TaskState != 2) || info.TaskState == 4 {
 			data = "1"
 		}
-		//if info.TaskId != "" && info.TaskState != 2 {
-		//	data = "1"
-		//}
 		redisConn.Do("setex", existTaskCacheKey, expire, data)
 	}
 	if data == "1" {
