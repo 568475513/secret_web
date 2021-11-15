@@ -387,9 +387,6 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 				}
 			}
 
-			logging.Info(fmt.Sprintf("cost_opt#app_id:%s#alive_id:%s#isGray:%t#isUserWebRtc:%t#enableWebRtc:%d#uv:%d#limitUv:%d#inCostOptWhiteMenu:%t",
-				b.Alive.AppId, b.Alive.Id, isGray, isUserWebRtc, enableWebRtc, uv, limitUv, inCostOptWhiteMenu))
-
 			if inCostOptWhiteMenu || uv < limitUv {
 				liveUrl.AliveFastWebrtcurl = "webrtc" + util.Substr(playUrls[0], 4, len(playUrls[0]))
 				liveUrl.FastAliveSwitch = true
