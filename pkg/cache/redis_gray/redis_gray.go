@@ -210,8 +210,6 @@ func InGrayShopSpecial(garyKey, appId string) bool {
 
 // 判断店铺是否在灰度名单,多一个反向逻辑【直播专用】
 func InGrayShopSpecialHit(garyKey, appId string) bool {
-	fmt.Println(garyKey)
-	fmt.Println(appId)
 	if garyKey == "" || appId == "" {
 		return false
 	}
@@ -220,20 +218,16 @@ func InGrayShopSpecialHit(garyKey, appId string) bool {
 
 	// 全网打开
 	if replyAll, _ := redis.Bool(conn.Do("SISMEMBER", garyKey, "-"+appId)); replyAll {
-		fmt.Println("-=", replyAll)
 		return false
 	}
 
 	// 全网打开
 	if replyAll, _ := redis.Bool(conn.Do("SISMEMBER", garyKey, "*")); replyAll {
-		fmt.Println("*=", replyAll)
 		return replyAll
 	}
 
 	// 指定查询
 	reply, err := redis.Bool(conn.Do("SISMEMBER", garyKey, appId))
-	fmt.Println("is=", reply)
-	fmt.Println("err=", err)
 	if err != nil {
 		logging.Error(fmt.Sprintf("注意！！！InGrayShopSpecial有错误：%s", err.Error()))
 		return false
