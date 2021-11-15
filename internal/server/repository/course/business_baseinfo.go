@@ -311,12 +311,6 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		// isEnableWebRtc bool
 	)
 
-	xiaoEImRedisConn, err := redis_xiaoe_im.GetConn()
-	if err != nil {
-		logging.Error(err)
-	}
-	defer xiaoEImRedisConn.Close()
-
 	timeStamp := time.Now().Unix()
 	supportSharpness := map[string]interface{}{
 		"default": "原画", //默认原画
@@ -378,6 +372,11 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 
 			//不在白名单才去查实时在线人
 			if !inCostOptWhiteMenu {
+				xiaoEImRedisConn, err := redis_xiaoe_im.GetConn()
+				if err != nil {
+					logging.Error(err)
+				}
+				defer xiaoEImRedisConn.Close()
 				//查询实时在线UV
 				cacheKey := fmt.Sprintf(aliveOnlineUV, b.Alive.Id)
 				uv, err = redis.Int(xiaoEImRedisConn.Do("ZCARD", cacheKey))
