@@ -375,7 +375,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		}
 
 		//判断成本控制的白名单
-		inCostOptWhiteMenu := redis_gray.InGrayShopSpecialHit("webrtc_cost_optimization_white_menu", b.Alive.AppId)
+		inCostOptWhiteMenu := redis_gray.InGrayShopSpecialHit("webrtc_cost_opt_white_menu", b.Alive.AppId)
 
 		// 快直播O端名单目录
 		isGray := redis_gray.InGrayShop("fast_alive_switch", b.AliveRep.AppId)
