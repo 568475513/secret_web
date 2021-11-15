@@ -1,6 +1,7 @@
 package course
 
 import (
+	"abs/pkg/cache/redis_xiaoe_im"
 	"fmt"
 	"os"
 	"strconv"
@@ -41,6 +42,10 @@ type LiveUrl struct {
 	PcAliveVideoMoreSharpness []map[string]interface{} `json:"pc_alive_video_more_sharpness"` //pc普通直播多清晰度
 	AliveFastMoreSharpness    []map[string]interface{} `json:"alive_fast_more_sharpness"`     //快直播多清晰度
 }
+
+const (
+	aliveOnlineUV = "POMELO:USER_LIST:%s"
+)
 
 // 组装直播的基本信息
 func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
@@ -299,17 +304,25 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 
 // 获取直播间相关的链接
 func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId string) (liveUrl LiveUrl) {
-	timeStamp := time.Now().Unix()
-	supportSharpness := map[string]interface{}{
-		"default": "原画", //默认原画
-		"fluent":  "流畅", //流畅（480P）
-	}
 	var (
 		playUrls     []string
 		err          error
 		isUserWebRtc bool
 		// isEnableWebRtc bool
 	)
+
+	xiaoEImRedisConn, err := redis_xiaoe_im.GetConn()
+	if err != nil {
+		logging.Error(err)
+	}
+	defer xiaoEImRedisConn.Close()
+
+	timeStamp := time.Now().Unix()
+	supportSharpness := map[string]interface{}{
+		"default": "原画", //默认原画
+		"fluent":  "流畅", //流畅（480P）
+	}
+
 	if err = util.JsonDecode([]byte(b.Alive.PlayUrl), &playUrls); err != nil {
 		logging.Warn(fmt.Sprintf("获取直播间播放链接JsonDecode有错误【非致命，不慌】：%s", err.Error()))
 		// 不能返回，有特殊的PlayUrl
@@ -352,27 +365,45 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			}
 		}
 
+		//查询实时在线UV
+		cacheKey := fmt.Sprintf(aliveOnlineUV, b.Alive.Id)
+		uv, err := redis.Int(xiaoEImRedisConn.Do("ZCARD", cacheKey))
+		limitUv, _ := strconv.Atoi(os.Getenv("WEBRTC_SWITCH_RTMP_UV"))
+		if err != nil {
+			//这里只记录查询redis失败日志，不去影响主流程
+			logging.Error(fmt.Sprintf("base_info 查询实时在线人数失败：%s", err.Error()))
+		}
+
+		//判断成本控制的白名单
+		inCostOptWhiteMenu := redis_gray.InGrayShopSpecialHit("webrtc_cost_optimization_white_menu", b.Alive.AppId)
+
 		// 快直播O端名单目录
 		isGray := redis_gray.InGrayShop("fast_alive_switch", b.AliveRep.AppId)
 		if isGray && isUserWebRtc && enableWebRtc == 1 && util.Substr(playUrls[0], 0, 4) == "rtmp" {
-			liveUrl.AliveFastWebrtcurl = "webrtc" + util.Substr(playUrls[0], 4, len(playUrls[0]))
-			liveUrl.FastAliveSwitch = true
-			//快直播多清晰度
-			liveUrl.AliveFastMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
-			i := 0
-			for k, v := range supportSharpness {
-				switch k {
-				case "fluent":
-					i = 1
-				case "default":
-					i = 0
+			if uv < limitUv || inCostOptWhiteMenu {
+				liveUrl.AliveFastWebrtcurl = "webrtc" + util.Substr(playUrls[0], 4, len(playUrls[0]))
+				liveUrl.FastAliveSwitch = true
+				//快直播多清晰度
+				liveUrl.AliveFastMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
+				i := 0
+				for k, v := range supportSharpness {
+					switch k {
+					case "fluent":
+						i = 1
+					case "default":
+						i = 0
+					}
+					liveUrl.AliveFastMoreSharpness[i] = map[string]interface{}{
+						"definition_name": v,
+						"definition_p":    k,
+						"url":             b.getPlayUrlBySharpness(k, liveUrl.AliveFastWebrtcurl, b.Alive.ChannelId),
+						"encrypt":         "",
+					}
 				}
-				liveUrl.AliveFastMoreSharpness[i] = map[string]interface{}{
-					"definition_name": v,
-					"definition_p":    k,
-					"url":             b.getPlayUrlBySharpness(k, liveUrl.AliveFastWebrtcurl, b.Alive.ChannelId),
-					"encrypt":         "",
-				}
+			} else {
+				// 触发成本控制了，记录下
+				logging.Info(fmt.Sprintf("cost_optimization app_id:%s alive_id:%s uv:%d limit:%d",
+					b.Alive.AppId, b.Alive.Id, uv, limitUv))
 			}
 		}
 	} else {
