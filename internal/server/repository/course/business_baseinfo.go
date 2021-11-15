@@ -365,26 +365,33 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			}
 		}
 
-		//查询实时在线UV
-		cacheKey := fmt.Sprintf(aliveOnlineUV, b.Alive.Id)
-		uv, err := redis.Int(xiaoEImRedisConn.Do("ZCARD", cacheKey))
-		limitUv, _ := strconv.Atoi(os.Getenv("WEBRTC_SWITCH_RTMP_UV"))
-		if err != nil {
-			//这里只记录查询redis失败日志，不去影响主流程
-			logging.Error(fmt.Sprintf("base_info 查询实时在线人数失败：%s", err.Error()))
-		}
-
-		//判断成本控制的白名单
-		inCostOptWhiteMenu := redis_gray.InGrayShopSpecialHit("webrtc_cost_opt_white_menu", b.Alive.AppId)
-
 		// 快直播O端名单目录
 		isGray := redis_gray.InGrayShop("fast_alive_switch", b.AliveRep.AppId)
-
-		logging.Info(fmt.Sprintf("cost_opt#app_id:%s#alive_id:%s#isGray:%t#isUserWebRtc:%t#enableWebRtc:%d#uv:%d#limitUv:%d#inCostOptWhiteMenu:%t",
-			b.Alive.AppId, b.Alive.Id, isGray, isUserWebRtc, enableWebRtc, uv, limitUv, inCostOptWhiteMenu))
-
 		if isGray && isUserWebRtc && enableWebRtc == 1 && util.Substr(playUrls[0], 0, 4) == "rtmp" {
-			if uv < limitUv || inCostOptWhiteMenu {
+			var (
+				uv      = 0
+				limitUv = 0
+			)
+
+			//判断成本控制的白名单
+			inCostOptWhiteMenu := redis_gray.InGrayShopSpecialHit("webrtc_cost_opt_white_menu", b.Alive.AppId)
+
+			//不在白名单才去查实时在线人
+			if !inCostOptWhiteMenu {
+				//查询实时在线UV
+				cacheKey := fmt.Sprintf(aliveOnlineUV, b.Alive.Id)
+				uv, err = redis.Int(xiaoEImRedisConn.Do("ZCARD", cacheKey))
+				limitUv, _ = strconv.Atoi(os.Getenv("WEBRTC_SWITCH_RTMP_UV"))
+				if err != nil {
+					//这里只记录查询redis失败日志，不去影响主流程
+					logging.Error(fmt.Sprintf("base_info 查询实时在线人数失败：%s", err.Error()))
+				}
+			}
+
+			logging.Info(fmt.Sprintf("cost_opt#app_id:%s#alive_id:%s#isGray:%t#isUserWebRtc:%t#enableWebRtc:%d#uv:%d#limitUv:%d#inCostOptWhiteMenu:%t",
+				b.Alive.AppId, b.Alive.Id, isGray, isUserWebRtc, enableWebRtc, uv, limitUv, inCostOptWhiteMenu))
+
+			if inCostOptWhiteMenu || uv < limitUv {
 				liveUrl.AliveFastWebrtcurl = "webrtc" + util.Substr(playUrls[0], 4, len(playUrls[0]))
 				liveUrl.FastAliveSwitch = true
 				//快直播多清晰度
