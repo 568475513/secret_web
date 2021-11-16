@@ -3,6 +3,7 @@ package cache
 import (
 	"abs/pkg/cache/redis_default"
 	"abs/pkg/cache/redis_im"
+	"abs/pkg/cache/redis_xiaoe_im"
 	"abs/pkg/logging"
 	"encoding/json"
 	"fmt"
@@ -78,6 +79,11 @@ func Init() {
 	// 默认业务库【直播专用】
 	if err := redis_default.Init(); err != nil {
 		logging.Error(fmt.Sprintf("redis_default.Init err: %v", err.Error()))
+		//log.Fatal(err)
+	}
+	// 小鹅IM redis
+	if err := redis_xiaoe_im.Init(); err != nil {
+		logging.Error(fmt.Sprintf("redis_xiaoe_im.Init err: %v", err.Error()))
 		//log.Fatal(err)
 	}
 	fmt.Println(">>>初始化缓存连接池完成")
