@@ -33,7 +33,7 @@ func GetBaseInfo(c *gin.Context) {
 		err error
 		req validator.BaseInfoRuleV2
 	)
-	userId := app.GetUserId(c)//u_60a211b56ace0_oWlPQsXXHZ
+	userId := app.GetUserId(c) //u_60a211b56ace0_oWlPQsXXHZ
 	req.AppId = app.GetAppId(c)
 	if err = app.ParseRequest(c, &req); err != nil {
 		return
@@ -61,7 +61,7 @@ func GetBaseInfo(c *gin.Context) {
 
 	// 直播静态化查询操作
 	aliveStaticRep := course.AliveStatic{AppId: req.AppId, AliveId: req.ResourceId, UserId: userId, Type: req.Type}
-	aliveStaticData, staticSwitch,err := aliveStaticRep.AliveStaticMain(c.GetInt("agent_type"))
+	aliveStaticData, staticSwitch, err := aliveStaticRep.AliveStaticMain(c.GetInt("agent_type"))
 	if len(aliveStaticData) > 0 {
 		app.OkWithData(aliveStaticData, c)
 		return
@@ -126,9 +126,9 @@ func GetBaseInfo(c *gin.Context) {
 	}, func() (err error) {
 		// 用户权益
 		if aliveInfo.IsPublic != 0 &&
-							aliveInfo.PaymentType == enums.PaymentTypeFree &&
-							aliveInfo.HavePassword != 1 &&
-							aliveInfo.State == 0 {
+			aliveInfo.PaymentType == enums.PaymentTypeFree &&
+			aliveInfo.HavePassword != 1 &&
+			aliveInfo.State == 0 {
 			available = true
 			return nil
 		}
@@ -153,6 +153,21 @@ func GetBaseInfo(c *gin.Context) {
 		logging.Error(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)))
 		//app.FailWithMessage(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), enums.ERROR, c)
 		//return
+	}
+	//企学院授权跳转逻辑
+	if baseConf.VersionType == enums.VERSION_TYPE_TRAINING_TRY || baseConf.VersionType == enums.VERSION_TYPE_TRAINING_STD {
+		isRedirect, err := appRep.TrainingIsRedirect(req.AppId, userId)
+		if err != nil {
+			logging.Error(err.Error())
+		}
+		if isRedirect {
+			app.OkWithCodeData("Redirect.", map[string]string{
+				"redirect": "/training_page/noPermission/1",
+				// 这个命名为了兼容，要不然不会写那么傻逼
+				"uRL": "/training_page/noPermission/1",
+			}, 11302, c)
+			return
+		}
 	}
 	// 公开课跳转
 	if aliveInfo.IsPublic == 0 && !available && userType == 0 && !util.IsQyApp(baseConf.VersionType) {
