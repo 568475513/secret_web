@@ -38,7 +38,7 @@ func (c *TrainingReq) AuthCheck() (TrainingResp, error) {
 	request.SetHeader("App-Id", c.AppId)
 	request.SetHeader("User-Id", c.UserId)
 	request.SetTimeout(trainingAuthTimeOut * time.Millisecond)
-	err := request.ToJSON2(&result)
+	err := request.ToJSON(&result)
 	if err != nil {
 		return TrainingResp{}, err
 	}
