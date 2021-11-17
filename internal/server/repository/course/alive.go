@@ -1,6 +1,8 @@
 package course
 
 import (
+	"abs/pkg/cache/redis_default"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"time"
@@ -25,6 +27,8 @@ const (
 	aliveInfoKey        = "base_info_alive_info:%s:%s"
 	aliveModuleConf     = "alive_module_conf:%s:%s"
 	aliveCircuitBreaker = "alive:circuitBreaker"
+	aliveRoleListKey    = "alive:baseinfo:role:%s:%s"
+
 	// 直播静态相关
 	staticAliveHashId   = "hash_static_alive_id_%s"
 	staticAliveHashUser = "hash_static_alive_user_%s"
@@ -54,6 +58,8 @@ const (
 	aliveInfoCacheTime = "60"
 	// 直播的ModuleConf
 	aliveModuleConfCacheTime = "60"
+	// 直播讲师角色列表 缓存时间
+	aliveRoleListCacheTime = "10"
 )
 
 // 获取直播详情
@@ -205,10 +211,33 @@ func (a *AliveInfo) GetAliveRole(userId string) (isRole uint, roleInfo map[strin
 		"main_user_id":       "",
 		"role_user_id":       "",
 	}
-	aliveRoles, err := alive.GetAliveRole(a.AppId, a.AliveId)
+	conn,err := redis_default.GetLiveRedisConn()
 	if err != nil {
 		logging.Error(err)
 		return
+	}
+	defer conn.Close()
+	cacheKey := fmt.Sprintf(aliveRoleListKey, a.AppId,a.AliveId)
+	roleByte,err := redis.Bytes(conn.Do("GET",cacheKey))
+	var aliveRoles []*alive.AliveRole
+	if roleByte == nil {
+		aliveRoles, err := alive.GetAliveRole(a.AppId, a.AliveId)
+		if err != nil {
+			logging.Error(err)
+			return 0,nil,err
+		}
+		aliveRolesByte,err := json.Marshal(aliveRoles)
+		if err != nil {
+			logging.Error(err)
+			return 0,nil,err
+		}
+		_,_= conn.Do("SET", cacheKey, aliveRolesByte, "EX", aliveRoleListCacheTime)
+	} else {
+		err = json.Unmarshal(roleByte,&aliveRoles)
+		if err != nil {
+			logging.Error(err)
+			return
+		}
 	}
 
 	for _, v := range aliveRoles {

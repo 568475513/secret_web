@@ -58,3 +58,14 @@ func GetLiveInfoConn() (redis.Conn, error) {
 	}
 	return conn, nil
 }
+
+// GetLiveRedisConn 获取直播 普通业务 redis 连接
+func GetLiveRedisConn() (redis.Conn, error) {
+	conn := redisDefaultConn.Get()
+	_, err := conn.Do("SELECT", 4)
+	if err != nil {
+		return conn, err
+	}
+	return conn, nil
+}
+
