@@ -1,6 +1,7 @@
 package course
 
 import (
+	"abs/pkg/cache/redis_im"
 	"abs/pkg/cache/redis_xiaoe_im"
 	"fmt"
 	"os"
@@ -41,6 +42,7 @@ type LiveUrl struct {
 	AliveVideoMoreSharpness   []map[string]interface{} `json:"alive_video_more_sharpness"`    //普通直播多清晰度
 	PcAliveVideoMoreSharpness []map[string]interface{} `json:"pc_alive_video_more_sharpness"` //pc普通直播多清晰度
 	AliveFastMoreSharpness    []map[string]interface{} `json:"alive_fast_more_sharpness"`     //快直播多清晰度
+	ReCordedUsePullStream     bool                     `json:"recorded_use_pull_stream"`      //录播直播是否伪直播
 }
 
 const (
@@ -127,6 +129,8 @@ func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 	//拼接直播间链接
 	aliveInfoDetail["alive_room_url"] = util.GetNewAliveRoom(b.Alive.AppId, b.Alive.Id, strconv.Itoa(e.PaymentTypeSingle), b.Alive.ProductId.String)
 
+	// 录播底层优化新增 - 预期视频或推流的结束时间
+	aliveInfoDetail["record_push_end_time"] = b.Alive.ZbStartAt.Time.Add(time.Duration(b.Alive.VideoLength) * 1e9).Format("2006-01-02 15:04:05")
 	return aliveInfoDetail
 }
 
@@ -416,6 +420,31 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 	} else {
 		liveUrl.MiniAliveVideoUrl = fmt.Sprintf("https://%s/%s.m3u8?%d", util.GetH5Domain(b.AliveRep.AppId, true), b.AliveRep.AliveId, timeStamp)
 		liveUrl.AliveVideoUrl = liveUrl.MiniAliveVideoUrl
+		// todo 录播底层优化-直播链接下发逻辑 start
+		/**
+		 * 先通过是否存在channel_id判断是否走伪直播逻辑
+		 * 通过直播状态值判断是否存在转推任务,因为推流了这边会由记录为1
+		 * redis也没有那么及时key 设置为 alive_recorded_{channel_id}
+		 */
+		isUsePullStream := b.GetNowRecordedIsPush()
+		if isUsePullStream {
+			liveUrl.AliveVideoMoreSharpness = make([]map[string]interface{}, 2)
+			recordedUrl := "http://" + os.Getenv("LIVE_PLAY_HOST") + b.Alive.ChannelId + ".m3u8"
+			liveUrl.AliveVideoMoreSharpness[0] = map[string]interface{}{
+				"definition_name": "原画",
+				"definition_p":    "default",
+				"url":             b.getPlayUrlBySharpness("default", recordedUrl, b.Alive.ChannelId),
+				"encrypt":         "",
+			}
+			liveUrl.AliveVideoMoreSharpness[1] = map[string]interface{}{
+				"definition_name": "流畅",
+				"definition_p":    "fluent",
+				"url":             b.getPlayUrlBySharpness("fluent", recordedUrl, b.Alive.ChannelId),
+				"encrypt":         "",
+			}
+		}
+		liveUrl.ReCordedUsePullStream = isUsePullStream
+		// todo 录播底层优化-直播链接下发逻辑 end
 		isGrayBool := redis_gray.InGrayShop("video_alive_not_use_cos", b.AliveRep.AppId)
 		// play_url不为空--不为小程序--不在O端名单内
 		if !isGrayBool && b.Alive.PlayUrl != "" && agentType != 14 {
@@ -689,3 +718,52 @@ func (b *BaseInfo) getAppExpireTime(profit map[string]interface{}) map[string]in
 
 	return result
 }
+
+// todo 录播底层优化-直播链接下发逻辑-func start
+/**
+1、判断是否有channel_id，无则返回 false
+2、判断是否在灰度，不在灰度则不使用伪直播 false
+3、判断推流状态是否为1 ，为1说明已经在推了，true
+4、redis查询拉流转推任务状态,数据为空则查mysql数据，目前判断redis使用情况不到3%
+*/
+func (b *BaseInfo) GetNowRecordedIsPush() bool {
+	if b.Alive.ChannelId == "" {
+		return false
+	}
+	isGrayBool := redis_gray.InGrayShopSpecialHit("recorded_use_retweet", b.AliveRep.AppId)
+	if !isGrayBool {
+		return false
+	}
+	if b.Alive.PushState == 1 {
+		return true
+	}
+	redisConn, err := redis_im.GetLiveGroupActionConn()
+	if err != nil {
+		logging.Error(err)
+	}
+	defer redisConn.Close()
+	expire := 5
+	if b.Alive.ZbStartAt.Time.Add(300 * time.Second).Before(time.Now()) {
+		expire = 30
+	}
+	existTaskCacheKey := fmt.Sprintf("alive_exist_retweet_task_%s", b.AliveRep.AliveId)
+	data, _ := redis.String(redisConn.Do("get", existTaskCacheKey))
+	if data == "" {
+		// redis没有数据，查mysql
+		info, errVod := alive.GetRecordedRetweetTaskInfo(b.AliveRep.AppId, b.AliveRep.AliveId, "task_id,task_state")
+		if errVod != nil {
+			return false
+		}
+		data = "0"
+		if (info.TaskId != "" && info.TaskState != 2) || info.TaskState == 4 {
+			data = "1"
+		}
+		redisConn.Do("setex", existTaskCacheKey, expire, data)
+	}
+	if data == "1" {
+		return true
+	}
+	return false
+}
+
+// todo 录播底层优化-直播链接下发逻辑-func end
