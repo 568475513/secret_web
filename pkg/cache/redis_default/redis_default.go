@@ -58,3 +58,4 @@ func GetLiveInfoConn() (redis.Conn, error) {
 	}
 	return conn, nil
 }
+
