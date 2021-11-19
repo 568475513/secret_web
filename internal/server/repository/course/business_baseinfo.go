@@ -54,6 +54,7 @@ func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 	aliveInfoDetail["alive_id"] = b.Alive.Id
 	aliveInfoDetail["room_id"] = b.Alive.RoomId
 	aliveInfoDetail["room_id"] = b.AliveRep.GetAliveRommId(b.Alive)
+	aliveInfoDetail["resource_type"] = e.ResourceTypeLive
 	// 直播间标题
 	aliveInfoDetail["title"] = b.Alive.Title.String
 	// 直播间描述
