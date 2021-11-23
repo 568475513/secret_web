@@ -8,8 +8,8 @@ import (
 
 	"abs/models/alive"
 	"abs/models/business"
-	"abs/models/sub_business"
 	"abs/models/data"
+	"abs/models/sub_business"
 	// "abs/models/user"
 )
 
@@ -24,6 +24,7 @@ func Init() {
 	// 用户的暂时不要查了，走用户服务
 	// user.Init()
 	alive.Init()
+	alive.InitReadDb()
 	business.Init()
 	business.InitRw()
 	sub_business.Init()
@@ -64,6 +65,7 @@ func InitJob() {
 func CloseDB() {
 	// user.CloseDB()
 	alive.CloseDB()
+	alive.CloseReadDB()
 	business.CloseDB()
 	business.CloseDB()
 	sub_business.CloseDB()
