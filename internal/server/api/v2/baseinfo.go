@@ -154,6 +154,15 @@ func GetBaseInfo(c *gin.Context) {
 		//app.FailWithMessage(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), enums.ERROR, c)
 		//return
 	}
+	//是否开启防录屏
+	if aliveModule.IsAntiScreen == 1 {
+		app.OkWithCodeData("该直播仅支持在鹅学习App观看", map[string]string{
+			"redirect": "https://www.baidu.com/",
+			"uRL": "https://www.baidu.com/",
+		}, 11302, c)
+		return
+	}
+
 	//企学院授权跳转逻辑
 	if baseConf.VersionType == enums.VERSION_TYPE_TRAINING_TRY || baseConf.VersionType == enums.VERSION_TYPE_TRAINING_STD {
 		isRedirect, err := appRep.TrainingIsRedirect(req.AppId, userId)
