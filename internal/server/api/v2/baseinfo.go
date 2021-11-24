@@ -157,8 +157,8 @@ func GetBaseInfo(c *gin.Context) {
 	//是否开启防录屏
 	if aliveModule.IsAntiScreen == 1 {
 		app.OkWithCodeData("该直播仅支持在鹅学习App观看", map[string]string{
-			"redirect": "https://www.baidu.com/",
-			"uRL": "https://www.baidu.com/",
+			"redirect": "https://service.h5.xiaoeknow.com/open_app",
+			"uRL": "https://service.h5.xiaoeknow.com/open_app",
 		}, 11302, c)
 		return
 	}
