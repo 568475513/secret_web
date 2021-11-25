@@ -564,7 +564,7 @@ func (a *AliveInfo) GetMicroResourceDesc(resourceId string) (rd *sub_business.Re
 	cacheKey := fmt.Sprintf(resourceCacheKeyPre, a.AppId, resourceId)
 	cacheData, err := redis.Bytes(conn.Do("get", cacheKey))
 	if err == nil {
-		_ = json.Unmarshal(cacheData, rd)
+		err = json.Unmarshal(cacheData, &rd)
 		return
 	} else {
 		if err != redis.ErrNil {
@@ -612,6 +612,7 @@ func (a *AliveInfo) ReplaceIosResourceDesc(aliveDetails map[string]interface{}, 
 		aliveDetails["img_url_compressed"] = rd.ImgUrlCompressed
 		aliveDetails["alive_img_url"] = rd.AliveImgUrl
 	}
+
 	pid, ok := aliveDetails["product_id"]
 	if paymentType == enums.PaymentTypeProduct && ok && pid != "" {
 		//非单卖的在小程序会显示product_name要进行过滤
