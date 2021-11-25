@@ -490,6 +490,8 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 	products []*business.PayProducts,
 	available bool,
 	versionType int,
+	aliveModule *alive.AliveModuleConf,
+	userId string,
 	req validator.BaseInfoRuleV2) (url string, code int, msg string) {
 	// 当无自身与属于专栏/会员售卖形式时，将超级会员加入进来
 	if len(products) == 0 && b.Alive.PaymentType == e.PaymentTypeProduct && !available {
@@ -552,6 +554,34 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 			}
 		}
 	}
+
+	//是否开启防录屏
+	if aliveModule.IsAntiScreen == 1 {
+		msg = "该直播仅支持在鹅学习App观看"
+		url = "https://service.h5.xiaoeknow.com/open_app?app_id=" + b.AliveRep.AppId + "&params=" + b.GetWakeUpAppParams(userId)
+		code = e.RESOURCE_REDIRECT
+	}
+
+	return
+}
+
+// 获取防录屏落地页唤起APP参数
+func (b *BaseInfo) GetWakeUpAppParams(userId string) (url string) {
+	params := make(map[string]interface{})
+	params["app_id"] = b.AliveRep.AppId
+	params["resource_id"] = b.AliveRep.AliveId
+	params["resource_type"] = 4
+	params["encrypt_user_id"] = util.GetEncryptUserId(userId)
+	tempParam := make(map[string]interface{})
+	tempParam["params"] = params
+	tempParam["type"] = 4
+
+	base64Str, err := util.PutParmToStr(tempParam)
+	if err != nil {
+		logging.Error(fmt.Sprintf("GetWakeUpAppParams Error: alive_id: %s, err: %v", b.AliveRep.AliveId, err))
+		return
+	}
+	url = base64Str
 	return
 }
 

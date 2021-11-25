@@ -154,15 +154,6 @@ func GetBaseInfo(c *gin.Context) {
 		//app.FailWithMessage(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), enums.ERROR, c)
 		//return
 	}
-	//是否开启防录屏
-	if aliveModule.IsAntiScreen == 1 {
-		app.OkWithCodeData("该直播仅支持在鹅学习App观看", map[string]string{
-			"redirect": "https://service.h5.xiaoeknow.com/open_app",
-			"uRL": "https://service.h5.xiaoeknow.com/open_app",
-		}, 11302, c)
-		return
-	}
-
 	//企学院授权跳转逻辑
 	if baseConf.VersionType == enums.VERSION_TYPE_TRAINING_TRY || baseConf.VersionType == enums.VERSION_TYPE_TRAINING_STD {
 		isRedirect, err := appRep.TrainingIsRedirect(req.AppId, userId)
@@ -293,7 +284,7 @@ func GetBaseInfo(c *gin.Context) {
 	// 首页链接
 	data["index_url"] = util.UrlWrapper("homepage", c.GetString("buz_uri"), req.AppId)
 	// 页面是否跳转
-	if url, code, msg := baseInfoRep.BaseInfoPageRedirect(products, available, baseConf.VersionType, req); code != 0 {
+	if url, code, msg := baseInfoRep.BaseInfoPageRedirect(products, available, baseConf.VersionType, aliveModule, userId, req); code != 0 {
 		app.OkWithCodeData(msg, map[string]string{"url": url}, code, c)
 		return
 	} else {
