@@ -612,13 +612,12 @@ func (a *AliveInfo) ReplaceIosResourceDesc(aliveDetails map[string]interface{}, 
 		aliveDetails["img_url_compressed"] = rd.ImgUrlCompressed
 		aliveDetails["alive_img_url"] = rd.AliveImgUrl
 	}
-	if paymentType == enums.PaymentTypeProduct {
+	pid, ok := aliveDetails["product_id"]
+	if paymentType == enums.PaymentTypeProduct && ok && pid != "" {
 		//非单卖的在小程序会显示product_name要进行过滤
-		if _, ok := aliveDetails["product_id"]; ok {
-			prd := a.GetMicroResourceDesc(aliveDetails["product_id"].(string))
-			if prd != nil {
-				aliveDetails["product_name"] = prd.Title
-			}
+		prd := a.GetMicroResourceDesc(pid.(string))
+		if prd != nil {
+			aliveDetails["product_name"] = prd.Title
 		}
 	}
 
