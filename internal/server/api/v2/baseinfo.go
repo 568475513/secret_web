@@ -267,7 +267,7 @@ func GetBaseInfo(c *gin.Context) {
 	// 直播权益信息
 	data["available_info"] = availableInfo
 	// 直播基本信息
-	data["alive_info"] = aliveInfoDetail
+	data["alive_info"] = aliveRep.ReplaceIosResourceDesc(aliveInfoDetail, req.ClientType, c.Request.UserAgent(), baseInfoRep.Alive.PaymentType)
 	// 直播播放信息
 	data["alive_play"] = alivePlayInfo
 	//直播静态化开关

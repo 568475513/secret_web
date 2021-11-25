@@ -1,6 +1,7 @@
 package course
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"time"
@@ -54,6 +55,10 @@ const (
 	aliveInfoCacheTime = "60"
 	// 直播的ModuleConf
 	aliveModuleConfCacheTime = "60"
+
+	//资源介绍信息缓存
+	resourceCacheKeyPre = "alive_resource_desc:%s:%s" //缓存key
+	resourceCacheTime   = "15"                        //缓存时间(s)
 )
 
 // 获取直播详情
@@ -544,6 +549,80 @@ func (a *AliveInfo) updatePv(resourceId string, resourceType int) {
 		}
 	}
 	redisConn.Do("set", pvCacheKey, pv)
+}
+
+// GetMicroResourceDesc 获取资源介绍信息
+func (a *AliveInfo) GetMicroResourceDesc(resourceId string) (rd *sub_business.ResourceDesc) {
+	//获取redis连接
+	conn, err := redis_alive.GetSubBusinessConn()
+	if err != nil {
+		logging.Error(fmt.Sprintf("getMicroResourceDesc get redis conn: %s", err.Error()))
+	}
+	defer conn.Close()
+
+	//先从缓存里面查
+	cacheKey := fmt.Sprintf(resourceCacheKeyPre, a.AppId, resourceId)
+	cacheData, err := redis.Bytes(conn.Do("get", cacheKey))
+	if err == nil {
+		_ = json.Unmarshal(cacheData, rd)
+		return
+	} else {
+		if err != redis.ErrNil {
+			logging.Error(fmt.Sprintf("getMicroResourceDesc redis get %s fails: %s", cacheKey, err.Error()))
+		}
+	}
+
+	//查数据库
+	rd, err = sub_business.GetSpecInfo(a.AppId, a.AliveId)
+	if err != nil {
+		logging.Error(fmt.Sprintf("getMicroResourceDesc mysql check fails: %s", err.Error()))
+	} else {
+		//缓存起来
+		data, err := json.Marshal(rd)
+		if err != nil {
+			logging.Error(fmt.Sprintf("getMicroResourceDesc json.Marshal fails: %s", err.Error()))
+		} else {
+			_, err := conn.Do("SETEX", cacheKey, resourceCacheTime, string(data))
+			if err != nil {
+				logging.Error(fmt.Sprintf("getMicroResourceDesc redis setex %s fails: %s",
+					cacheKey, err.Error()))
+			}
+		}
+	}
+	return
+}
+
+// ReplaceIosResourceDesc 替换直播的资源介绍信息
+func (a *AliveInfo) ReplaceIosResourceDesc(aliveDetails map[string]interface{}, clientType string, ua string, paymentType uint8) map[string]interface{} {
+	//先判断是否需要替换
+	if util.GetMiniProgramVersion(clientType, ua) != 2 {
+		return aliveDetails
+	}
+
+	//查询直播资源介绍信息
+	rd := a.GetMicroResourceDesc(a.AliveId)
+
+	//替换逻辑
+	if rd != nil {
+		aliveDetails["summary"] = rd.OrgSummary
+		aliveDetails["org_content"] = rd.OrgDescrb
+		aliveDetails["descrb"] = rd.Descrb
+		aliveDetails["title"] = rd.Title
+		aliveDetails["img_url"] = rd.ImgUrl
+		aliveDetails["img_url_compressed"] = rd.ImgUrlCompressed
+		aliveDetails["alive_img_url"] = rd.AliveImgUrl
+	}
+	if paymentType == enums.PaymentTypeProduct {
+		//非单卖的在小程序会显示product_name要进行过滤
+		if _, ok := aliveDetails["product_id"]; ok {
+			prd := a.GetMicroResourceDesc(aliveDetails["product_id"].(string))
+			if prd != nil {
+				aliveDetails["product_name"] = prd.Title
+			}
+		}
+	}
+
+	return aliveDetails
 }
 
 // Todo 老的获取直播播放链接@王桂钦

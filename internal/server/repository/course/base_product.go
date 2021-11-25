@@ -153,7 +153,7 @@ func (p *Product) FilterParentColumns(resources []*business.PayProducts, client,
 					}
 					wg.Add(1)
 					go func(v *business.PayProducts, k int, pType int) {
-						specInfo, err := sub_business.GetSpecInfo(v.AppId, v.Id, pType)
+						specInfo, err := sub_business.GetSpecInfo(v.AppId, v.Id)
 						if err == nil && specInfo.Id != 0 {
 							// 勾选了不显示的资源
 							if specInfo.State == 1 {
