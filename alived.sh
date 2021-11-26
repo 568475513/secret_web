@@ -37,7 +37,7 @@ if [ $1 == "start" ]; then
     go build -tags=jsoniter -o absGoDev -ldflags "-w -s"
     ps aux | grep "absGoDev server" | grep -v grep | awk '{print $2}' | xargs kill -9
     if [ $# -eq 2 ] && [ $2 == "-d" ]; then
-        nohup ./absGoDev server --port=9983 --env=develop > ./runtime/run.log 2>&1 &
+        nohup ./absGoDev server  > ./runtime/run.log 2>&1 &
         # tail -n 20 ./runtime/run.log
     else
         ./absGoDev server
