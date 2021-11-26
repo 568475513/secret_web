@@ -594,9 +594,6 @@ func (a *AliveInfo) GetMicroResourceDesc(resourceId string) (rd *sub_business.Re
 
 // ReplaceIosResourceDesc 替换直播的资源介绍信息
 func (a *AliveInfo) ReplaceIosResourceDesc(aliveDetails map[string]interface{}, clientType string, ua string, paymentType uint8) map[string]interface{} {
-	fmt.Println(clientType)
-	fmt.Println(ua)
-
 	//先判断是否需要替换
 	if util.GetMiniProgramVersion(clientType, ua) != 2 {
 		return aliveDetails
