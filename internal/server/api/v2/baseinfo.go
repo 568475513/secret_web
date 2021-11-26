@@ -354,6 +354,9 @@ func GetSecondaryInfo(c *gin.Context) {
 		// 获取店铺配置
 		baseConf, err = appRep.GetConfHubInfo()
 		return
+	}, func() (err error) {
+		//todo::获取product_info数据
+		return
 	})
 	// fmt.Println("GetSecondaryInfo的协程处理时间: ", time.Since(bT))
 	if err != nil {
