@@ -256,12 +256,23 @@ func (lb *LookBack) GetAliveComposeLookBack(aliveInfo *alive.Alive) (aVideoUrl s
 		"concat_mp4_url",
 		"is_drm",
 		"drm_m3u8_url",
+		"is_use_cut",
+		"cut_file_url",
 	})
 	if err != nil {
 		return aliveVideoUrl, miniAliveVideoUrl, aliveVideoMp4Url, err
 	}
 
 	if AliveHlsResult != nil { //查看备份临时表数据
+
+		//直播回放成本优化灰度名单
+		inGrayShop := redis_gray.InGrayShop("edit_media_key", lb.AppId)
+		if inGrayShop && AliveHlsResult.IsUseCut == 1 && AliveHlsResult.CutFileUrl != "" {
+			aliveVideoUrl = AliveHlsResult.CutFileUrl
+			miniAliveVideoUrl = AliveHlsResult.CutFileUrl
+			aliveVideoMp4Url = AliveHlsResult.ConcatMp4Url
+			return aliveVideoUrl, miniAliveVideoUrl, aliveVideoMp4Url, nil
+		}
 		if AliveHlsResult.ConcatM3u8Url != "" && AliveHlsResult.LatestM3u8FileId == AliveHlsResult.ConcatLatestFileId {
 			/*
 			 * 为了保证优化后的回看时长有保证
