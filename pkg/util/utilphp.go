@@ -62,6 +62,8 @@ type ContentParam struct {
 	ShareAgent   string `json:"share_agent"`
 	ShareFrom    string `json:"share_from"`
 	ExtraData    int    `json:"extra_data"`
+	WebAlive     int    `json:"web_alive"`
+	Token        string `json:"token"`
 }
 
 // 老的跳转拼接方法
