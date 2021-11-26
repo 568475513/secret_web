@@ -63,7 +63,7 @@ type ContentParam struct {
 	ShareFrom    string `json:"share_from"`
 	ExtraData    int    `json:"extra_data"`
 	WebAlive     int    `json:"web_alive"`
-	InviteToken  string `json:"InviteToken string"`
+	Token        string `json:"Token string"`
 }
 
 // 老的跳转拼接方法
