@@ -571,7 +571,7 @@ func (b *BaseInfo) GetAliveRoomUrl(req validator.BaseInfoRuleV2) string {
 		ShareFrom:    req.ShareFrom,
 		Scene:        req.Scene,
 		WebAlive:     req.WebAlive,
-		Token:        req.Token,
+		InviteToken:  req.InviteToken,
 		ExtraData:    e.AliveRoomPage,
 	}
 	return util.ContentUrl(params)
