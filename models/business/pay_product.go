@@ -14,7 +14,7 @@ const (
 )
 
 type PayProducts struct {
-	// Model
+	Model
 
 	AppId                  string              `json:"app_id"`
 	Id                     string              `json:"id"`
@@ -38,11 +38,14 @@ type PayProducts struct {
 	RecycleBinState        uint8               `json:"recycle_bin_state"` // recycle_bin_state
 	DisplayState           uint8               `json:"display_state"`     // display_state
 	State                  uint8               `json:"state"`
+	SellType               int                 `json:"sell_type"`
 
 	RatePrice  int      `json:"rate_price"`
 	SrcType    uint8    `json:"srcType"`
 	InActivity int      `json:"in_activity"`
 	Tags       []string `json:"tags"`
+	IsTry      int      `json:"is_try"`
+	ResourceId string   `json:"resource_id"`
 }
 
 // 获取状态值筛选的专栏资源
@@ -80,6 +83,16 @@ func GetPayProductByIds(appId string, ids []string) ([]*PayProducts, error) {
 		"recycle_bin_state",
 		"state",
 		"img_url"}).Where("app_id=? and state!=? and id in (?)", appId, 2, ids).Find(&pp).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+
+	return pp, nil
+}
+
+// GetInfoBatch 批量查询专栏信息
+func GetInfoBatch(appId string, productIds []string, s []string) (pp []*PayProducts, err error) {
+	err = db.Select(s).Where("app_id=? and id in (?) and state <> ?", appId, productIds, 2).Find(&pp).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
