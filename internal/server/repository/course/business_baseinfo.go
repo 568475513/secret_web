@@ -214,7 +214,7 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	aliveConf["pc_network_school_index_url"] = baseConf.PcCustomDomain
 	aliveConf["is_open_promoter"] = aliveModule.IsOpenPromoter
 	// 版本过期信息
-	versionState := b.getAppExpireTime(baseConf.Profit)
+	versionState := b.GetAppExpireTime(baseConf.Profit)
 	aliveIsRemind := 0
 	// 版本是否过期和功能是否过期0-过期 1-没过期，2-流量余额为0，-1未购买
 	// 该类型直播间是否过期
@@ -668,8 +668,8 @@ func (b *BaseInfo) canUseFastLive(versionType int) bool {
 	}
 }
 
-// 获取版本过期信息
-func (b *BaseInfo) getAppExpireTime(profit map[string]interface{}) map[string]interface{} {
+// GetAppExpireTime 获取版本过期信息
+func (b *BaseInfo) GetAppExpireTime(profit map[string]interface{}) map[string]interface{} {
 	// 查询直播间插件功能过期信息
 	versionStateArray := []string{
 		"alive_voice",
@@ -681,6 +681,8 @@ func (b *BaseInfo) getAppExpireTime(profit map[string]interface{}) map[string]in
 		"alive_show_man_time",
 		"alive_reward",
 		"exercise",
+		"hide_resource_count",
+		"hide_sub_count",
 	}
 
 	var permissionArray map[string]interface{}

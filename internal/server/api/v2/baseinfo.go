@@ -321,6 +321,13 @@ func GetSecondaryInfo(c *gin.Context) {
 		app.FailWithMessage(fmt.Sprintf("获取直播基础信息失败:%s", err.Error()), enums.ERROR, c)
 		return
 	}
+	//初始化product_info结构体
+	pi := course.ProductInfo{
+		AppId:     appId,
+		AliveId:   aliveInfo.Id,
+		ProductId: req.ProductId,
+		TargetUrl: req.TargetUrl,
+	}
 	// 协程组查询数据包
 	bT := time.Now()
 	var (
@@ -329,6 +336,7 @@ func GetSecondaryInfo(c *gin.Context) {
 		isShow       int
 		blackInfo    service.UserBlackInfo
 		baseConf     *service.AppBaseConf
+		productList  []map[string]interface{}
 	)
 	data := map[string]interface{}{"alive_id": aliveInfo.Id}
 	// 初始化用户实例
@@ -355,9 +363,16 @@ func GetSecondaryInfo(c *gin.Context) {
 		baseConf, err = appRep.GetConfHubInfo()
 		return
 	}, func() (err error) {
-		//todo::获取product_info数据
+		//获取关联父级列表信息
+		productList = pi.GetAliveProductsInfo(req.PaymentType)
 		return
 	})
+	//补充处理关联父级列表信息
+	client := util.GetMiniProgramVersion(c.GetString("client"), c.Request.UserAgent())
+	b := course.BaseInfo{
+		Alive: aliveInfo,
+	}
+	productList = pi.DealProductsInfo(productList, baseConf, client, b.GetAppExpireTime(baseConf.Profit), c.GetString("buz_uri"))
 	// fmt.Println("GetSecondaryInfo的协程处理时间: ", time.Since(bT))
 	if err != nil {
 		app.FailWithMessage(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), enums.ERROR, c)

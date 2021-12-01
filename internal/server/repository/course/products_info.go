@@ -463,3 +463,51 @@ func (pi *ProductInfo) GetUpdatePhase(productId string) int {
 
 	return total
 }
+
+// DealProductsInfo 补充替换父级列表信息部分字段
+func (pi *ProductInfo) DealProductsInfo(productList []map[string]interface{}, baseConf *service.AppBaseConf, client int, moduleProfit map[string]interface{}, buzUri string) []map[string]interface{} {
+	if len(productList) == 0 {
+		return productList
+	}
+	contentAppId := pi.GetFromTargetUrl("content_app_id")
+	//todo::确认product有没有修改得到
+	for _, product := range productList {
+		//是否显示订阅数
+		if baseConf.HideSubCount == 1 || client == 2 {
+			profit, ok := moduleProfit["hide_sub_count_is_remind"].(int)
+			if ok && (profit == 1 || profit == 0) {
+				product["purchase_count"] = 0
+			}
+		}
+		//是否显示期数
+		if baseConf.IsShowResourcecount == 0 {
+			profit, ok := moduleProfit["hide_resource_count"].(int)
+			if ok && (profit == 1 || profit == 0) {
+				product["update_num"] = 0
+			}
+		}
+		var resourceType int
+		if product["is_member"] == 0 {
+			resourceType = enums.ResourceTypePackage
+		} else if product["member_type"] == 1 {
+			resourceType = enums.ResourceTypeActivity
+		} else {
+			resourceType = enums.ResourceTypeTopic
+		}
+		if product["id"].(string)[0:5] == "term" {
+			resourceType = enums.ResourceTypeCamp
+		}
+		path := util.ContentUrl(util.ContentParam{
+			Type:         enums.PaymentTypeProduct,
+			ResourceType: resourceType,
+			ResourceId:   "",
+			ProductId:    product["id"].(string),
+		})
+		if contentAppId == "" {
+			util.UrlWrapper(path, buzUri, pi.AppId)
+		} else {
+			util.UrlWrapper(path, buzUri, contentAppId)
+		}
+	}
+	return productList
+}
