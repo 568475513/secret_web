@@ -34,6 +34,8 @@ type AliveConcatHlsResult struct {
 	IsUseConcatMp4           uint8  `json:"is_use_concat_mp4"`
 	IsDrm                    uint8  `json:"is_drm"`
 	DrmM3u8Url               string `json:"drm_m3u8_url"`
+	IsUseCut                 uint8  `json:"is_use_cut"`
+	CutFileUrl               string `json:"cut_file_url"`
 }
 
 func GetAliveLookBackFile(appId string, aliveId string, s []string) (*AliveLookBack, error) {

@@ -22,3 +22,5 @@ require (
 	go.uber.org/zap v1.10.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 )
+
+replace github.com/gomodule/redigo => talkcheap.xiaoeknow.com/AliveDev/redigo v1.8.4
