@@ -22,14 +22,22 @@ const (
 )
 
 // 将最近查看时间的更新任务丢进Redis队列异步处理
-func (c *EliveInfo) UpdateAccessTimeToQueue(appId, aliveId, userId string) {
+func (c *EliveInfo) UpdateAccessTimeToQueue(appId, aliveId, userId string, userType uint) {
 	cur := time.Now().Format("2006-01-02 15:04:05")
+	var role int
+	if userType == 1 {
+		// 讲师身份
+		role = 2
+	} else {
+		// 学员身份
+		role = 1
+	}
 	jsonData := map[string]interface{}{
 		"app_id":      appId,
 		"alive_id":    aliveId,
 		"user_id":     userId,
 		"access_time": cur,
-		"role":        1,
+		"role":        role,
 	}
 	jsonStrData, _ := json.Marshal(jsonData)
 	conn, _ := redis_elive.GetEliveRedisConn()

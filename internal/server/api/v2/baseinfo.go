@@ -144,7 +144,7 @@ func GetBaseInfo(c *gin.Context) {
 		aliveRep.IncreasePv(c.Request.Referer(), aliveInfo.Id, int(aliveInfo.AliveType))
 		// 异步丢队列，更新最近查看时间
 		eliveInfo := course.EliveInfo{}
-		eliveInfo.UpdateAccessTimeToQueue(req.AppId, req.ResourceId, userId)
+		eliveInfo.UpdateAccessTimeToQueue(req.AppId, req.ResourceId, userId, userType)
 		return nil
 	})
 
