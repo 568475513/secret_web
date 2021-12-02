@@ -51,7 +51,7 @@ func (pi *ProductInfo) GetFromTargetUrl(key string) string {
 		return value
 	}
 
-	err = json.Unmarshal([]byte(pi.TargetUrl), &targetUrlObj)
+	err = json.Unmarshal(util.UrlSafeB64Decode(pi.TargetUrl), &targetUrlObj)
 	if err != nil {
 		logging.Error(fmt.Sprintf("GetFromTargetUrl json.Unmarshal fails: %s", err.Error()))
 		return value
