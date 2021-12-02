@@ -132,7 +132,7 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 		pDetailsInfos = pi.getProductsDetailsInfo(pRelationIds, pi.AppId)
 		//查询训练营的信息
 		for _, item := range pRelationList {
-			if item.ProductType == enums.ResourceTypeLive {
+			if item.ProductType == 4 {
 				termIds = append(termIds, item.ProductId)
 			}
 			if len(termIds) != 0 {
