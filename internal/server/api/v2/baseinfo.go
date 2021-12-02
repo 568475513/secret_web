@@ -217,7 +217,7 @@ func GetBaseInfo(c *gin.Context) {
 	// 业务数据封装
 	baseInfoRep := course.BaseInfo{Alive: aliveInfo, AliveRep: &aliveRep, UserType: userType}
 	aliveInfoDetail := baseInfoRep.GetAliveInfoDetail()
-	aliveConf := baseInfoRep.GetAliveConfInfo(baseConf, aliveModule)
+	aliveConf := baseInfoRep.GetAliveConfInfo(baseConf, aliveModule, available, userId)
 	availableInfo := baseInfoRep.GetAvailableInfo(available, availableProduct, expireAt)
 	// 回放服务
 	lookBackRep := material.LookBack{AppId: req.AppId, AliveId: req.ResourceId}
@@ -284,7 +284,7 @@ func GetBaseInfo(c *gin.Context) {
 	// 首页链接
 	data["index_url"] = util.UrlWrapper("homepage", c.GetString("buz_uri"), req.AppId)
 	// 页面是否跳转
-	if url, code, msg := baseInfoRep.BaseInfoPageRedirect(products, available, baseConf.VersionType, aliveModule, userId, req); code != 0 {
+	if url, code, msg := baseInfoRep.BaseInfoPageRedirect(products, available, baseConf.VersionType, req); code != 0 {
 		app.OkWithCodeData(msg, map[string]string{"url": url}, code, c)
 		return
 	} else {

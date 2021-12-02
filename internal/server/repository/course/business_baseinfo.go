@@ -151,7 +151,7 @@ func (b *BaseInfo) GetAvailableInfo(available, availableProduct bool, expireAt s
 }
 
 // 组装直播店铺配置信息
-func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *alive.AliveModuleConf) map[string]interface{} {
+func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *alive.AliveModuleConf, available bool, userId string) map[string]interface{} {
 	aliveConf := make(map[string]interface{})
 	// 店铺名称
 	aliveConf["wx_app_name"] = baseConf.ShopName
@@ -303,6 +303,14 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	}
 	//该直播是否开启圆桌会议模式，0关闭，1开启
 	aliveConf["is_round_table_on"] = aliveModule.IsRoundTableOn
+
+	//是否开启防录屏
+	aliveConf["anti_screen_jump"] = 0
+	aliveConf["anti_screen_jump_url"] = ""
+	if aliveModule.IsAntiScreen == 1 && b.UserType == 0 && available == true{
+		aliveConf["anti_screen_jump"] = 1
+		aliveConf["anti_screen_jump_url"] = os.Getenv("LB_PF_ANTI_SCREEN") + "open_app?app_id=" + b.AliveRep.AppId + "&params=" + b.GetWakeUpAppParams(userId)
+	}
 
 	return aliveConf
 }
@@ -490,8 +498,6 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 	products []*business.PayProducts,
 	available bool,
 	versionType int,
-	aliveModule *alive.AliveModuleConf,
-	userId string,
 	req validator.BaseInfoRuleV2) (url string, code int, msg string) {
 	// 当无自身与属于专栏/会员售卖形式时，将超级会员加入进来
 	if len(products) == 0 && b.Alive.PaymentType == e.PaymentTypeProduct && !available {
@@ -553,14 +559,6 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 				code = e.SUCCESS
 			}
 		}
-	}
-
-	//是否开启防录屏
-	if aliveModule.IsAntiScreen == 1 && b.UserType == 0 && available == true{
-		//此msg切勿随意改动，鹅直播小程序根据它做特殊判断
-		msg = "该直播仅支持在鹅学习App观看"
-		url = os.Getenv("LB_PF_ANTI_SCREEN") + "open_app?app_id=" + b.AliveRep.AppId + "&params=" + b.GetWakeUpAppParams(userId)
-		code = e.RESOURCE_REDIRECT
 	}
 
 	return
