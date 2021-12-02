@@ -534,9 +534,9 @@ func (pi *ProductInfo) DealProductsInfo(productList []map[string]interface{}, ba
 			ProductId:    product["id"].(string),
 		})
 		if contentAppId == "" {
-			util.UrlWrapper(path, pi.BuzUri, pi.AppId)
+			product["url"] = util.UrlWrapper(path, pi.BuzUri, pi.AppId)
 		} else {
-			util.UrlWrapper(path, pi.BuzUri, contentAppId)
+			product["url"] = util.UrlWrapper(path, pi.BuzUri, contentAppId)
 		}
 	}
 	return productList
