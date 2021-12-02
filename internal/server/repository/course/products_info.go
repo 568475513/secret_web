@@ -85,7 +85,7 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 	}
 	defer conn.Close()
 
-	//先从缓存查关联父级数据
+	//查关联父级数据
 	contentAppId = pi.GetFromTargetUrl("content_app_id")
 	if contentAppId == "" {
 		cacheKey = fmt.Sprintf(columnsIdsCacheKeyPre, pi.AppId, pi.AliveId)
@@ -94,6 +94,7 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 	}
 	cacheData, err := redis.Bytes(conn.Do("GET", cacheKey))
 	if err == nil {
+		//有缓存直接取缓存
 		err = json.Unmarshal(cacheData, &pRelationList)
 		if err != nil {
 			logging.Error(fmt.Sprintf("GetAliveProductsInfo json.Unmarshal fails: %s", err.Error()))
