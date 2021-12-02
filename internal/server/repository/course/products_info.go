@@ -138,7 +138,7 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 		}
 		if len(termIds) != 0 {
 			cs := service.CampService{AppId: pi.AppId}
-			termInfos, err := cs.GetCampTermInfo(termIds, []string{
+			termInfos, err := cs.GetCampTermInfoV2(termIds, []string{
 				"app_id",
 				"id",
 				"title",
@@ -154,8 +154,20 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 			if err != nil {
 				logging.Error(fmt.Sprintf("GetAliveProductsInfo GetCampTermInfo fails: %s", err.Error()))
 			} else {
-				//todo::注意训练营和专栏部分字段名称不一致问题
-				pDetailsInfos = append(pDetailsInfos, termInfos...)
+				//处理训练营和专栏部分字段名称不一致问题
+				//有点恶心，但是想不到更好的转换逻辑...
+				for _, item := range termInfos {
+					pp := business.PayProducts{}
+					pp.Name.String = item["title"].(string)
+					pp.IsMember = 4
+					pp.MemberType = 0
+					pp.PurchaseCount = int(item["join_count"].(float64))
+					pp.State = uint8(item["display_state"].(float64))
+					pp.Id = item["id"].(string)
+					pp.AppId = item["app_id"].(string)
+					pp.ImgUrl.String = item["img_url"].(string)
+					pDetailsInfos = append(pDetailsInfos, &pp)
+				}
 			}
 		}
 	} else {
