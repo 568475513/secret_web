@@ -1,9 +1,13 @@
 package business
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+
+	"abs/pkg/provider/json"
+)
 
 type ProductRelation struct {
-	Model
+	//Model
 
 	AppId         string `json:"app_id"`
 	ProductId     string `json:"product_id"`
@@ -15,6 +19,10 @@ type ProductRelation struct {
 	IsTry         int    `json:"is_try"`
 	OrderWeight   int    `json:"order_weight"`
 	IsTop         int    `json:"is_top"`
+
+	//这里不直接继承model是为了方便service层json decode响应数据
+	CreatedAt json.JSONTime `json:"created_at"`
+	UpdatedAt json.JSONTime `json:"updated_at"`
 }
 
 const (

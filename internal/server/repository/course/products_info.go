@@ -135,27 +135,27 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 			if item.ProductType == 4 {
 				termIds = append(termIds, item.ProductId)
 			}
-			if len(termIds) != 0 {
-				cs := service.CampService{AppId: pi.AppId}
-				termInfos, err := cs.GetCampTermInfo(termIds, []string{
-					"app_id",
-					"id",
-					"title",
-					"price",
-					"distribute_percent",
-					"first_distribute_percent",
-					"join_count",
-					"img_url",
-					"display_state",
-					"recycle_bin_state",
-					"img_url_compressed",
-					"created_at"})
-				if err != nil {
-					logging.Error(fmt.Sprintf("GetAliveProductsInfo GetCampTermInfo fails: %s", err.Error()))
-				} else {
-					//todo::注意训练营和专栏部分字段名称不一致问题
-					pDetailsInfos = append(pDetailsInfos, termInfos...)
-				}
+		}
+		if len(termIds) != 0 {
+			cs := service.CampService{AppId: pi.AppId}
+			termInfos, err := cs.GetCampTermInfo(termIds, []string{
+				"app_id",
+				"id",
+				"title",
+				"price",
+				"distribute_percent",
+				"first_distribute_percent",
+				"join_count",
+				"img_url",
+				"display_state",
+				"recycle_bin_state",
+				"img_url_compressed",
+				"created_at"})
+			if err != nil {
+				logging.Error(fmt.Sprintf("GetAliveProductsInfo GetCampTermInfo fails: %s", err.Error()))
+			} else {
+				//todo::注意训练营和专栏部分字段名称不一致问题
+				pDetailsInfos = append(pDetailsInfos, termInfos...)
 			}
 		}
 	} else {

@@ -14,7 +14,7 @@ const (
 )
 
 type PayProducts struct {
-	Model
+	//Model
 
 	AppId                  string              `json:"app_id"`
 	Id                     string              `json:"id"`
@@ -46,6 +46,10 @@ type PayProducts struct {
 	Tags       []string `json:"tags"`
 	IsTry      int      `json:"is_try"`
 	ResourceId string   `json:"resource_id"`
+
+	//这里不直接继承model是为了方便service层json decode响应数据
+	CreatedAt json.JSONTime `json:"created_at"`
+	UpdatedAt json.JSONTime `json:"updated_at"`
 }
 
 // 获取状态值筛选的专栏资源
