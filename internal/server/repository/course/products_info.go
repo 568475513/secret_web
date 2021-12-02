@@ -47,7 +47,11 @@ func (pi *ProductInfo) GetFromTargetUrl(key string) string {
 		targetUrlObj = make(map[string]string)
 	)
 
-	err = json.Unmarshal([]byte(key), &targetUrlObj)
+	if pi.TargetUrl == "" {
+		return value
+	}
+
+	err = json.Unmarshal([]byte(pi.TargetUrl), &targetUrlObj)
 	if err != nil {
 		logging.Error(fmt.Sprintf("GetFromTargetUrl json.Unmarshal fails: %s", err.Error()))
 		return value
