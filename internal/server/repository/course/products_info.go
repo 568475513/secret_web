@@ -99,7 +99,7 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 		if err != nil {
 			logging.Error(fmt.Sprintf("GetAliveProductsInfo json.Unmarshal fails: %s", err.Error()))
 		}
-	} else if err != redis.ErrNil {
+	} else if err == redis.ErrNil {
 		//无数据则查库
 		if contentAppId == "" {
 			pRelationList, err = business.GetResRelation(pi.AppId, pi.AliveId, []string{"*"})
