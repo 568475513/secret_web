@@ -29,6 +29,7 @@ type SecondaryInfoRuleV2 struct {
 	ProductId     string `form:"product_id" json:"product_id"`
 	StaticIsStart string `form:"static_is_start" json:"static_is_start"`
 	TargetUrl     string `form:"target_url" json:"target_url"`
+	Channel       string `form:"channel" json:"channel"`
 }
 
 // v2/baseinfo.go/DataReported

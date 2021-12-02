@@ -321,13 +321,6 @@ func GetSecondaryInfo(c *gin.Context) {
 		app.FailWithMessage(fmt.Sprintf("获取直播基础信息失败:%s", err.Error()), enums.ERROR, c)
 		return
 	}
-	//初始化product_info结构体
-	pi := course.ProductInfo{
-		AppId:     appId,
-		AliveId:   aliveInfo.Id,
-		ProductId: req.ProductId,
-		TargetUrl: req.TargetUrl,
-	}
 	// 协程组查询数据包
 	bT := time.Now()
 	var (
@@ -337,6 +330,18 @@ func GetSecondaryInfo(c *gin.Context) {
 		blackInfo    service.UserBlackInfo
 		baseConf     *service.AppBaseConf
 		productList  []map[string]interface{}
+		baseInfo     = course.BaseInfo{
+			Alive:    aliveInfo,
+			AliveRep: &aliveRep,
+		}
+		productsInfo = course.ProductInfo{
+			AppId:     appId,
+			AliveId:   aliveInfo.Id,
+			ProductId: req.ProductId,
+			TargetUrl: req.TargetUrl,
+			BuzUri:    c.GetString("buz_uri"),
+			Channel:   req.Channel,
+		}
 	)
 	data := map[string]interface{}{"alive_id": aliveInfo.Id}
 	// 初始化用户实例
@@ -364,15 +369,21 @@ func GetSecondaryInfo(c *gin.Context) {
 		return
 	}, func() (err error) {
 		//获取关联父级列表信息
-		productList = pi.GetAliveProductsInfo(req.PaymentType)
+		productList = productsInfo.GetAliveProductsInfo(req.PaymentType)
 		return
 	})
 	//补充处理关联父级列表信息
 	client := util.GetMiniProgramVersion(c.GetString("client"), c.Request.UserAgent())
-	b := course.BaseInfo{
-		Alive: aliveInfo,
+	productList = productsInfo.DealProductsInfo(
+		productList,
+		baseConf,
+		client,
+		baseInfo.GetAppExpireTime(baseConf.Profit))
+	//生成more_info链接
+	parentsInfo := map[string]interface{}{
+		"product_list": productsInfo,
+		"more_info":    productsInfo.GetMoreInfo(productList, aliveInfo),
 	}
-	productList = pi.DealProductsInfo(productList, baseConf, client, b.GetAppExpireTime(baseConf.Profit), c.GetString("buz_uri"))
 	// fmt.Println("GetSecondaryInfo的协程处理时间: ", time.Since(bT))
 	if err != nil {
 		app.FailWithMessage(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), enums.ERROR, c)
@@ -412,6 +423,8 @@ func GetSecondaryInfo(c *gin.Context) {
 	data["share_file_url"] = baseInfoRep.GetShareFileListUrl()
 	// 获取云通信配置
 	data["im_init"] = appRep.GetCommunicationCloudInfo(userId, aliveInfo.RoomId, false)
+	// 关联父级信息列表
+	data["product_info"] = parentsInfo
 	app.OkWithData(data, c)
 }
 

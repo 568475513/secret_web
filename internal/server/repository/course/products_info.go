@@ -23,6 +23,8 @@ type ProductInfo struct {
 	AppId     string
 	AliveId   string
 	ProductId string
+	Channel   string
+	BuzUri    string
 	TargetUrl string
 }
 
@@ -233,6 +235,20 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 	}
 
 	return
+}
+
+// GetMoreInfo 拼接展示多个父级课程的中间页url
+func (pi *ProductInfo) GetMoreInfo(productList []map[string]interface{}, alive *alive.Alive) (url string) {
+	if len(productList) < 2 {
+		return
+	}
+	path := util.ContentUrl(util.ContentParam{
+		ResourceType: enums.ResourceTypeLive,
+		ResourceId:   alive.Id,
+		ChannelId:    pi.Channel,
+	})
+	url = util.UrlWrapper(path, pi.BuzUri, pi.AppId)
+	return url
 }
 
 //格式化父级关联关系数据
@@ -465,7 +481,7 @@ func (pi *ProductInfo) GetUpdatePhase(productId string) int {
 }
 
 // DealProductsInfo 补充替换父级列表信息部分字段
-func (pi *ProductInfo) DealProductsInfo(productList []map[string]interface{}, baseConf *service.AppBaseConf, client int, moduleProfit map[string]interface{}, buzUri string) []map[string]interface{} {
+func (pi *ProductInfo) DealProductsInfo(productList []map[string]interface{}, baseConf *service.AppBaseConf, client int, moduleProfit map[string]interface{}) []map[string]interface{} {
 	if len(productList) == 0 {
 		return productList
 	}
@@ -504,9 +520,9 @@ func (pi *ProductInfo) DealProductsInfo(productList []map[string]interface{}, ba
 			ProductId:    product["id"].(string),
 		})
 		if contentAppId == "" {
-			util.UrlWrapper(path, buzUri, pi.AppId)
+			util.UrlWrapper(path, pi.BuzUri, pi.AppId)
 		} else {
-			util.UrlWrapper(path, buzUri, contentAppId)
+			util.UrlWrapper(path, pi.BuzUri, contentAppId)
 		}
 	}
 	return productList
