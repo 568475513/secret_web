@@ -500,7 +500,6 @@ func (pi *ProductInfo) DealProductsInfo(productList []map[string]interface{}, ba
 		return productList
 	}
 	contentAppId := pi.GetFromTargetUrl("content_app_id").(string)
-	//todo::确认product有没有修改得到
 	for _, product := range productList {
 		//是否显示订阅数
 		if baseConf.HideSubCount == 1 || client == 2 {
