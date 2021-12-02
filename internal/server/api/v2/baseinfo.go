@@ -381,7 +381,7 @@ func GetSecondaryInfo(c *gin.Context) {
 		baseInfo.GetAppExpireTime(baseConf.Profit))
 	//生成more_info链接
 	parentsInfo := map[string]interface{}{
-		"product_list": productsInfo,
+		"product_list": productList,
 		"more_info":    productsInfo.GetMoreInfo(productList, aliveInfo),
 	}
 	// fmt.Println("GetSecondaryInfo的协程处理时间: ", time.Since(bT))

@@ -93,17 +93,13 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 		cacheKey = fmt.Sprintf(columnsIdsCacheKeyPre, contentAppId, pi.AliveId)
 	}
 	cacheData, err := redis.Bytes(conn.Do("GET", cacheKey))
-	if err != nil && err != redis.ErrNil {
-		logging.Error(fmt.Sprintf("GetAliveProductsInfo redis get %s fails: %s", cacheKey, err.Error()))
-	} else {
+	if err == nil {
 		err = json.Unmarshal(cacheData, &pRelationList)
 		if err != nil {
 			logging.Error(fmt.Sprintf("GetAliveProductsInfo json.Unmarshal fails: %s", err.Error()))
 		}
-	}
-
-	//无数据则查库 todo::注意缓存穿透问题
-	if pRelationIds == nil {
+	} else if err != redis.ErrNil {
+		//无数据则查库
 		if contentAppId == "" {
 			pRelationList, err = business.GetResRelation(pi.AppId, pi.AliveId, []string{"*"})
 		} else {
@@ -120,6 +116,8 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 				logging.Error(fmt.Sprintf("GetAliveProductsInfo reids SETEX %s fails: %s", cacheKey, err.Error()))
 			}
 		}
+	} else {
+		logging.Error(fmt.Sprintf("GetAliveProductsInfo redis get %s fails: %s", cacheKey, err.Error()))
 	}
 
 	//提取父级id
