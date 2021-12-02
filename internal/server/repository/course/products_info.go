@@ -40,11 +40,11 @@ const (
 )
 
 // GetFromTargetUrl 从target_url提取元素
-func (pi *ProductInfo) GetFromTargetUrl(key string) string {
+func (pi *ProductInfo) GetFromTargetUrl(key string) interface{} {
 	var (
 		err          error
-		value        string
-		targetUrlObj = make(map[string]string)
+		value        interface{}
+		targetUrlObj = make(map[string]interface{})
 	)
 
 	if pi.TargetUrl == "" {
@@ -86,7 +86,7 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 	defer conn.Close()
 
 	//查关联父级数据
-	contentAppId = pi.GetFromTargetUrl("content_app_id")
+	contentAppId = pi.GetFromTargetUrl("content_app_id").(string)
 	if contentAppId == "" {
 		cacheKey = fmt.Sprintf(columnsIdsCacheKeyPre, pi.AppId, pi.AliveId)
 	} else {
@@ -488,7 +488,7 @@ func (pi *ProductInfo) DealProductsInfo(productList []map[string]interface{}, ba
 	if len(productList) == 0 {
 		return productList
 	}
-	contentAppId := pi.GetFromTargetUrl("content_app_id")
+	contentAppId := pi.GetFromTargetUrl("content_app_id").(string)
 	//todo::确认product有没有修改得到
 	for _, product := range productList {
 		//是否显示订阅数
