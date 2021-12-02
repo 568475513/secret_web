@@ -193,8 +193,8 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 				columnInfo := make(map[string]interface{})
 				columnInfo["app_id"] = item.AppId
 				columnInfo["id"] = item.Id
-				columnInfo["title"] = item.Name
-				columnInfo["img_url"] = item.ImgUrl
+				columnInfo["title"] = item.Name.String
+				columnInfo["img_url"] = item.ImgUrl.String
 				if pType == enums.ResourceTypeCamp {
 					//营期不显示这些字段
 					columnInfo["update_num"] = 0
@@ -213,8 +213,8 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 				termInfo := make(map[string]interface{})
 				termInfo["app_id"] = item.AppId
 				termInfo["id"] = item.Id
-				termInfo["title"] = item.Name
-				termInfo["img_url"] = item.ImgUrl
+				termInfo["title"] = item.Name.String
+				termInfo["img_url"] = item.ImgUrl.String
 				if pType == enums.ResourceTypeCamp {
 					//营期不显示这些字段
 					termInfo["update_num"] = 0
