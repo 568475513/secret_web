@@ -174,7 +174,7 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 		pDetailsInfos = pi.getProductsDetailsInfo(pRelationIds, contentAppId)
 	}
 
-	//遍历父级列表数据，一些逻辑处理 todo::确认此处的item变更是否生效
+	//遍历父级列表数据，一些逻辑处理
 	var termSlice []map[string]interface{}
 	if len(pDetailsInfos) != 0 {
 		pfRelationList := pi.formatRelationList(pRelationList)
@@ -200,7 +200,6 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 				pType = enums.ResourceTypeCamp
 			}
 
-			//todo::需要注意默认值问题
 			if item.RecycleBinState != 1 && item.State != 1 {
 				columnInfo := make(map[string]interface{})
 				columnInfo["app_id"] = item.AppId
