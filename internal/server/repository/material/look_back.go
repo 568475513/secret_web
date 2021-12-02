@@ -255,7 +255,8 @@ func (lb *LookBack) GetAliveComposeLookBack(aliveInfo *alive.Alive) (aVideoUrl s
 		"is_use_concat_mp4",
 		"concat_mp4_url",
 		"is_drm",
-		"drm_m3u8_url"})
+		"drm_m3u8_url",
+	})
 	if err != nil {
 		return aliveVideoUrl, miniAliveVideoUrl, aliveVideoMp4Url, err
 	}

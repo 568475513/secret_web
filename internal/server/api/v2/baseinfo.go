@@ -142,6 +142,9 @@ func GetBaseInfo(c *gin.Context) {
 		aliveInfo.ViewCount, _ = aliveRep.UpdateViewCountToCache(aliveInfo.ViewCount)
 		// 直播带货商品PV加一
 		aliveRep.IncreasePv(c.Request.Referer(), aliveInfo.Id, int(aliveInfo.AliveType))
+		// 异步丢队列，更新最近查看时间
+		eliveInfo := course.EliveInfo{}
+		eliveInfo.UpdateAccessTimeToQueue(req.AppId, req.ResourceId, userId, userType)
 		return nil
 	})
 
