@@ -556,9 +556,10 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 	}
 
 	//是否开启防录屏
-	if aliveModule.IsAntiScreen == 1 {
+	if aliveModule.IsAntiScreen == 1 && b.UserType == 0 && available == true{
+		//此msg切勿随意改动，鹅直播小程序根据它做特殊判断
 		msg = "该直播仅支持在鹅学习App观看"
-		url = "https://service.h5.xiaoeknow.com/open_app?app_id=" + b.AliveRep.AppId + "&params=" + b.GetWakeUpAppParams(userId)
+		url = os.Getenv("LB_PF_ANTI_SCREEN") + "open_app?app_id=" + b.AliveRep.AppId + "&params=" + b.GetWakeUpAppParams(userId)
 		code = e.RESOURCE_REDIRECT
 	}
 
