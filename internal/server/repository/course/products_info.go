@@ -86,7 +86,7 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 	defer conn.Close()
 
 	//查关联父级数据
-	contentAppId = pi.GetFromTargetUrl("content_app_id").(string)
+	contentAppId, _ = pi.GetFromTargetUrl("content_app_id").(string)
 	if contentAppId == "" {
 		cacheKey = fmt.Sprintf(columnsIdsCacheKeyPre, pi.AppId, pi.AliveId)
 	} else {
@@ -499,7 +499,7 @@ func (pi *ProductInfo) DealProductsInfo(productList []map[string]interface{}, ba
 	if len(productList) == 0 {
 		return productList
 	}
-	contentAppId := pi.GetFromTargetUrl("content_app_id").(string)
+	contentAppId, _ := pi.GetFromTargetUrl("content_app_id").(string)
 	for _, product := range productList {
 		//是否显示订阅数
 		if baseConf.HideSubCount == 1 || client == 2 {
