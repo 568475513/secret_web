@@ -604,13 +604,27 @@ func (a *AliveInfo) ReplaceIosResourceDesc(aliveDetails map[string]interface{}, 
 
 	//替换逻辑
 	if rd != nil {
-		aliveDetails["summary"] = rd.OrgSummary
-		aliveDetails["org_content"] = rd.OrgDescrb
-		aliveDetails["descrb"] = rd.Descrb
-		aliveDetails["title"] = rd.Title
-		aliveDetails["img_url"] = rd.ImgUrl
-		aliveDetails["img_url_compressed"] = rd.ImgUrlCompressed
-		aliveDetails["alive_img_url"] = rd.AliveImgUrl
+		if rd.OrgSummary != "" {
+			aliveDetails["summary"] = rd.OrgSummary
+		}
+		if rd.OrgDescrb != "" {
+			aliveDetails["org_content"] = rd.OrgDescrb
+		}
+		if rd.Descrb != "" {
+			aliveDetails["descrb"] = rd.Descrb
+		}
+		if rd.Title != "" {
+			aliveDetails["title"] = rd.Title
+		}
+		if rd.ImgUrl != "" {
+			aliveDetails["img_url"] = rd.ImgUrl
+		}
+		if rd.ImgUrlCompressed != "" {
+			aliveDetails["img_url_compressed"] = rd.ImgUrlCompressed
+		}
+		if rd.AliveImgUrl != "" {
+			aliveDetails["alive_img_url"] = rd.AliveImgUrl
+		}
 	}
 
 	pid, ok := aliveDetails["product_id"]
