@@ -266,7 +266,7 @@ func (lb *LookBack) GetAliveComposeLookBack(aliveInfo *alive.Alive) (aVideoUrl s
 	if AliveHlsResult != nil { //查看备份临时表数据
 
 		//直播回放成本优化灰度名单
-		inGrayShop := redis_gray.InGrayShop("edit_media_key", lb.AppId)
+		inGrayShop := redis_gray.InGrayShop("replay_cost_optimize", lb.AppId)
 		if inGrayShop && AliveHlsResult.IsUseCut == 1 && AliveHlsResult.CutFileUrl != "" {
 			aliveVideoUrl = AliveHlsResult.CutFileUrl
 			miniAliveVideoUrl = AliveHlsResult.CutFileUrl
