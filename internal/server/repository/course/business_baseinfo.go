@@ -309,7 +309,7 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	aliveConf["anti_screen_jump_url"] = ""
 	if aliveModule.IsAntiScreen == 1 && b.UserType == 0 && available == true{
 		aliveConf["anti_screen_jump"] = 1
-		aliveConf["anti_screen_jump_url"] = os.Getenv("HOST_KNOW_SERVICEH5") + "open_app?app_id=" + b.AliveRep.AppId + "&params=" + b.GetWakeUpAppParams(userId)
+		aliveConf["anti_screen_jump_url"] = os.Getenv("LB_PF_ANTI_SCREEN") + "open_app?app_id=" + b.AliveRep.AppId + "&params=" + b.GetWakeUpAppParams(userId)
 	}
 
 	return aliveConf
