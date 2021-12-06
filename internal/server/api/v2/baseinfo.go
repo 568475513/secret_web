@@ -154,6 +154,7 @@ func GetBaseInfo(c *gin.Context) {
 		//app.FailWithMessage(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), enums.ERROR, c)
 		//return
 	}
+	logging.Error(baseConf.VersionType)
 	//企学院授权跳转逻辑
 	if baseConf.VersionType == enums.VERSION_TYPE_TRAINING_TRY || baseConf.VersionType == enums.VERSION_TYPE_TRAINING_STD {
 		isRedirect, err := appRep.TrainingIsRedirect(req.AppId, userId)
