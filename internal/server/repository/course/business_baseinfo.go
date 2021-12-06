@@ -570,6 +570,8 @@ func (b *BaseInfo) GetWakeUpAppParams(userId string) (url string) {
 	params["app_id"] = b.AliveRep.AppId
 	params["resource_id"] = b.AliveRep.AliveId
 	params["resource_type"] = 4
+	params["user_id"] = userId
+	params["content_app_id"] = ""
 	params["encrypt_user_id"] = util.GetEncryptUserId(userId)
 	tempParam := make(map[string]interface{})
 	tempParam["params"] = params

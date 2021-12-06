@@ -114,7 +114,7 @@ func GetBaseInfo(c *gin.Context) {
 		// 获取店铺配置相关
 		goSpan := tracer.StartSpan("获取店铺配置相关", opentracing.ChildOf(childSpan.Context()))
 		defer goSpan.Finish()
-		baseConf, err = appRep.GetConfHubInfo()
+		baseConf = &service.AppBaseConf{}//, err = appRep.GetConfHubInfo()
 		// 报错不抛出
 		return nil
 	}, func() (err error) {
