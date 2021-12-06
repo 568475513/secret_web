@@ -226,7 +226,7 @@ func DuplicateRemovalByArrString(s []string) []string {
 
 func GetEncryptUserId(userId string) (encryptUserId string) {
 	origData := []byte(userId)
-	keyStr := md5.Sum([]byte("xiaoeapp2021"))// 密钥字符串
+	keyStr := fmt.Sprintf("%x", md5.Sum([]byte("xiaoeapp2021"))) // 密钥字符串
 	//截取key前16位字符
 	key16Str := keyStr[0 : len(keyStr)-16]
 	key := []byte(key16Str);//加密字符串
