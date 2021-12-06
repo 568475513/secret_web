@@ -100,27 +100,28 @@ type AliveForbid struct {
 }
 
 type AliveModuleConf struct {
-	AppId           string `json:"app_id"`
-	AliveId         string `json:"alive_id"`
-	IsCouponOn      uint8  `json:"is_coupon_on"`
-	IsCardOn        uint8  `json:"is_card_on"`
-	IsShowRewardOn  uint8  `json:"is_show_reward_on"`
-	IsInviteOn      uint8  `json:"is_invite_on"`
-	IsMessageOn     uint8  `json:"is_message_on"`
-	IsSignInOn      uint8  `json:"is_sign_in_on"`
-	IsMessageVerify uint8  `json:"is_message_verify"`
-	IsPrizeOn       uint8  `json:"is_prize_on"`
-	MessageAhead    int    `json:"message_ahead"`
-	AliveMode       uint8  `json:"alive_mode"`
-	CompleteTime    uint16 `json:"complete_time"`
-	LookbackName    string `json:"lookback_name"`
-	LookbackTime    string `json:"lookback_time"`
-	IsRedirectIndex uint8  `json:"is_redirect_index"`
-	IsRoundTableOn  uint8  `json:"is_round_table_on"`
-	IsRedPacketOn   uint8  `json:"is_red_packet_on"`
-	IsPictureOn     uint8  `json:"is_picture_on"`
-	IsAuditFirstOn  uint8  `json:"is_audit_first_on"`
-	IsOpenPromoter  uint8  `json:"is_open_promoter"`
+	AppId             string `json:"app_id"`
+	AliveId           string `json:"alive_id"`
+	IsCouponOn        uint8  `json:"is_coupon_on"`
+	IsCardOn          uint8  `json:"is_card_on"`
+	IsShowRewardOn    uint8  `json:"is_show_reward_on"`
+	IsInviteOn        uint8  `json:"is_invite_on"`
+	IsMessageOn       uint8  `json:"is_message_on"`
+	IsSignInOn        uint8  `json:"is_sign_in_on"`
+	IsMessageVerify   uint8  `json:"is_message_verify"`
+	IsPrizeOn         uint8  `json:"is_prize_on"`
+	MessageAhead      int    `json:"message_ahead"`
+	AliveMode         uint8  `json:"alive_mode"`
+	CompleteTime      uint16 `json:"complete_time"`
+	LookbackName      string `json:"lookback_name"`
+	LookbackTime      string `json:"lookback_time"`
+	IsRedirectIndex   uint8  `json:"is_redirect_index"`
+	IsRoundTableOn    uint8  `json:"is_round_table_on"`
+	IsRedPacketOn     uint8  `json:"is_red_packet_on"`
+	IsPictureOn       uint8  `json:"is_picture_on"`
+	IsAuditFirstOn    uint8  `json:"is_audit_first_on"`
+	IsOpenPromoter    uint8  `json:"is_open_promoter"`
+	IsOpenShareReward uint8  `json:"is_open_share_reward"`
 }
 
 const (
@@ -153,15 +154,15 @@ func GetAliveInfoByChannelId(channelId string, s []string) (*Alive, error) {
 // 获取直播讲师信息详情
 func GetAliveRole(appId string, aliveId string) ([]*AliveRole, error) {
 	var ar []*AliveRole
-	con,err := redis_alive.GetLiveBusinessConn()
+	con, err := redis_alive.GetLiveBusinessConn()
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	defer con.Close()
-	cacheKey := fmt.Sprintf(AliveRoleCacheKey,appId,aliveId)
-	data,_ := redis.Bytes(con.Do("GET",cacheKey))
+	cacheKey := fmt.Sprintf(AliveRoleCacheKey, appId, aliveId)
+	data, _ := redis.Bytes(con.Do("GET", cacheKey))
 	if data != nil {
-		err = jsonUtil.Unmarshal(data,&ar)
+		err = jsonUtil.Unmarshal(data, &ar)
 	} else {
 		err = db.Select("role_name,user_id,user_name,is_current_lecturer,is_can_exceptional").
 			Where("app_id=? and alive_id=? and state=?", appId, aliveId, 0).
@@ -169,9 +170,9 @@ func GetAliveRole(appId string, aliveId string) ([]*AliveRole, error) {
 		if err != nil && err != gorm.ErrRecordNotFound {
 			return nil, err
 		}
-		data,err = jsonUtil.Marshal(ar)
+		data, err = jsonUtil.Marshal(ar)
 		if err == nil {
-			con.Do("SET",cacheKey,data,"EX",5)
+			con.Do("SET", cacheKey, data, "EX", 5)
 		}
 	}
 	return ar, err
