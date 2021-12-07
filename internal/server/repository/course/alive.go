@@ -328,11 +328,7 @@ func (a *AliveInfo) GetAliveState(start time.Time, stop time.Time, mst time.Time
 	state = 1
 	//手动结束 && 现在的时间大于手动结束时间
 	if !mst.IsZero() && now.After(mst) {
-		if rt.Add(300 * time.Second).Before(now) {
-			state = 3
-		} else {
-			state = 2
-		}
+		state = 3
 	}
 	if mst.IsZero() && pstate != 1 {
 		// 设定直播时间已经到了,并且断流
