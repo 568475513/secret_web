@@ -475,7 +475,7 @@ func (pi *ProductInfo) GetUpdatePhase(productId string) int {
 					end = len(aliveIds)
 				}
 				batch := aliveIds[start:end]
-				num, err := alive.CountAlive(pi.AliveId, batch, nowTime)
+				num, err := alive.CountAlive(pi.AppId, batch, nowTime)
 				if err != nil {
 					logging.Error(fmt.Sprintf("GetUpdatePhase CountAlive fails: %s", err.Error()))
 				}
