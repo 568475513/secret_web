@@ -197,7 +197,7 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 			} else if item.IsMember == 4 {
 				pType = enums.ResourceTypeCamp
 			} else {
-				pType = enums.ResourceTypeCamp
+				pType = enums.ResourceTypePackage
 			}
 
 			if item.RecycleBinState != 1 && item.State != 1 {
