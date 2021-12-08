@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"abs/pkg/app"
@@ -30,7 +31,14 @@ const (
 func (srs *ShareRewardService) RequestShareRewardToList() (app.Response, error) {
 	var result app.Response
 	request := Post(fmt.Sprintf("%s/%s", os.Getenv("LB_PF_SHAREREWARD_IN"), shareRewardInsertListUrl))
-	request.SetParams(srs)
+	request.SetParams(map[string]string{
+		"app_id":        srs.AppId,
+		"resource_id":   srs.ResourceId,
+		"resource_type": strconv.Itoa(srs.ResourceType),
+		"share_user_id": srs.ShareUserId,
+		"user_id":       srs.UserId,
+		"share_type":    strconv.Itoa(srs.ShareType),
+	})
 	request.SetHeader("Content-Type", "application/x-www-form-urlencoded")
 	request.SetTimeout(shareRewardInsertListTimeOut * time.Millisecond)
 	err := request.ToJSON(&result)
