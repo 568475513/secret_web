@@ -166,6 +166,7 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 					pp.Id = item["id"].(string)
 					pp.AppId = item["app_id"].(string)
 					pp.ImgUrl.String = item["img_url"].(string)
+					pp.SellType = 1
 					pDetailsInfos = append(pDetailsInfos, &pp)
 				}
 			}
@@ -175,7 +176,7 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 	}
 
 	//遍历父级列表数据，一些逻辑处理
-	var termSlice []map[string]interface{}
+	var tempSlice []map[string]interface{}
 	if len(pDetailsInfos) != 0 {
 		pfRelationList := pi.formatRelationList(pRelationList)
 		for _, item := range pDetailsInfos {
@@ -219,7 +220,7 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 				columnInfo["purchase_count"] = item.PurchaseCount
 				columnInfo["sell_type"] = item.SellType
 				result = append(result, columnInfo)
-			} else if len(termSlice) == 0 {
+			} else if len(tempSlice) == 0 {
 				//确保就算上级全部下架或隐藏，也留一个临时上级，避免无处跳转
 				termInfo := make(map[string]interface{})
 				termInfo["app_id"] = item.AppId
@@ -238,14 +239,13 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 				termInfo["member_type"] = item.MemberType
 				termInfo["purchase_count"] = item.PurchaseCount
 				termInfo["sell_type"] = item.SellType
-				termSlice = append(termSlice, termInfo)
+				tempSlice = append(tempSlice, termInfo)
 			}
 		}
 	}
 	if len(result) == 0 && paymentType == 3 {
 		//原注释："非单卖资源现在无上级？？要爆炸"
-		//我也不知道这段逻辑是干嘛，我也不敢动它
-		result = append(result, termSlice...)
+		result = append(result, tempSlice...)
 	}
 
 	return
