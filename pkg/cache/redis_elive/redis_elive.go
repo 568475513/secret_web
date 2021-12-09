@@ -54,6 +54,7 @@ func Init() error {
 
 func GetEliveRedisConn() (*EliveRedisConn, error) {
 	conn := EliveRedisConnPool.Get()
+
 	eliveRedisConn := &EliveRedisConn{
 		conn: conn,
 	}
@@ -64,4 +65,8 @@ func GetEliveRedisConn() (*EliveRedisConn, error) {
 func (conn *EliveRedisConn) PushToUpdateAccessTimeQueue(key string, data []byte) error {
 	_, err := conn.conn.Do("LPUSH", key, data)
 	return err
+}
+
+func (c *EliveRedisConn) Close() {
+	c.conn.Close()
 }
