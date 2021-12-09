@@ -41,6 +41,7 @@ func (c *EliveInfo) UpdateAccessTimeToQueue(appId, aliveId, userId string, userT
 	}
 	jsonStrData, _ := json.Marshal(jsonData)
 	conn, _ := redis_elive.GetEliveRedisConn()
+	defer conn.Close()
 	err := conn.PushToUpdateAccessTimeQueue(accessTimeListKey, jsonStrData)
 	if err != nil {
 		logging.Error(err)
