@@ -222,24 +222,24 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 				result = append(result, columnInfo)
 			} else if len(tempSlice) == 0 {
 				//确保就算上级全部下架或隐藏，也留一个临时上级，避免无处跳转
-				termInfo := make(map[string]interface{})
-				termInfo["app_id"] = item.AppId
-				termInfo["id"] = item.Id
-				termInfo["title"] = item.Name.String
-				termInfo["img_url"] = item.ImgUrl.String
+				tempInfo := make(map[string]interface{})
+				tempInfo["app_id"] = item.AppId
+				tempInfo["id"] = item.Id
+				tempInfo["title"] = item.Name.String
+				tempInfo["img_url"] = item.ImgUrl.String
 				if pType == enums.ResourceTypeCamp {
 					//营期不显示这些字段
-					termInfo["update_num"] = 0
-					termInfo["resource_count"] = 0
+					tempInfo["update_num"] = 0
+					tempInfo["resource_count"] = 0
 				} else {
-					termInfo["update_num"] = pi.GetUpdatePhase(item.Id)
-					termInfo["resource_count"] = item.ResourceCount
+					tempInfo["update_num"] = pi.GetUpdatePhase(item.Id)
+					tempInfo["resource_count"] = item.ResourceCount
 				}
-				termInfo["is_member"] = item.IsMember
-				termInfo["member_type"] = item.MemberType
-				termInfo["purchase_count"] = item.PurchaseCount
-				termInfo["sell_type"] = item.SellType
-				tempSlice = append(tempSlice, termInfo)
+				tempInfo["is_member"] = item.IsMember
+				tempInfo["member_type"] = item.MemberType
+				tempInfo["purchase_count"] = item.PurchaseCount
+				tempInfo["sell_type"] = item.SellType
+				tempSlice = append(tempSlice, tempInfo)
 			}
 		}
 	}

@@ -33,7 +33,7 @@ const (
 
 // GetResRelation 根据资源id查询父级关联关系
 func GetResRelation(appId string, resourceId string, s []string) (data []*ProductRelation, err error) {
-	err = dbRw.Table(tableName).Select(s).
+	err = db.Table(tableName).Select(s).
 		Where("app_id = ? and resource_id = ? and relation_state = ?", appId, resourceId, relationStateNormal).
 		Find(&data).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -44,7 +44,7 @@ func GetResRelation(appId string, resourceId string, s []string) (data []*Produc
 
 // GetResByProductId 根据父级id查询关联关系
 func GetResByProductId(appId string, productId string, s []string) (data []*ProductRelation, err error) {
-	err = dbRw.Table(tableName).Select(s).
+	err = db.Table(tableName).Select(s).
 		Where("app_id = ? and product_id = ? and relation_state = ?", appId, productId, relationStateNormal).
 		Find(&data).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
