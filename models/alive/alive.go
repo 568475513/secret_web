@@ -153,15 +153,15 @@ func GetAliveInfoByChannelId(channelId string, s []string) (*Alive, error) {
 // 获取直播讲师信息详情
 func GetAliveRole(appId string, aliveId string) ([]*AliveRole, error) {
 	var ar []*AliveRole
-	con,err := redis_alive.GetLiveBusinessConn()
+	con, err := redis_alive.GetLiveBusinessConn()
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	defer con.Close()
-	cacheKey := fmt.Sprintf(AliveRoleCacheKey,appId,aliveId)
-	data,_ := redis.Bytes(con.Do("GET",cacheKey))
+	cacheKey := fmt.Sprintf(AliveRoleCacheKey, appId, aliveId)
+	data, _ := redis.Bytes(con.Do("GET", cacheKey))
 	if data != nil {
-		err = jsonUtil.Unmarshal(data,&ar)
+		err = jsonUtil.Unmarshal(data, &ar)
 	} else {
 		err = db.Select("role_name,user_id,user_name,is_current_lecturer,is_can_exceptional").
 			Where("app_id=? and alive_id=? and state=?", appId, aliveId, 0).
@@ -169,9 +169,9 @@ func GetAliveRole(appId string, aliveId string) ([]*AliveRole, error) {
 		if err != nil && err != gorm.ErrRecordNotFound {
 			return nil, err
 		}
-		data,err = jsonUtil.Marshal(ar)
+		data, err = jsonUtil.Marshal(ar)
 		if err == nil {
-			con.Do("SET",cacheKey,data,"EX",5)
+			con.Do("SET", cacheKey, data, "EX", 5)
 		}
 	}
 	return ar, err
@@ -272,4 +272,15 @@ func GetAliveListByZbStartTimeAndType(appIds string, startTime string, endTime s
 		return nil, errors.New("app_id数量错误")
 	}
 	return aliveList, nil
+}
+
+// CountAlive 资源计数
+func CountAlive(appId string, resourceIds []string, startAt string) (total int, err error) {
+	err = db.Table("t_alive").
+		Where("app_id = ? and id in (?) and start_at < ? and state = 0", appId, resourceIds, startAt).
+		Count(&total).Error
+	if err != nil {
+		return 0, err
+	}
+	return total, nil
 }
