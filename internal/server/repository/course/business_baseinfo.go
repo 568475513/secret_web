@@ -304,6 +304,9 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	//该直播是否开启圆桌会议模式，0关闭，1开启
 	aliveConf["is_round_table_on"] = aliveModule.IsRoundTableOn
 
+	//是否开启分享有礼
+	aliveConf["is_open_share_reward"] = aliveModule.IsOpenShareReward
+
 	return aliveConf
 }
 
