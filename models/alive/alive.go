@@ -1,8 +1,12 @@
 package alive
 
 import (
+	"abs/pkg/cache/redis_alive"
 	"abs/pkg/provider/json"
 	"abs/pkg/util"
+	jsonUtil "encoding/json"
+	"fmt"
+	"github.com/gomodule/redigo/redis"
 
 	"errors"
 	"strings"
@@ -10,6 +14,9 @@ import (
 
 	"github.com/jinzhu/gorm"
 )
+
+// 直播角色列表缓存 key, app_id: alive_id,
+const AliveRoleCacheKey = "alive:roles:%s:%s"
 
 type Alive struct {
 	Model
@@ -113,6 +120,7 @@ type AliveModuleConf struct {
 	IsRedPacketOn   uint8  `json:"is_red_packet_on"`
 	IsPictureOn     uint8  `json:"is_picture_on"`
 	IsAuditFirstOn  uint8  `json:"is_audit_first_on"`
+	IsOpenPromoter  uint8  `json:"is_open_promoter"`
 }
 
 const (
@@ -145,14 +153,28 @@ func GetAliveInfoByChannelId(channelId string, s []string) (*Alive, error) {
 // 获取直播讲师信息详情
 func GetAliveRole(appId string, aliveId string) ([]*AliveRole, error) {
 	var ar []*AliveRole
-	err := db.Select("role_name,user_id,user_name,is_current_lecturer,is_can_exceptional").
-		Where("app_id=? and alive_id=? and state=?", appId, aliveId, 0).
-		Find(&ar).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return nil, err
+	con,err := redis_alive.GetLiveBusinessConn()
+	if err != nil {
+		return nil,err
 	}
-
-	return ar, nil
+	defer con.Close()
+	cacheKey := fmt.Sprintf(AliveRoleCacheKey,appId,aliveId)
+	data,_ := redis.Bytes(con.Do("GET",cacheKey))
+	if data != nil {
+		err = jsonUtil.Unmarshal(data,&ar)
+	} else {
+		err = db.Select("role_name,user_id,user_name,is_current_lecturer,is_can_exceptional").
+			Where("app_id=? and alive_id=? and state=?", appId, aliveId, 0).
+			Find(&ar).Error
+		if err != nil && err != gorm.ErrRecordNotFound {
+			return nil, err
+		}
+		data,err = jsonUtil.Marshal(ar)
+		if err == nil {
+			con.Do("SET",cacheKey,data,"EX",5)
+		}
+	}
+	return ar, err
 }
 
 // 获取直播是否被禁言数据

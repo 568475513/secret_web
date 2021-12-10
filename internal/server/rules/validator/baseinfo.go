@@ -19,6 +19,8 @@ type BaseInfoRuleV2 struct {
 	MoreWay       string `json:"more_way" form:"more_way"`
 	Scene         string `json:"scene" form:"scene"`
 	UseCollection bool   `json:"use_collection" form:"use_collection"` // 判断小程序是否使用个人模式
+	WebAlive      int    `form:"web_alive" json:"web_alive"`
+	InviteToken   string `form:"invite_token" json:"invite_token"`
 }
 
 // v2/baseinfo.go/GetSecondaryInfo
