@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"os"
+	"strconv"
 	"time"
 )
 
 var EliveRedisConnPool *redis.Pool
 
 type EliveRedisConn struct {
-	conn redis.Conn
+	conn                redis.Conn
+	accessTimeListLimit int // 限制队列长度，0表示不限制
 }
 
 const (
@@ -54,16 +56,25 @@ func Init() error {
 
 func GetEliveRedisConn() (*EliveRedisConn, error) {
 	conn := EliveRedisConnPool.Get()
-
+	limit, _ := strconv.Atoi(os.Getenv("ACCESS_TIME_LIST_LIMIT"))
 	eliveRedisConn := &EliveRedisConn{
-		conn: conn,
+		conn:                conn,
+		accessTimeListLimit: limit,
 	}
 	return eliveRedisConn, nil
 }
 
 // 丢进处理最近查看时间的队列
-func (conn *EliveRedisConn) PushToUpdateAccessTimeQueue(key string, data []byte) error {
-	_, err := conn.conn.Do("LPUSH", key, data)
+func (c *EliveRedisConn) PushToUpdateAccessTimeQueue(key string, data []byte) error {
+	if c.accessTimeListLimit == 0 {
+		return nil
+	}
+	// 达到数量限制就停止丢队列
+	listLen, err := redis.Int(c.conn.Do("LLEN", key))
+	if listLen >= c.accessTimeListLimit {
+		return nil
+	}
+	_, err = c.conn.Do("LPUSH", key, data)
 	return err
 }
 
