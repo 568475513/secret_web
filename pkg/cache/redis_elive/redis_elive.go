@@ -72,8 +72,7 @@ func (c *EliveRedisConn) PushToUpdateAccessTimeQueue(key string, data []byte) er
 	// 达到数量限制就停止丢队列
 	listLen, err := redis.Int(c.conn.Do("LLEN", key))
 	if listLen >= c.accessTimeListLimit {
-		errStr := fmt.Sprintf("curent access time list length is out of limit, curent length value is : %d", listLen)
-		return fmt.Errorf(errStr)
+		return nil
 	}
 	_, err = c.conn.Do("LPUSH", key, data)
 	return err
