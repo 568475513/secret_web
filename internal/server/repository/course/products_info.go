@@ -166,6 +166,7 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 					pp.Id = item["id"].(string)
 					pp.AppId = item["app_id"].(string)
 					pp.ImgUrl.String = item["img_url"].(string)
+					pp.RecycleBinState = uint8(item["recycle_bin_state"].(float64))
 					pp.SellType = 1
 					pDetailsInfos = append(pDetailsInfos, &pp)
 				}
