@@ -220,7 +220,7 @@ func GetBaseInfo(c *gin.Context) {
 	// 业务数据封装
 	baseInfoRep := course.BaseInfo{Alive: aliveInfo, AliveRep: &aliveRep, UserType: userType}
 	aliveInfoDetail := baseInfoRep.GetAliveInfoDetail()
-	aliveConf := baseInfoRep.GetAliveConfInfo(baseConf, aliveModule)
+	aliveConf := baseInfoRep.GetAliveConfInfo(baseConf, aliveModule, available, userId)
 	availableInfo := baseInfoRep.GetAvailableInfo(available, availableProduct, expireAt)
 	// 回放服务
 	lookBackRep := material.LookBack{AppId: req.AppId, AliveId: req.ResourceId}
