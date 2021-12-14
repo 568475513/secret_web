@@ -1,7 +1,6 @@
 package logging
 
 import (
-	"fmt"
 	"runtime/debug"
 
 	"go.uber.org/zap"
@@ -11,11 +10,11 @@ import (
 func Info(v interface{}) {
 	switch v.(type) {
 	case string:
-		ILogger.Info(v.(string))
+		BLogger.Info(v.(string))
 	case map[string]interface{}:
-		ILogger.Info("Map", zap.Any("info", v))
+		BLogger.Info("Map", zap.Any("info", v))
 	default:
-		ILogger.Info("Info!!!", zap.Any("Data", v))
+		BLogger.Info("Info!!!", zap.Any("Data", v))
 	}
 }
 
@@ -23,11 +22,11 @@ func Info(v interface{}) {
 func Warn(param interface{}) {
 	switch param.(type) {
 	case string:
-		ILogger.Warn(param.(string), zap.Any("error", param))
+		BLogger.Warn(param.(string), zap.Any("error", param))
 	case error:
-		ILogger.Warn(param.(error).Error(), zap.Error(param.(error)), zap.Stack("stack"))
+		BLogger.Warn(param.(error).Error(), zap.Error(param.(error)), zap.Stack("stack"))
 	default:
-		ILogger.Warn("Warn!!!", zap.Any("warn", param), zap.Stack("stack"))
+		BLogger.Warn("Warn!!!", zap.Any("warn", param), zap.Stack("stack"))
 	}
 }
 
@@ -35,41 +34,29 @@ func Warn(param interface{}) {
 func Error(param interface{}) {
 	switch param.(type) {
 	case string:
-		ELogger.Error(param.(string))
-		EsLogger.Error(param.(string),
-			zap.String("error", param.(string)),
-			zap.String("type", "error"),
-			zap.String("module_name", "alive_server_go"),
-			zap.String("method", "-"),
-			zap.String("target_url", "-"),
-			zap.String("request", "-"),
-			zap.String("stack", string(debug.Stack())),
-		)
+		BLogger.Error(param.(string), zap.String("stack", string(debug.Stack())))
 	case error:
-		// ELogger.Error(param.(error).Error(), zap.Error(param.(error)), zap.String("stack", string(debug.Stack())))
-		ELogger.Error(fmt.Sprintf("Error: %s\n stack: %s\n", param.(error).Error(), string(debug.Stack())))
-		EsLogger.Error(param.(error).Error(),
+		BLogger.Error(param.(error).Error(),
 			zap.Any("error", param.(error)),
-			zap.String("type", "error"),
-			zap.String("module_name", "alive_server_go"),
-			zap.String("method", "-"),
-			zap.String("target_url", "-"),
-			zap.String("request", "-"),
 			zap.String("stack", string(debug.Stack())),
 		)
 	default:
-		ELogger.Error("Error!!!", zap.Any("error", param), zap.String("stack", string(debug.Stack())))
+		BLogger.Error("未识别的 ERROR 类型",
+			zap.Any("error", param.(error)),
+			zap.String("stack", string(debug.Stack())),
+		)
 	}
 }
 
 // 一般日志插入ES日志文件
-func LogToEs(msg string, data interface{}) {
-	EsLogger.Error(msg,
-		zap.Any("info", data),
-		zap.String("type", "info"),
-		zap.String("module_name", "alive_server_go"),
-		zap.String("method", "-"),
-		zap.String("target_url", "-"),
-		zap.String("request", "-"),
-	)
-}
+//Deprecated
+//func LogToEs(msg string, data interface{}) {
+//	BLogger.Error(msg,
+//		zap.Any("info", data),
+//		zap.String("type", "info"),
+//		zap.String("module_name", "alive_server_go"),
+//		zap.String("method", "-"),
+//		zap.String("target_url", "-"),
+//		zap.String("request", "-"),
+//	)
+//}

@@ -25,6 +25,12 @@ type ZapSetting struct {
 	MaxAge     int
 }
 
+//当前运行环境
+var Env string
+
+// AbsRequestId 预定义常量
+const AbsRequestId = "abs_request_id"
+
 // 服务配置
 var ServerConf = &Server{}
 
@@ -35,6 +41,8 @@ var ZapConf = &ZapSetting{}
 func Init(env string) {
 	// 获取环境变量
 	env = getEnvMode(env)
+
+	Env = env
 
 	// 读取对应环境变量
 	err := godotenv.Load(".env." + env)

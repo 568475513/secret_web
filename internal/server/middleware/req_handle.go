@@ -1,6 +1,9 @@
 package middleware
 
 import (
+	"abs/pkg/conf"
+	"crypto/rand"
+	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -27,9 +30,22 @@ func ReqParamHandle() gin.HandlerFunc {
 		c.Set("agent_type", agentType)
 		// c.Set("agent_version", c.GetHeader("XE_X_AGENT_VERSION"))
 
+		//注入RequestId，未来网关直接支持RequestId的话更佳
+		c.Set(conf.AbsRequestId, generateRequestId())
+
 		// 暂时不这么用
 		// 设置全局参数
 		// 处理请求
 		c.Next()
 	}
+}
+
+//随机生成RequestId
+func generateRequestId() string {
+	b := make([]byte, 8)
+	_, err := rand.Read(b)
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf("%x", b[0:])
 }
