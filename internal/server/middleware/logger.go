@@ -21,22 +21,20 @@ import (
 func GinLogger(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
-		path := c.Request.URL.Path
-		query := c.Request.URL.RawQuery
+
 		c.Next()
 
-		cost := time.Since(start)
-
-		logger.Info(path,
+		requestTime := time.Since(start)
+		logger.Info("请求信息",
 			zap.Int("status", c.Writer.Status()),
 			zap.String("method", c.Request.Method),
 			zap.String("requestId", c.GetString(conf.AbsRequestId)),
-			zap.String("path", path),
-			zap.String("query", query),
-			zap.String("ip", c.ClientIP()),
-			zap.String("user-agent", c.Request.UserAgent()),
-			zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
-			zap.String("cost", cost.String()),
+			zap.String("host", c.Request.URL.Host),
+			zap.String("path", c.Request.URL.Path),
+			zap.String("query", c.Request.URL.RawQuery),
+			zap.String("clientIp", c.ClientIP()),
+			zap.String("userAgent", c.Request.UserAgent()),
+			zap.String("requestTime", requestTime.String()),
 		)
 	}
 }
