@@ -29,7 +29,6 @@ func GinLogger(logger *zap.Logger) gin.HandlerFunc {
 			zap.Int("status", c.Writer.Status()),
 			zap.String("method", c.Request.Method),
 			zap.String("requestId", c.GetString(conf.AbsRequestId)),
-			zap.String("host", c.Request.URL.Host),
 			zap.String("path", c.Request.URL.Path),
 			zap.String("query", c.Request.URL.RawQuery),
 			zap.String("clientIp", c.ClientIP()),

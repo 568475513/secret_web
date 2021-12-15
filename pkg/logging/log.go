@@ -22,11 +22,16 @@ func Info(v interface{}) {
 func Warn(param interface{}) {
 	switch param.(type) {
 	case string:
-		BLogger.Warn(param.(string), zap.Any("error", param))
+		BLogger.Warn(param.(string))
 	case error:
-		BLogger.Warn(param.(error).Error(), zap.Error(param.(error)), zap.Stack("stack"))
+		BLogger.Warn(param.(error).Error(),
+			zap.Stack("stack"),
+		)
 	default:
-		BLogger.Warn("Warn!!!", zap.Any("warn", param), zap.Stack("stack"))
+		BLogger.Warn("Warn!!!",
+			zap.Any("warn", param),
+			zap.Stack("stack"),
+		)
 	}
 }
 
@@ -34,14 +39,15 @@ func Warn(param interface{}) {
 func Error(param interface{}) {
 	switch param.(type) {
 	case string:
-		BLogger.Error(param.(string), zap.String("stack", string(debug.Stack())))
+		BLogger.Error(param.(string),
+			zap.String("stack", string(debug.Stack())),
+		)
 	case error:
 		BLogger.Error(param.(error).Error(),
-			zap.Any("error", param.(error)),
 			zap.String("stack", string(debug.Stack())),
 		)
 	default:
-		BLogger.Error("未识别的 ERROR 类型",
+		BLogger.Error("Error!!!",
 			zap.Any("error", param.(error)),
 			zap.String("stack", string(debug.Stack())),
 		)
