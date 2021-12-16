@@ -14,9 +14,10 @@ pipeline {
     CONFIGFILE = '.env.docker' // 替换为配置文件相对路径+文件名，如config/.env.xxx
     REGISTRY = 'registry.xiaoe-tools.com'
     REGISTRYNAMESPACE = 'dev'
-    GOPROXY = 'https://goproxy.cn,direct'
+    // GOPROXY = 'https://goproxy.cn,direct'
     BRANCH = getGitBranchName()
     GITURL = getRepositoryUrl()
+    GOPROXY='https://goproxy.cn,http://goproxy.xiaoe-tools.com,direct'
   }
   agent {
     node {

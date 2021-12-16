@@ -5,7 +5,7 @@ FROM golang as builder
 
 WORKDIR /app
 
-ENV  GOPROXY=https://goproxy.cn,direct GO111MODULE=on
+ENV  GOPROXY=https://goproxy.cn,http://goproxy.xiaoe-tools.com,direct GO111MODULE=on
 
 # 缓存处理，如gomod gosum未更改则不会重新拉取
 COPY go.mod go.mod
