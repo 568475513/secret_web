@@ -1,6 +1,7 @@
 package logging
 
 import (
+	"abs/internal/server/middleware"
 	"runtime/debug"
 
 	"go.uber.org/zap"
@@ -10,11 +11,19 @@ import (
 func Info(v interface{}) {
 	switch v.(type) {
 	case string:
-		BLogger.Info(v.(string))
+		BLogger.Info(v.(string),
+			zap.String("requestId", middleware.GetRequestId()),
+		)
 	case map[string]interface{}:
-		BLogger.Info("Map", zap.Any("info", v))
+		BLogger.Info("Map",
+			zap.String("requestId", middleware.GetRequestId()),
+			zap.Any("info", v),
+		)
 	default:
-		BLogger.Info("Info!!!", zap.Any("Data", v))
+		BLogger.Info("Info!!!",
+			zap.String("requestId", middleware.GetRequestId()),
+			zap.Any("Data", v),
+		)
 	}
 }
 
@@ -22,13 +31,17 @@ func Info(v interface{}) {
 func Warn(param interface{}) {
 	switch param.(type) {
 	case string:
-		BLogger.Warn(param.(string))
+		BLogger.Warn(param.(string),
+			zap.String("requestId", middleware.GetRequestId()),
+		)
 	case error:
 		BLogger.Warn(param.(error).Error(),
+			zap.String("requestId", middleware.GetRequestId()),
 			zap.Stack("stack"),
 		)
 	default:
 		BLogger.Warn("Warn!!!",
+			zap.String("requestId", middleware.GetRequestId()),
 			zap.Any("warn", param),
 			zap.Stack("stack"),
 		)
@@ -40,14 +53,17 @@ func Error(param interface{}) {
 	switch param.(type) {
 	case string:
 		BLogger.Error(param.(string),
+			zap.String("requestId", middleware.GetRequestId()),
 			zap.String("stack", string(debug.Stack())),
 		)
 	case error:
 		BLogger.Error(param.(error).Error(),
+			zap.String("requestId", middleware.GetRequestId()),
 			zap.String("stack", string(debug.Stack())),
 		)
 	default:
 		BLogger.Error("Error!!!",
+			zap.String("requestId", middleware.GetRequestId()),
 			zap.Any("error", param.(error)),
 			zap.String("stack", string(debug.Stack())),
 		)
