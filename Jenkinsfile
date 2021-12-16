@@ -27,14 +27,14 @@ pipeline {
   }
   stages {
 
-    stage('单元测试') {
-          agent none
-          steps {
-            container('go') {
-              sh 'go test -work -timeout 3s ./...'
-            }
-          }
-    }
+//     stage('单元测试') {
+//           agent none
+//           steps {
+//             container('go') {
+//               sh 'go test -work -timeout 3s ./...'
+//             }
+//           }
+//     }
 
     stage('docker build && login && push') {
       agent none
