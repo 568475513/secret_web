@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"abs/pkg/global"
 	"fmt"
 	"time"
 
@@ -21,7 +22,7 @@ func InitRouter() *gin.Engine {
 
 	// 自定义中间件在此处添加...[注意顺序]
 	// 暂存当前上下文
-	r.Use(middleware.SetCurrentContext())
+	r.Use(global.SetCurrentContext())
 	// 跨域中间件
 	r.Use(middleware.Cors())
 	// 处理公共请求参数以及网关转发参数

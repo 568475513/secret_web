@@ -1,8 +1,7 @@
 package middleware
 
 import (
-	"crypto/rand"
-	"fmt"
+	"abs/pkg/global"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -30,21 +29,11 @@ func ReqParamHandle() gin.HandlerFunc {
 		// c.Set("agent_version", c.GetHeader("XE_X_AGENT_VERSION"))
 
 		//保存当前RequestId
-		SetRequestId(c)
+		global.SetRequestId(c)
 
 		// 暂时不这么用
 		// 设置全局参数
 		// 处理请求
 		c.Next()
 	}
-}
-
-//随机生成RequestId
-func generateRequestId() string {
-	b := make([]byte, 8)
-	_, err := rand.Read(b)
-	if err != nil {
-		return ""
-	}
-	return fmt.Sprintf("%x", b[0:])
 }

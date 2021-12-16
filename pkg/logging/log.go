@@ -1,7 +1,7 @@
 package logging
 
 import (
-	"abs/internal/server/middleware"
+	"abs/pkg/global"
 	"runtime/debug"
 
 	"go.uber.org/zap"
@@ -12,16 +12,16 @@ func Info(v interface{}) {
 	switch v.(type) {
 	case string:
 		BLogger.Info(v.(string),
-			zap.String("requestId", middleware.GetRequestId()),
+			zap.String("requestId", global.GetRequestId()),
 		)
 	case map[string]interface{}:
 		BLogger.Info("Map",
-			zap.String("requestId", middleware.GetRequestId()),
+			zap.String("requestId", global.GetRequestId()),
 			zap.Any("info", v),
 		)
 	default:
 		BLogger.Info("Info!!!",
-			zap.String("requestId", middleware.GetRequestId()),
+			zap.String("requestId", global.GetRequestId()),
 			zap.Any("Data", v),
 		)
 	}
@@ -32,16 +32,16 @@ func Warn(param interface{}) {
 	switch param.(type) {
 	case string:
 		BLogger.Warn(param.(string),
-			zap.String("requestId", middleware.GetRequestId()),
+			zap.String("requestId", global.GetRequestId()),
 		)
 	case error:
 		BLogger.Warn(param.(error).Error(),
-			zap.String("requestId", middleware.GetRequestId()),
+			zap.String("requestId", global.GetRequestId()),
 			zap.Stack("stack"),
 		)
 	default:
 		BLogger.Warn("Warn!!!",
-			zap.String("requestId", middleware.GetRequestId()),
+			zap.String("requestId", global.GetRequestId()),
 			zap.Any("warn", param),
 			zap.Stack("stack"),
 		)
@@ -53,17 +53,17 @@ func Error(param interface{}) {
 	switch param.(type) {
 	case string:
 		BLogger.Error(param.(string),
-			zap.String("requestId", middleware.GetRequestId()),
+			zap.String("requestId", global.GetRequestId()),
 			zap.String("stack", string(debug.Stack())),
 		)
 	case error:
 		BLogger.Error(param.(error).Error(),
-			zap.String("requestId", middleware.GetRequestId()),
+			zap.String("requestId", global.GetRequestId()),
 			zap.String("stack", string(debug.Stack())),
 		)
 	default:
 		BLogger.Error("Error!!!",
-			zap.String("requestId", middleware.GetRequestId()),
+			zap.String("requestId", global.GetRequestId()),
 			zap.Any("error", param.(error)),
 			zap.String("stack", string(debug.Stack())),
 		)

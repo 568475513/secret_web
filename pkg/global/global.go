@@ -1,8 +1,10 @@
-package middleware
+package global
 
 import (
 	"abs/pkg/conf"
 	"bytes"
+	"crypto/rand"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"runtime"
 	"strconv"
@@ -35,7 +37,7 @@ func GetCurrentContext() *gin.Context {
 //SetRequestId To gin.Context
 func SetRequestId(ctx *gin.Context)  {
 	//注入RequestId，未来网关直接支持RequestId的话更佳
-	ctx.Set(conf.AbsRequestId, generateRequestId())
+	ctx.Set(conf.AbsRequestId, GenerateRequestId())
 }
 
 // GetRequestId 获取当前requestId
@@ -45,6 +47,16 @@ func GetRequestId() string{
 		return ""
 	}
 	return ctx.GetString(conf.AbsRequestId)
+}
+
+//GenerateRequestId 随机生成RequestId
+func GenerateRequestId() string {
+	b := make([]byte, 8)
+	_, err := rand.Read(b)
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf("%x", b[0:])
 }
 
 //获取协程ID
