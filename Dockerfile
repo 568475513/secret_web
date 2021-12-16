@@ -18,7 +18,7 @@ RUN  go clean
 COPY . .
 
 # 构建二进制文件命令,替换为自身程序的构建命令
-RUN  go build -a main.go -ldflags "-w -s"
+RUN  go build -tags=jsoniter -o main -ldflags "-w -s"
 
 # 为了缩小镜像体积，做分层处理
 FROM centos:7
