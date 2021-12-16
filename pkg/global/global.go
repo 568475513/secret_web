@@ -13,6 +13,10 @@ import (
 //GlobalContext 妥协但相对实用的设计 目前主要是为了暂存 *gin.Context 方便打日志的时候获取 requestId
 var GlobalContext map[uint64]*gin.Context
 
+func init()  {
+	GlobalContext = make(map[uint64]*gin.Context)
+}
+
 //SetCurrentContext 保存当前上下文到GlobalContext
 func SetCurrentContext() gin.HandlerFunc {
 	return func(ctx *gin.Context) {

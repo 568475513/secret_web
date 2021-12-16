@@ -30,7 +30,7 @@ func InitRouter() *gin.Engine {
 	// 调用链路zipkin
 	r.Use(middleware.ZipkinTracer(true))
 
-	// 请求的入参和出参日志
+	// 请求信息日志
 	r.Use(middleware.GinLogger(logging.BLogger))
 
 	// 此处可写公共路由...

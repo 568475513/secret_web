@@ -1,6 +1,9 @@
 package app
 
 import (
+	"abs/pkg/conf"
+	"abs/pkg/logging"
+	"go.uber.org/zap"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +19,16 @@ type Response struct {
 
 // Response setting gin.JSON
 func Result(httpCode, errCode int, errMsg string, data interface{}, c *gin.Context) {
+
+	logging.BLogger.Info("请求出参信息",
+		zap.String("requestId", c.GetString(conf.AbsRequestId)),
+		zap.Int("status", c.Writer.Status()),
+		zap.Int("httpCode", httpCode),
+		zap.Int("errCode", errCode),
+		zap.String("errMsg", errMsg),
+		zap.Any("data", data),
+	)
+
 	c.JSON(httpCode, Response{
 		Code: errCode,
 		Msg:  errMsg,

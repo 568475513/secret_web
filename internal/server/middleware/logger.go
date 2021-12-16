@@ -25,8 +25,7 @@ func GinLogger(logger *zap.Logger) gin.HandlerFunc {
 		c.Next()
 
 		requestTime := time.Since(start)
-		logger.Info("请求信息",
-			zap.Int("status", c.Writer.Status()),
+		logger.Info("请求入参信息",
 			zap.String("method", c.Request.Method),
 			zap.String("requestId", c.GetString(conf.AbsRequestId)),
 			zap.String("path", c.Request.URL.Path),
