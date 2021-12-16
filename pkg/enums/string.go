@@ -24,6 +24,11 @@ const (
 	ResourceTypeAudio     = 2
 	ResourceTypeVideo     = 3
 	ResourceTypeLive      = 4
+	ResourceTypeActivity  = 5
+	ResourceTypePackage   = 6
+	ResourceTypeTopic     = 8
+	ResourceTypeEBook     = 20
+	ResourceTypeCamp      = 25
 
 	AGENT_TYPE_MP          = 0 //微信小程序
 	AGENT_TYPE_H5          = 1 //微信浏览器

@@ -19,6 +19,7 @@ type BaseInfoRuleV2 struct {
 	MoreWay       string `json:"more_way" form:"more_way"`
 	Scene         string `json:"scene" form:"scene"`
 	UseCollection bool   `json:"use_collection" form:"use_collection"` // 判断小程序是否使用个人模式
+	ClientType    string `json:"client_type" form:"client_type"`       //请求来源的客户端类型
 	WebAlive      int    `form:"web_alive" json:"web_alive"`
 	InviteToken   string `form:"invite_token" json:"invite_token"`
 }
@@ -30,6 +31,8 @@ type SecondaryInfoRuleV2 struct {
 	PaymentType   int    `form:"payment_type" json:"payment_type" binding:"required"`
 	ProductId     string `form:"product_id" json:"product_id"`
 	StaticIsStart string `form:"static_is_start" json:"static_is_start"`
+	TargetUrl     string `form:"target_url" json:"target_url"`
+	Channel       string `form:"channel" json:"channel"`
 }
 
 // v2/baseinfo.go/DataReported

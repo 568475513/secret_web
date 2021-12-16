@@ -226,7 +226,7 @@ func ParseUrlType(url string) int {
 // 获取小程序版本 1-不是小程序 2-小程序苹果版 3-小程序安卓版
 func GetMiniProgramVersion(client, userAgent string) (version int) {
 	version = 1
-	if client == strconv.Itoa(e.AGENT_TYPE_APP) && userAgent != "" {
+	if client == strconv.Itoa(e.AGENT_TYPE_MP) && userAgent != "" {
 		agent := strings.ToLower(userAgent)
 		if strings.Contains(agent, "iphone") || strings.Contains(agent, "ios") {
 			version = 2 // 苹果小程序
