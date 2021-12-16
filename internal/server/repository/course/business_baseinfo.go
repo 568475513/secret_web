@@ -284,6 +284,8 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	aliveConf["alive_mode"] = aliveModule.AliveMode
 	aliveConf["is_picture_on"] = aliveModule.IsPictureOn
 	aliveConf["is_audit_first_on"] = aliveModule.IsAuditFirstOn
+	aliveConf["is_show_online_count"] = aliveModule.isShowOnlineCount
+	aliveConf["is_show_heat_count"] = aliveModule.isShowHeatCount
 	aliveConf["is_coupon_on"] = aliveModule.IsCouponOn
 	aliveConf["is_card_on"] = aliveModule.IsCardOn
 	aliveConf["is_prize_on"] = aliveModule.IsPrizeOn
