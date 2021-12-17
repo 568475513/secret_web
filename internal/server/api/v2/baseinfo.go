@@ -73,7 +73,7 @@ func GetBaseInfo(c *gin.Context) {
 	childSpan.Finish()
 	if err != nil {
 		//错误信息记录日志 不直接返回
-		logging.Error(fmt.Sprintf("获取直播专栏关联信息错误:%s", err.Error()))
+		logging.ErrorWithCtx(fmt.Sprintf("获取直播专栏关联信息错误:%s", err.Error()), c)
 		//app.FailWithMessage(fmt.Sprintf("获取直播专栏关联信息错误:%s", err.Error()), enums.ERROR, c)
 		//return
 	}
@@ -153,7 +153,7 @@ func GetBaseInfo(c *gin.Context) {
 	// 错误处理【需要扔掉一些不要的】
 	if err != nil {
 		//错误记录日志 不抛出异常
-		logging.Error(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)))
+		logging.ErrorWithCtx(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), c)
 		//app.FailWithMessage(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), enums.ERROR, c)
 		//return
 	}
@@ -161,7 +161,7 @@ func GetBaseInfo(c *gin.Context) {
 	if baseConf.VersionType == enums.VERSION_TYPE_TRAINING_TRY || baseConf.VersionType == enums.VERSION_TYPE_TRAINING_STD {
 		isRedirect, err := appRep.TrainingIsRedirect(req.AppId, userId)
 		if err != nil {
-			logging.Error(err.Error())
+			logging.ErrorWithCtx(err.Error(), c)
 		}
 		if isRedirect {
 			app.OkWithCodeData("Redirect.", map[string]string{
