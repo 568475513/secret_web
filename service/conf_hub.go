@@ -57,11 +57,12 @@ type AppBaseConf struct {
 	HasReward           int `json:"has_reward"` // 是否有打赏功能
 	HasInvite           int `json:"has_invite"` // 是否有邀请功能
 	AuthenticState      int `json:"authentic_state"`
-	IsShowResourcecount int `json:"is_show_resourcecount"`
-	RelateSellInfo      int `json:"relate_sell_info"` // 是否显示关联售卖界面，默认1-显示，0-不显示
+	IsShowResourcecount int `json:"is_show_resourcecount"` //是否显示期数：0-不显示，1-显示
+	RelateSellInfo      int `json:"relate_sell_info"`      // 是否显示关联售卖界面，默认1-显示，0-不显示
 	OnlyH5Play          int `json:"only_h5_play"`
 	VideoPlayerType     int `json:"video_player_type"` // 0-默认播放器 1-自研播放器 (默认0)
 	EnableWebRtc        int `json:"enable_web_rtc"`    // 店铺快直播开关
+	HideSubCount        int `json:"hide_sub_count"`    //是否隐藏订阅数：0-不隐藏，1-隐藏
 	// profit
 	Profit map[string]interface{} `json:"profit"`
 	// pc
