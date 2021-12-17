@@ -15,13 +15,16 @@ type Response struct {
 	Code int         `json:"code"`
 	Msg  string      `json:"msg"`
 	Data interface{} `json:"data"`
+	RequestId string `json:"requestId"`
 }
 
 // Response setting gin.JSON
 func Result(httpCode, errCode int, errMsg string, data interface{}, c *gin.Context) {
 
+	requestId := c.GetString(conf.AbsRequestId)
+
 	logging.BLogger.Info("请求出参信息",
-		zap.String("requestId", c.GetString(conf.AbsRequestId)),
+		zap.String("requestId", requestId),
 		zap.Int("status", c.Writer.Status()),
 		zap.Int("httpCode", httpCode),
 		zap.Int("errCode", errCode),
@@ -33,6 +36,7 @@ func Result(httpCode, errCode int, errMsg string, data interface{}, c *gin.Conte
 		Code: errCode,
 		Msg:  errMsg,
 		Data: data,
+		RequestId: requestId,
 	})
 }
 
