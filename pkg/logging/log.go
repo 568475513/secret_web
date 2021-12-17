@@ -33,7 +33,6 @@ func Warn(param interface{}) {
 		)
 	case error:
 		BLogger.Warn(param.(error).Error(),
-			zap.Stack("stack"),
 		)
 	default:
 		BLogger.Warn("Warn!!!",
@@ -92,7 +91,6 @@ func WarnWithCtx(param interface{}, ctx *gin.Context) {
 	case error:
 		BLogger.Warn(param.(error).Error(),
 			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
-			zap.Stack("stack"),
 		)
 	default:
 		BLogger.Warn("Warn!!!",
