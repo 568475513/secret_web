@@ -25,7 +25,7 @@ FROM centos:7
 
 WORKDIR /app
 
-COPY --from=builder /app/main ./main
+COPY --from=builder /app/ ./
 
 # 启动命令，多行参数使用,隔开
 # 如原启动命令 ./main run -p 8888，则以下启动命令为 ENTRYPOINT ["./main","run","-p","8888"]

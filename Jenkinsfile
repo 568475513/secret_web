@@ -18,14 +18,39 @@ pipeline {
     BRANCH = getGitBranchName()
     GITURL = getRepositoryUrl()
     GOPROXY='https://goproxy.cn,http://goproxy.xiaoe-tools.com,direct'
+    GIT_TRACE = 2
+    GIT_CURL_VERBOSE = 2
   }
   agent {
     node {
       label 'go'
     }
-
   }
+
+  options {
+    disableConcurrentBuilds()
+    skipDefaultCheckout()
+    buildDiscarder(
+        logRotator(numToKeepStr: '10',daysToKeepStr: '7')
+    )
+    timeout(time: 1, unit: 'HOURS')
+  }
+
   stages {
+    stage('git pull') {
+      agent none
+      steps {
+        container('go') {
+            checkout([
+            $class: 'GitSCM',
+            branches: [[name: "refs/heads/${branch}"]],
+            doGenerateSubmoduleConfigurations: false,
+            // extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true, timeout: 10]],
+            userRemoteConfigs: [[credentialsId: 'gitlab', url: "${giturl}"]]
+            ])
+        }
+      }
+    }
 
 //     stage('单元测试') {
 //           agent none
