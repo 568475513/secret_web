@@ -43,7 +43,7 @@ pipeline {
         container('go') {
             checkout([
             $class: 'GitSCM',
-            branches: [[name: "refs/heads/${branch}"]],
+            branches: [[name: "${branch}"]],
             doGenerateSubmoduleConfigurations: false,
             // extensions: [[$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true, timeout: 10]],
             userRemoteConfigs: [[credentialsId: 'gitlab', url: "${giturl}"]]
