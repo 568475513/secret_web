@@ -18,9 +18,8 @@ pipeline {
     BRANCH = getGitBranchName()
     GITURL = getRepositoryUrl()
     GOPROXY='https://goproxy.cn,http://goproxy.xiaoe-tools.com,direct'
-    GIT_TRACE = 2
-    GIT_CURL_VERBOSE = 2
   }
+  
   agent {
     node {
       label 'go'
@@ -37,7 +36,7 @@ pipeline {
   }
 
   stages {
-    
+
     stage('git pull') {
       agent none
       steps {
