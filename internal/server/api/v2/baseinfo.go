@@ -220,7 +220,7 @@ func GetBaseInfo(c *gin.Context) {
 	// 业务数据封装
 	baseInfoRep := course.BaseInfo{Alive: aliveInfo, AliveRep: &aliveRep, UserType: userType}
 	aliveInfoDetail := baseInfoRep.GetAliveInfoDetail()
-	aliveConf := baseInfoRep.GetAliveConfInfo(baseConf, aliveModule)
+	aliveConf := baseInfoRep.GetAliveConfInfo(baseConf, aliveModule, available, userId)
 	availableInfo := baseInfoRep.GetAvailableInfo(available, availableProduct, expireAt)
 	// 回放服务
 	lookBackRep := material.LookBack{AppId: req.AppId, AliveId: req.ResourceId}
@@ -270,7 +270,7 @@ func GetBaseInfo(c *gin.Context) {
 	// 直播权益信息
 	data["available_info"] = availableInfo
 	// 直播基本信息
-	data["alive_info"] = aliveInfoDetail
+	data["alive_info"] = aliveRep.ReplaceIosResourceDesc(aliveInfoDetail, req.ClientType, c.Request.UserAgent(), baseInfoRep.Alive.PaymentType)
 	// 直播播放信息
 	data["alive_play"] = alivePlayInfo
 	//直播静态化开关
@@ -332,6 +332,19 @@ func GetSecondaryInfo(c *gin.Context) {
 		isShow       int
 		blackInfo    service.UserBlackInfo
 		baseConf     *service.AppBaseConf
+		productList  []map[string]interface{}
+		baseInfo     = course.BaseInfo{
+			Alive:    aliveInfo,
+			AliveRep: &aliveRep,
+		}
+		productsInfo = course.ProductInfo{
+			AppId:     appId,
+			AliveId:   aliveInfo.Id,
+			ProductId: req.ProductId,
+			TargetUrl: req.TargetUrl,
+			BuzUri:    c.GetString("buz_uri"),
+			Channel:   req.Channel,
+		}
 	)
 	data := map[string]interface{}{"alive_id": aliveInfo.Id}
 	// 初始化用户实例
@@ -357,7 +370,23 @@ func GetSecondaryInfo(c *gin.Context) {
 		// 获取店铺配置
 		baseConf, err = appRep.GetConfHubInfo()
 		return
+	}, func() (err error) {
+		//获取关联父级列表信息
+		productList = productsInfo.GetAliveProductsInfo(req.PaymentType)
+		return
 	})
+	//补充处理关联父级列表信息
+	client := util.GetMiniProgramVersion(c.GetString("client"), c.Request.UserAgent())
+	productList = productsInfo.DealProductsInfo(
+		productList,
+		baseConf,
+		client,
+		baseInfo.GetAppExpireTime(baseConf.Profit))
+	//生成more_info链接
+	parentsInfo := map[string]interface{}{
+		"product_list": productList,
+		"more_info":    productsInfo.GetMoreInfo(productList, aliveInfo),
+	}
 	// fmt.Println("GetSecondaryInfo的协程处理时间: ", time.Since(bT))
 	if err != nil {
 		app.FailWithMessage(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), enums.ERROR, c)
@@ -397,6 +426,8 @@ func GetSecondaryInfo(c *gin.Context) {
 	data["share_file_url"] = baseInfoRep.GetShareFileListUrl()
 	// 获取云通信配置
 	data["im_init"] = appRep.GetCommunicationCloudInfo(userId, aliveInfo.RoomId, false)
+	// 关联父级信息列表
+	data["product_info"] = parentsInfo
 	app.OkWithData(data, c)
 }
 

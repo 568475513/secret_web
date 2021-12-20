@@ -151,7 +151,7 @@ func (b *BaseInfo) GetAvailableInfo(available, availableProduct bool, expireAt s
 }
 
 // 组装直播店铺配置信息
-func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *alive.AliveModuleConf) map[string]interface{} {
+func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *alive.AliveModuleConf, available bool, userId string) map[string]interface{} {
 	aliveConf := make(map[string]interface{})
 	// 店铺名称
 	aliveConf["wx_app_name"] = baseConf.ShopName
@@ -214,7 +214,7 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	aliveConf["pc_network_school_index_url"] = baseConf.PcCustomDomain
 	aliveConf["is_open_promoter"] = aliveModule.IsOpenPromoter
 	// 版本过期信息
-	versionState := b.getAppExpireTime(baseConf.Profit)
+	versionState := b.GetAppExpireTime(baseConf.Profit)
 	aliveIsRemind := 0
 	// 版本是否过期和功能是否过期0-过期 1-没过期，2-流量余额为0，-1未购买
 	// 该类型直播间是否过期
@@ -303,6 +303,14 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	}
 	//该直播是否开启圆桌会议模式，0关闭，1开启
 	aliveConf["is_round_table_on"] = aliveModule.IsRoundTableOn
+
+	//是否开启防录屏
+	aliveConf["anti_screen_jump"] = 0
+	aliveConf["anti_screen_jump_url"] = ""
+	if aliveModule.IsAntiScreen == 1 && b.UserType == 0 && available == true {
+		aliveConf["anti_screen_jump"] = 1
+		aliveConf["anti_screen_jump_url"] = os.Getenv("APP_REDIRECT_DOMAIN") + "open_app?app_id=" + b.AliveRep.AppId + "&params=" + b.GetWakeUpAppParams(userId)
+	}
 
 	return aliveConf
 }
@@ -552,6 +560,29 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 			}
 		}
 	}
+
+	return
+}
+
+// 获取防录屏落地页唤起APP参数
+func (b *BaseInfo) GetWakeUpAppParams(userId string) (url string) {
+	params := make(map[string]interface{})
+	params["app_id"] = b.AliveRep.AppId
+	params["resource_id"] = b.AliveRep.AliveId
+	params["resource_type"] = 4
+	params["user_id"] = userId
+	params["content_app_id"] = ""
+	params["encrypt_user_id"] = util.GetEncryptUserId(userId)
+	tempParam := make(map[string]interface{})
+	tempParam["params"] = params
+	tempParam["type"] = 4
+
+	base64Str, err := util.PutParmToStr(tempParam)
+	if err != nil {
+		logging.Error(fmt.Sprintf("GetWakeUpAppParams Error: alive_id: %s, err: %v", b.AliveRep.AliveId, err))
+		return
+	}
+	url = base64Str
 	return
 }
 
@@ -670,8 +701,8 @@ func (b *BaseInfo) canUseFastLive(versionType int) bool {
 	}
 }
 
-// 获取版本过期信息
-func (b *BaseInfo) getAppExpireTime(profit map[string]interface{}) map[string]interface{} {
+// GetAppExpireTime 获取版本过期信息
+func (b *BaseInfo) GetAppExpireTime(profit map[string]interface{}) map[string]interface{} {
 	// 查询直播间插件功能过期信息
 	versionStateArray := []string{
 		"alive_voice",
@@ -683,6 +714,8 @@ func (b *BaseInfo) getAppExpireTime(profit map[string]interface{}) map[string]in
 		"alive_show_man_time",
 		"alive_reward",
 		"exercise",
+		"hide_resource_count",
+		"hide_sub_count",
 	}
 
 	var permissionArray map[string]interface{}

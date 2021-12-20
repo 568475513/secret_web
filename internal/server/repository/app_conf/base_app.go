@@ -225,6 +225,7 @@ func (a *AppInfo) handleConfResult(result service.ConfHubInfo) *service.AppBaseC
 		IsShowResourcecount: int(switcheConfMap["is_show_resourcecount"].(float64)),
 		RelateSellInfo:      int(result.H5Custom["relate_sell_info"].(float64)),
 		VideoPlayerType:     int(result.H5Custom["video_player_type"].(float64)),
+		HideSubCount:        int(switcheConfMap["hide_sub_count"].(float64)),
 		// 新增在这里加
 		PcCustomDomain:      result.Domain["pc_custom_domain"].(string),
 		IsEnable:            int(result.Pc["is_enable"].(float64)),
