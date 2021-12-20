@@ -45,6 +45,7 @@ pipeline {
             $class: 'GitSCM',
             branches: [[name: "${branch}"]],
             doGenerateSubmoduleConfigurations: false,
+            extensions: [[$class: 'CloneOption', depth: 2, noTags: false, reference: '', shallow: true, timeout: 10]],
             userRemoteConfigs: [[credentialsId: 'gitlab', url: "${giturl}"]]
             ])
         }
