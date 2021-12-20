@@ -29,7 +29,7 @@ pipeline {
 
   options {
     disableConcurrentBuilds()
-    skipDefaultCheckout()
+    // skipDefaultCheckout()
     buildDiscarder(
         logRotator(numToKeepStr: '10',daysToKeepStr: '7')
     )
@@ -37,20 +37,20 @@ pipeline {
   }
 
   stages {
-    stage('git pull') {
-      agent none
-      steps {
-        container('go') {
-            checkout([
-            $class: 'GitSCM',
-            branches: [[name: "${branch}"]],
-            doGenerateSubmoduleConfigurations: false,
-            extensions: [[$class: 'CloneOption', depth: 2, noTags: false, reference: '', shallow: true, timeout: 10]],
-            userRemoteConfigs: [[credentialsId: 'gitlab', url: "${giturl}"]]
-            ])
-        }
-      }
-    }
+    // stage('git pull') {
+    //   agent none
+    //   steps {
+    //     container('go') {
+    //         checkout([
+    //         $class: 'GitSCM',
+    //         branches: [[name: "${branch}"]],
+    //         doGenerateSubmoduleConfigurations: false,
+    //         extensions: [[$class: 'CloneOption', depth: 2, noTags: false, reference: '', shallow: true, timeout: 10]],
+    //         userRemoteConfigs: [[credentialsId: 'gitlab', url: "${giturl}"]]
+    //         ])
+    //     }
+    //   }
+    // }
 
 //     stage('单元测试') {
 //           agent none
