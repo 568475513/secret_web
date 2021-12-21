@@ -65,6 +65,7 @@ func (lb *LookBack) GetLookBackUrl(aliveInfo *alive.Alive, aliveState, appType i
 		if aliveInfo.IsLookback == 0 { //没有开启回放
 			aliveVideoUrl = ""
 			miniAliveVideoUrl = ""
+			aliveReviewUrl = ""
 		} else {
 			if aliveInfo.AliveType == e.AliveTypeVideo { //语音直播
 				videoMiddleTranscode, err := business.GetVideoMiddleTranscode(aliveInfo.FileId)
