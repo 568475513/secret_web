@@ -29,4 +29,4 @@ COPY --from=builder /app/main ./main
 
 # 启动命令，多行参数使用,隔开
 # 如原启动命令 ./main run -p 8888，则以下启动命令为 ENTRYPOINT ["./main","run","-p","8888"]
-ENTRYPOINT ["./main","server","--port=9993","--env=docker","--queue=abs_machinery_tasks_all"]
+ENTRYPOINT ["./main","server","--port=9993","--env=develop","--queue=abs_machinery_tasks_all"]
