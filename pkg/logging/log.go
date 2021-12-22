@@ -12,14 +12,14 @@ import (
 func Info(v interface{}) {
 	switch v.(type) {
 	case string:
-		BLogger.Info(v.(string),
+		GetLogger().Info(v.(string),
 		)
 	case map[string]interface{}:
-		BLogger.Info("Map",
+		GetLogger().Info("Map",
 			zap.Any("Data", v),
 		)
 	default:
-		BLogger.Info("Info!!!",
+		GetLogger().Info("Info!!!",
 			zap.Any("Data", v),
 		)
 	}
@@ -29,13 +29,13 @@ func Info(v interface{}) {
 func Warn(param interface{}) {
 	switch param.(type) {
 	case string:
-		BLogger.Warn(param.(string),
+		GetLogger().Warn(param.(string),
 		)
 	case error:
-		BLogger.Warn(param.(error).Error(),
+		GetLogger().Warn(param.(error).Error(),
 		)
 	default:
-		BLogger.Warn("Warn!!!",
+		GetLogger().Warn("Warn!!!",
 			zap.Any("Data", param),
 			zap.Stack("stack"),
 		)
@@ -46,15 +46,15 @@ func Warn(param interface{}) {
 func Error(param interface{}) {
 	switch param.(type) {
 	case string:
-		BLogger.Error(param.(string),
+		GetLogger().Error(param.(string),
 			zap.String("stack", string(debug.Stack())),
 		)
 	case error:
-		BLogger.Error(param.(error).Error(),
+		GetLogger().Error(param.(error).Error(),
 			zap.String("stack", string(debug.Stack())),
 		)
 	default:
-		BLogger.Error("Error!!!",
+		GetLogger().Error("Error!!!",
 			zap.Any("error", param.(error)),
 			zap.String("stack", string(debug.Stack())),
 		)
@@ -65,16 +65,16 @@ func Error(param interface{}) {
 func InfoWithCtx(v interface{}, ctx *gin.Context) {
 	switch v.(type) {
 	case string:
-		BLogger.Info(v.(string),
+		GetLogger().Info(v.(string),
 			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
 		)
 	case map[string]interface{}:
-		BLogger.Info("Map",
+		GetLogger().Info("Map",
 			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
 			zap.Any("info", v),
 		)
 	default:
-		BLogger.Info("Info!!!",
+		GetLogger().Info("Info!!!",
 			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
 			zap.Any("Data", v),
 		)
@@ -85,15 +85,15 @@ func InfoWithCtx(v interface{}, ctx *gin.Context) {
 func WarnWithCtx(param interface{}, ctx *gin.Context) {
 	switch param.(type) {
 	case string:
-		BLogger.Warn(param.(string),
+		GetLogger().Warn(param.(string),
 			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
 		)
 	case error:
-		BLogger.Warn(param.(error).Error(),
+		GetLogger().Warn(param.(error).Error(),
 			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
 		)
 	default:
-		BLogger.Warn("Warn!!!",
+		GetLogger().Warn("Warn!!!",
 			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
 			zap.Any("warn", param),
 			zap.Stack("stack"),
@@ -105,17 +105,17 @@ func WarnWithCtx(param interface{}, ctx *gin.Context) {
 func ErrorWithCtx(param interface{}, ctx *gin.Context) {
 	switch param.(type) {
 	case string:
-		BLogger.Error(param.(string),
+		GetLogger().Error(param.(string),
 			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
 			zap.String("stack", string(debug.Stack())),
 		)
 	case error:
-		BLogger.Error(param.(error).Error(),
+		GetLogger().Error(param.(error).Error(),
 			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
 			zap.String("stack", string(debug.Stack())),
 		)
 	default:
-		BLogger.Error("Error!!!",
+		GetLogger().Error("Error!!!",
 			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
 			zap.Any("error", param.(error)),
 			zap.String("stack", string(debug.Stack())),
@@ -126,7 +126,7 @@ func ErrorWithCtx(param interface{}, ctx *gin.Context) {
 // 一般日志插入ES日志文件
 //Deprecated
 //func LogToEs(msg string, data interface{}) {
-//	BLogger.Error(msg,
+//	GetLogger().Error(msg,
 //		zap.Any("info", data),
 //		zap.String("type", "info"),
 //		zap.String("module_name", "alive_server_go"),

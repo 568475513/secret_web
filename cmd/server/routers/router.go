@@ -17,7 +17,7 @@ import (
 func InitRouter() *gin.Engine {
 	r := gin.New()
 	// 收到panics抛错后返回500中间件
-	r.Use(middleware.GinRecovery(logging.BLogger))
+	r.Use(middleware.GinRecovery(logging.GetLogger()))
 
 	// 自定义中间件在此处添加...[注意顺序]
 	// 跨域中间件
@@ -28,7 +28,7 @@ func InitRouter() *gin.Engine {
 	r.Use(middleware.ZipkinTracer(true))
 
 	// 请求信息日志
-	r.Use(middleware.GinLogger(logging.BLogger))
+	r.Use(middleware.GinLogger(logging.GetLogger()))
 
 	// 此处可写公共路由...
 	// 健康检测接口

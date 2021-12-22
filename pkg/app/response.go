@@ -23,7 +23,7 @@ func Result(httpCode, errCode int, errMsg string, data interface{}, c *gin.Conte
 
 	requestId := c.GetString(conf.AbsRequestId)
 
-	logging.BLogger.Info("请求出参信息",
+	logging.GetLogger().Info("请求出参信息",
 		zap.String("requestId", requestId),
 		zap.Int("status", c.Writer.Status()),
 		zap.Int("httpCode", httpCode),
