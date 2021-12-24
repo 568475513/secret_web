@@ -23,7 +23,7 @@ var (
 )
 
 // loggerPoolSize 预定义日志池大小
-const loggerPoolSize = 50
+const loggerPoolSize = 100
 
 // loggerPool 定义日志池
 var loggerPool [loggerPoolSize]*zap.Logger
