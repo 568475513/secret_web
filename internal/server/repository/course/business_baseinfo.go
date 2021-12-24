@@ -272,6 +272,9 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	if versionState["alive_show_man_time_is_remind"].(int) != 1 && versionState["alive_show_man_time_is_remind"].(int) != 0 && b.Alive.ConfigShowViewCount == 1 && b.UserType == 0 {
 		aliveConf["is_show_view_count"] = 0
 	}
+	if b.Alive.ConfigShowViewCount == 2 {
+		aliveConf["is_show_view_count"] = 2
+	}
 
 	// 获取直播配置表相关配置
 	// 邀请达人榜需要灰度控制
