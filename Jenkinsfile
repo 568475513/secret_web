@@ -11,7 +11,7 @@ return scm.userRemoteConfigs[0].url
 pipeline {
   environment {
     NAMESPACE = 'alive-platform' // 替换服务所在的项目名
-    CONFIGFILE = '.env.docker' // 替换为配置文件相对路径+文件名，如config/.env.xxx
+    CONFIGFILE = '.env.develop' // 替换为配置文件相对路径+文件名，如config/.env.xxx
     REGISTRY = 'registry.xiaoe-tools.com'
     REGISTRYNAMESPACE = 'dev'
     // GOPROXY = 'https://goproxy.cn,direct'

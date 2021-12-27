@@ -61,18 +61,18 @@ spec:
               readOnly: true
               mountPath: /etc/localtime
             - name: config-volume
-              mountPath: app/.env.docker # 替换为配置文件路径
-              subPath: .env.docker # 替换为配置文件名称
-          livenessProbe: # 健康检查探针，填写可以返回HTTP状态码200的GET接口，端口为服务监听/启动端口
-            httpGet:
-              path: /health
-              port: 9993
-              scheme: HTTP
-            initialDelaySeconds: 30
-            timeoutSeconds: 1
-            periodSeconds: 10
-            successThreshold: 1
-            failureThreshold: 10
+              mountPath: app/.env.develop # 替换为配置文件路径
+              subPath: .env.develop # 替换为配置文件名称
+#          livenessProbe: # 健康检查探针，填写可以返回HTTP状态码200的GET接口，端口为服务监听/启动端口
+#            httpGet:
+#              path: /health
+#              port: 9993
+#              scheme: HTTP
+#            initialDelaySeconds: 30
+#            timeoutSeconds: 1
+#            periodSeconds: 10
+#            successThreshold: 1
+#            failureThreshold: 10
 #          readinessProbe: # 服务启动就绪探针，填写可以返回HTTP状态码200的GET接口，端口为服务监听/启动端口
 #            httpGet:
 #              path: /api/health
