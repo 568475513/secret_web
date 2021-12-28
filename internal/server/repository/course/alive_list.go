@@ -285,3 +285,16 @@ func (l *ListInfo) GetAliveListByZbStartTimeAndType(appIds string, aliveType []s
 	}
 	return aliveList, nil
 }
+
+//剔除未开始的直播
+func (l *ListInfo) GetAliveListScreenLiving(aliveList []*alive.Alive) []*alive.Alive {
+	livingAlive := make([]*alive.Alive, 0)
+
+	for _, aliveInfo := range aliveList {
+		if aliveInfo.AliveState == 1 {
+			livingAlive = append(livingAlive, aliveInfo)
+		}
+	}
+
+	return livingAlive
+}
