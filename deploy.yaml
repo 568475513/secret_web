@@ -93,6 +93,39 @@ spec:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           imagePullPolicy: IfNotPresent
+        - name: job
+          image: $REGISTRY/$REGISTRYNAMESPACE/$SERVICE:$BUILDDATE-$COMMITID
+          resources:
+            requests:
+              cpu: 40m
+              memory: 50Mi
+            limits:
+              cpu: 400m
+              memory: 512Mi
+          volumeMounts:
+            - name: data
+              mountPath: /data  # 日志采集路径,默认采集/data下所有log文件日志，如果你的服务写日志不会创建对应目录，请指定对应的日志路径，或者程序内创建日志文件时检查是否存在目录/路径(推荐)
+            - name: storage
+              mountPath: app/storage # 日志采集路径，默认采集./storage下所有log文件日志，如果你的服务写日志不会创建对应目录，请指定对应的日志路径，或者程序内创建日志文件时检查是否存在目录/路径(推荐)
+            - name: host-time
+              readOnly: true
+              mountPath: /etc/localtime
+            - name: config-volume
+              mountPath: app/.env.develop # 替换为配置文件路径
+              subPath: .env.develop # 替换为配置文件名称
+          command:
+            - ./job job --env=develop --queue=abs_machinery_tasks_all
+          startupProbe:
+            exec:
+              command:
+                - ls
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 30
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       dnsPolicy: ClusterFirst
