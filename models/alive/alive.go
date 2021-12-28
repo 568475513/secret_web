@@ -122,6 +122,7 @@ type AliveModuleConf struct {
 	IsAuditFirstOn  uint8  `json:"is_audit_first_on"`
 	IsOpenPromoter  uint8  `json:"is_open_promoter"`
 	IsAntiScreen    uint8  `json:"is_anti_screen"`
+	AliveJson       string `json:"alive_json"`
 }
 
 const (

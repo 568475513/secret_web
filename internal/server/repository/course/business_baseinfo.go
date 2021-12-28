@@ -312,6 +312,13 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 		aliveConf["anti_screen_jump_url"] = os.Getenv("APP_REDIRECT_DOMAIN") + "open_app?app_id=" + b.AliveRep.AppId + "&params=" + b.GetWakeUpAppParams(userId)
 	}
 
+	//该直播是否自定义tab
+	if aliveModule.AliveJson == "" {
+		aliveConf["alive_tab"] = 0
+	} else {
+		aliveConf["alive_tab"] = 1
+	}
+
 	return aliveConf
 }
 
