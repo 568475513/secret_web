@@ -1,7 +1,7 @@
 # 构建Docker镜像使用
 # 任何问题，联系基础架构@sparklizhang
 
-FROM golang as builder
+FROM golang:1.17 as builder
 
 WORKDIR /app
 
