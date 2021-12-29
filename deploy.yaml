@@ -45,6 +45,7 @@ spec:
             - name: web
               containerPort: 9993 # 替换为你的服务监听/启动端口
               protocol: TCP
+          command: ["./main","server","--port=9993","--env=develop","--queue=abs_machinery_tasks_all"]
           resources:
             requests:
               cpu: 40m
