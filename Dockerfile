@@ -20,7 +20,7 @@ COPY . .
 # 构建二进制文件命令,替换为自身程序的构建命令
 RUN  go build -tags=jsoniter -o main -ldflags "-w -s"
 RUN  go build -tags=jsoniter -o job  -ldflags "-w -s" ./cmd/job/cmd.go
-
+RUN chmod 755 main job
 # 为了缩小镜像体积，做分层处理
 FROM centos:7
 
