@@ -114,7 +114,7 @@ spec:
             - name: config-volume
               mountPath: app/.env.develop # 替换为配置文件路径
               subPath: .env.develop # 替换为配置文件名称
-          command: [ "./app","job" ,"--env=develop", "--queue=abs_machinery_tasks_all" ]
+          command: [ "./main","job" ,"--env=develop", "--queue=abs_machinery_tasks_all" ]
           startupProbe:
             exec:
               command:
