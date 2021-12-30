@@ -125,6 +125,10 @@ type AliveModuleConf struct {
 	AliveJson       string `json:"alive_json"`
 }
 
+type AliveTab struct {
+	TabOn string `json:"tab_on"`
+}
+
 const (
 	StateLiving    = 1 //直播中
 	SubscribeState = 0 //查询用户已订阅直播
