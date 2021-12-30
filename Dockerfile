@@ -1,11 +1,11 @@
 # 构建Docker镜像使用
 # 任何问题，联系基础架构@sparklizhang
 
-FROM golang as builder
+FROM golang:1.17 as builder
 
 WORKDIR /app
 
-ENV  GOPROXY=https://goproxy.cn,http://goproxy.xiaoe-tools.com,direct GO111MODULE=on
+ENV  GOPROXY=https://goproxy.cn,http://goproxy.xiaoe-tools.com,direct GO111MODULE=on GOOS=linux GOARCH=amd64
 
 # 缓存处理，如gomod gosum未更改则不会重新拉取
 COPY go.mod go.mod
@@ -19,7 +19,6 @@ COPY . .
 
 # 构建二进制文件命令,替换为自身程序的构建命令
 RUN  go build -tags=jsoniter -o main -ldflags "-w -s"
-
 # 为了缩小镜像体积，做分层处理
 FROM centos:7
 
