@@ -163,6 +163,8 @@ func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interf
 					"alive_mode":       0,
 					"is_picture_on":    0,
 					"is_audit_first_on":0,
+					"is_online_on":0,
+					"is_heat_on":0,
 					"show_on_wall":     1,
 					"alive_type_state": 1,
 				}
