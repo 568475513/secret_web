@@ -124,7 +124,11 @@ func (p *Product) GetCampTermListByIds(relations []*business.ProResRelation) ([]
 		"price", "display_state", "distribute_percent", "first_distribute_percent", "lesson_start_at", "lesson_stop_at", "recycle_bin_state"}
 	// 初始化营期请求服务
 	campReq := service.CampService{AppId: p.AppId}
-	terms, err := campReq.GetCampTermInfo(ids, selectFields)
+	term, err := campReq.GetCampTermInfoV2(ids, selectFields)
+	//todo::转换 训练营=>product
+
+	logging.Info(fmt.Sprintf("处理之后的训练营数据terms:%s", term))
+
 	if err != nil {
 		logging.Error(err)
 	}

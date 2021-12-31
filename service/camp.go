@@ -1,6 +1,7 @@
 package service
 
 import (
+	"abs/pkg/logging"
 	"errors"
 	"fmt"
 	"os"
@@ -88,6 +89,7 @@ func (t *CampService) GetCampTermInfoV2(ids, fields []string) ([]map[string]inte
 	)
 
 	request := Post(fmt.Sprintf("%s%s", os.Getenv("LB_SP_TRA_IN"), termBatchInfo))
+	logging.Info(fmt.Sprintf("训练营数据terms:%s", request))
 	request.SetParams(map[string]interface{}{
 		"select_fields": fields,
 		"ids":           ids,
