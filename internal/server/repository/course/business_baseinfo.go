@@ -344,9 +344,11 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 	limitUvUseHd, _ := strconv.Atoi(os.Getenv("DEFAULT_USE_HD_LIMIT_UV"))
 
 	//默认使用高清播放的店铺名单
-	inGrayDefaultUseHd := redis_gray.InGrayShop("abs_go:alive_default_use_hd_switch", b.AliveRep.AppId)
+	inGrayDefaultUseHd := redis_gray.InGrayShop("abs_go:alive_default_use_hd_switch", b.Alive.AppId)
 	//成本控制的白名单
 	inCostOptWhiteMenu := redis_gray.InGrayShopSpecialHit("webrtc_cost_opt_white_menu", b.Alive.AppId)
+
+	fmt.Println("inGrayDefaultUseHd", inGrayDefaultUseHd, "inCostOptWhiteMenu", inCostOptWhiteMenu, "AppId", b.Alive.AppId)
 
 	//需要默认使用高清播放的店铺 或者 不在成本控制白名单的店铺 查一下实时在线人数
 	if inGrayDefaultUseHd || !inCostOptWhiteMenu {
@@ -358,6 +360,9 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		//查询实时在线UV
 		cacheKey := fmt.Sprintf(aliveOnlineUV, b.Alive.Id)
 		currentUv, err = redis.Int(xiaoEImRedisConn.Do("ZCARD", cacheKey))
+
+		fmt.Println("currentUv", currentUv)
+
 		if err != nil {
 			//这里只记录查询redis失败日志，不去影响主流程
 			logging.Error(fmt.Sprintf("base_info 查询实时在线人数失败：%s", err.Error()))
@@ -502,6 +507,8 @@ func (b *BaseInfo) getIndex(currentUv int, limitUvUseHd int, k string) int{
 			i = 0
 		}
 	}
+
+    fmt.Println("currentUv", currentUv, "limitUvUseHd", limitUvUseHd, "k", k, "i", i)
 	return i
 }
 
