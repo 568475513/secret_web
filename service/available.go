@@ -39,11 +39,19 @@ type ResourceAvailable struct {
 	VersionType  int
 }
 
+// 用户权益参数
+type ECourseAvailable struct {
+	BuzData map[string]interface{} // 必填
+}
+
 const (
 	// 专栏是否可用
 	cmdIsProductAvailable = "/isProductAvailable"
 	// 资源是否可用
 	cmdIsResourceAvailable = "/isResourceAvailable"
+
+	cmdIsECourseAvailable = "/xe.course.business.e_course.content.access.get/1.0.0"
+
 	// 权益超时设置ms[time.Millisecond]
 	availableTimeout = 1000
 )
@@ -88,6 +96,29 @@ func (ava *AvailableService) IsResourceAvailable(params ResourceAvailable) (expi
 			available = data["resource"].(bool)
 		}
 	}
+	return
+}
+
+// 鹅课程权益请求
+func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data interface{}, err error) {
+	// 发起请求
+	request := Post(fmt.Sprintf("%sceopenclose%s", os.Getenv("LB_PF_COURSEBUSINESS_IN"), cmdIsECourseAvailable))
+	request.SetParams(map[string]interface{}{
+		"app_id":   ava.AppId,
+		"user_id":  ava.UserId,
+		"buz_data": params.BuzData,
+	})
+
+	request.SetHeader("Content-Type", "application/json")
+	request.SetTimeout(availableTimeout * time.Millisecond)
+	result, err := request.ToMap()
+	if err != nil {
+		logging.Error(fmt.Sprintf("权益IsECourseAvailable，Http获取错误：%s", err.Error()))
+		return
+	}
+
+	// 权益返回适配处理
+	data = result["data"].(map[string]interface{})
 	return
 }
 

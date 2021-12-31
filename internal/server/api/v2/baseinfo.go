@@ -33,6 +33,7 @@ func GetBaseInfo(c *gin.Context) {
 		err error
 		req validator.BaseInfoRuleV2
 	)
+
 	userId := app.GetUserId(c) //u_60a211b56ace0_oWlPQsXXHZ
 	req.AppId = app.GetAppId(c)
 	if err = app.ParseRequest(c, &req); err != nil {
@@ -144,11 +145,9 @@ func GetBaseInfo(c *gin.Context) {
 		aliveRep.IncreasePv(c.Request.Referer(), aliveInfo.Id, int(aliveInfo.AliveType))
 
 		// 异步丢队列，更新最近查看时间
-		// sell_model 为6的情况下是只属于鹅学习的直播。 所以不计入到订阅库
-		if aliveInfo.SellMode != course.ECourseSellMode {
-			eliveInfo := course.EliveInfo{}
-			eliveInfo.UpdateAccessTimeToQueue(req.AppId, req.ResourceId, userId, userType)
-		}
+		eliveInfo := course.EliveInfo{}
+		eliveInfo.UpdateAccessTimeToQueue(req.AppId, req.ResourceId, userId, userType)
+
 		return nil
 	})
 
@@ -219,8 +218,24 @@ func GetBaseInfo(c *gin.Context) {
 			available = true
 		}
 	}
+
 	// 分享免费听逻辑
 	shareListenInfo := shareRes.GetShareListenInfo(&shareInfo, available)
+
+	// 申明变量
+	var eCourseAvailableParams interface{}
+	// 如果是鹅课程且有权益这里要处理一下鹅课程的权益 不包括老师哦
+	if available == true && userType == 2 && aliveInfo.SellMode == course.ECourseSellMode {
+		// 这里请求一下而课程的权益
+		var availableService service.AvailableService
+		var eCourseAvailable service.ECourseAvailable
+		availableService.AppId = req.AppId
+		availableService.UserId = userId
+		eCourseAvailable.BuzData["recourse_id"] = req.ResourceId
+		// 鹅课程权益接口请求哦
+		eCourseAvailableParams, _ = availableService.IsECourseAvailable(eCourseAvailable)
+	}
+
 	// 业务数据封装
 	baseInfoRep := course.BaseInfo{Alive: aliveInfo, AliveRep: &aliveRep, UserType: userType}
 	aliveInfoDetail := baseInfoRep.GetAliveInfoDetail()
@@ -271,6 +286,8 @@ func GetBaseInfo(c *gin.Context) {
 	data := make(map[string]interface{})
 	// 父级专栏信息列表
 	// data["parent_columns"] = products
+	// 鹅课程权益数据
+	data["e_course_data"] = eCourseAvailableParams
 	// 直播权益信息
 	data["available_info"] = availableInfo
 	// 直播基本信息
