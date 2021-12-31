@@ -556,9 +556,9 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 			} else if len(products) == 1 {
 				urlColumParams.Type = e.PaymentTypeProduct
 				//兼容训练营逻辑
-				//if strings.Contains(products[0].Id, "term") {
-				//	urlColumParams.ResourceType = e.ResourceTypeCamp
-				//}
+				if strings.Contains(products[0].Id, "term") {
+					urlColumParams.ResourceType = e.ResourceTypeCamp
+				}
 				urlColumParams.ProductId = products[0].Id
 				if req.ContentAppId != "" {
 					urlColumParams.ContentAppId = req.ContentAppId
