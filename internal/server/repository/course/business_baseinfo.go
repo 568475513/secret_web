@@ -335,6 +335,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 	timeStamp := time.Now().Unix()
 	supportSharpness := map[string]interface{}{
 		"default": "原画", //默认原画
+		"hd":  "高清", //高清（720P）
 		"fluent":  "流畅", //流畅（480P）
 	}
 
@@ -361,8 +362,10 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		i := 0
 		for k, v := range supportSharpness {
 			switch k {
-			case "fluent":
+			case "hd":
 				i = 1
+			case "fluent":
+				i = 2
 			case "default":
 				i = 0
 			}
@@ -416,8 +419,10 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 				i := 0
 				for k, v := range supportSharpness {
 					switch k {
-					case "fluent":
+					case "hd":
 						i = 1
+					case "fluent":
+						i = 2
 					case "default":
 						i = 0
 					}
@@ -678,6 +683,8 @@ func (b *BaseInfo) getPlayUrlBySharpness(sharpness, playUrl, channelId string) s
 	switch sharpness {
 	case "fluent":
 		replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_FLUENT"))
+	case "hd":
+		replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_HD"))
 	default:
 		replaceStr = ""
 	}
