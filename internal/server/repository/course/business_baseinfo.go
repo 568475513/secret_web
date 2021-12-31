@@ -363,9 +363,9 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		for k, v := range supportSharpness {
 			switch k {
 			case "hd":
-				i = 1
-			case "fluent":
 				i = 2
+			case "fluent":
+				i = 1
 			case "default":
 				i = 0
 			}
@@ -420,9 +420,9 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 				for k, v := range supportSharpness {
 					switch k {
 					case "hd":
-						i = 1
-					case "fluent":
 						i = 2
+					case "fluent":
+						i = 1
 					case "default":
 						i = 0
 					}
