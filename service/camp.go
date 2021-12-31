@@ -90,9 +90,9 @@ func (t *CampService) GetCampTermInfoV2(ids, fields []string) ([]map[string]inte
 
 	request := Post(fmt.Sprintf("%s%s", os.Getenv("LB_SP_TRA_IN"), termBatchInfo))
 	request.SetParams(map[string]interface{}{
-		"select_fields": fields,
-		"ids":           ids,
-		"app_id":        t.AppId,
+		//"select_fields": fields,
+		"ids":    ids,
+		"app_id": t.AppId,
 	})
 	request.SetHeader("Content-Type", "application/json")
 	request.SetTimeout(timeoutTerm * time.Millisecond)
