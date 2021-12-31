@@ -333,10 +333,47 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 	)
 
 	timeStamp := time.Now().Unix()
-	supportSharpness := map[string]interface{}{
-		"default": "原画", //默认原画
-		"hd":  "高清", //高清（720P）
-		"fluent":  "流畅", //流畅（480P）
+	currentUv := 0
+
+	var supportSharpness map[string]interface{}
+
+	limitUvUseHd, _ := strconv.Atoi(os.Getenv("DEFAULT_USE_HD_LIMIT_UV"))
+
+	//默认使用高清播放的店铺名单
+	inGrayDefaultUseHd := redis_gray.InGrayShop("abs_go:alive_default_use_hd_switch", b.AliveRep.AppId)
+	//成本控制的白名单
+	inCostOptWhiteMenu := redis_gray.InGrayShopSpecialHit("webrtc_cost_opt_white_menu", b.Alive.AppId)
+
+	//需要默认使用高清播放的店铺 或者 不在成本控制白名单的店铺 查一下实时在线人数
+	if inGrayDefaultUseHd || !inCostOptWhiteMenu {
+		xiaoEImRedisConn, err := redis_xiaoe_im.GetConn()
+		if err != nil {
+			logging.Error(err)
+		}
+		defer xiaoEImRedisConn.Close()
+		//查询实时在线UV
+		cacheKey := fmt.Sprintf(aliveOnlineUV, b.Alive.Id)
+		currentUv, err = redis.Int(xiaoEImRedisConn.Do("ZCARD", cacheKey))
+		if err != nil {
+			//这里只记录查询redis失败日志，不去影响主流程
+			logging.Error(fmt.Sprintf("base_info 查询实时在线人数失败：%s", err.Error()))
+		}
+	}
+
+	if currentUv > limitUvUseHd {
+		//默认使用高清（忽略default的key命名，历史原因）
+		supportSharpness = map[string]interface{}{
+			"hd":  "高清", //高清（720P）
+			"default": "原画", //默认原画
+			"fluent":  "流畅", //流畅（480P）
+		}
+	}else {
+		//默认使用原画
+		supportSharpness = map[string]interface{}{
+			"default": "原画", //默认原画
+			"hd":  "高清", //高清（720P）
+			"fluent":  "流畅", //流畅（480P）
+		}
 	}
 
 	if err = util.JsonDecode([]byte(b.Alive.PlayUrl), &playUrls); err != nil {
@@ -361,14 +398,6 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		liveUrl.PcAliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 		i := 0
 		for k, v := range supportSharpness {
-			switch k {
-			case "hd":
-				i = 2
-			case "fluent":
-				i = 1
-			case "default":
-				i = 0
-			}
 			liveUrl.AliveVideoMoreSharpness[i] = map[string]interface{}{
 				"definition_name": v,
 				"definition_p":    k,
@@ -381,62 +410,35 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 				"url":             b.getPlayUrlBySharpness(k, playUrls[1], b.Alive.ChannelId),
 				"encrypt":         "",
 			}
+
+			i++
 		}
 
 		// 快直播O端名单目录
 		isGray := redis_gray.InGrayShop("fast_alive_switch", b.AliveRep.AppId)
 		if isGray && isUserWebRtc && enableWebRtc == 1 && util.Substr(playUrls[0], 0, 4) == "rtmp" {
-			var (
-				uv      = 0
-				limitUv = 0
-			)
+			limitUv, _ := strconv.Atoi(os.Getenv("WEBRTC_SWITCH_RTMP_UV"))
 
-			//判断成本控制的白名单
-			inCostOptWhiteMenu := redis_gray.InGrayShopSpecialHit("webrtc_cost_opt_white_menu", b.Alive.AppId)
-
-			//不在白名单才去查实时在线人
-			if !inCostOptWhiteMenu {
-				xiaoEImRedisConn, err := redis_xiaoe_im.GetConn()
-				if err != nil {
-					logging.Error(err)
-				}
-				defer xiaoEImRedisConn.Close()
-				//查询实时在线UV
-				cacheKey := fmt.Sprintf(aliveOnlineUV, b.Alive.Id)
-				uv, err = redis.Int(xiaoEImRedisConn.Do("ZCARD", cacheKey))
-				limitUv, _ = strconv.Atoi(os.Getenv("WEBRTC_SWITCH_RTMP_UV"))
-				if err != nil {
-					//这里只记录查询redis失败日志，不去影响主流程
-					logging.Error(fmt.Sprintf("base_info 查询实时在线人数失败：%s", err.Error()))
-				}
-			}
-
-			if inCostOptWhiteMenu || uv < limitUv {
+			if inCostOptWhiteMenu || currentUv < limitUv {
 				liveUrl.AliveFastWebrtcurl = "webrtc" + util.Substr(playUrls[0], 4, len(playUrls[0]))
 				liveUrl.FastAliveSwitch = true
 				//快直播多清晰度
 				liveUrl.AliveFastMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 				i := 0
 				for k, v := range supportSharpness {
-					switch k {
-					case "hd":
-						i = 2
-					case "fluent":
-						i = 1
-					case "default":
-						i = 0
-					}
 					liveUrl.AliveFastMoreSharpness[i] = map[string]interface{}{
 						"definition_name": v,
 						"definition_p":    k,
 						"url":             b.getPlayUrlBySharpness(k, liveUrl.AliveFastWebrtcurl, b.Alive.ChannelId),
 						"encrypt":         "",
 					}
+
+					i++
 				}
 			} else {
 				// 触发成本控制了，记录下
 				logging.Info(fmt.Sprintf("cost_optimization app_id:%s alive_id:%s uv:%d limit:%d",
-					b.Alive.AppId, b.Alive.Id, uv, limitUv))
+					b.Alive.AppId, b.Alive.Id, currentUv, limitUv))
 			}
 		}
 	} else {
