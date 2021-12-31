@@ -335,7 +335,11 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 	timeStamp := time.Now().Unix()
 	currentUv := 0
 
-	var supportSharpness map[string]interface{}
+	supportSharpness := map[string]interface{}{
+		"default": "原画", //默认原画
+		"hd":  "高清", //高清（720P）
+		"fluent":  "流畅", //流畅（480P）
+	}
 
 	limitUvUseHd, _ := strconv.Atoi(os.Getenv("DEFAULT_USE_HD_LIMIT_UV"))
 
@@ -357,22 +361,6 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		if err != nil {
 			//这里只记录查询redis失败日志，不去影响主流程
 			logging.Error(fmt.Sprintf("base_info 查询实时在线人数失败：%s", err.Error()))
-		}
-	}
-
-	if currentUv > limitUvUseHd {
-		//默认使用高清（忽略default的key命名，历史原因）
-		supportSharpness = map[string]interface{}{
-			"hd":  "高清", //高清（720P）
-			"default": "原画", //默认原画
-			"fluent":  "流畅", //流畅（480P）
-		}
-	}else {
-		//默认使用原画
-		supportSharpness = map[string]interface{}{
-			"default": "原画", //默认原画
-			"hd":  "高清", //高清（720P）
-			"fluent":  "流畅", //流畅（480P）
 		}
 	}
 
@@ -398,6 +386,8 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		liveUrl.PcAliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 		i := 0
 		for k, v := range supportSharpness {
+			i = b.getIndex(currentUv, limitUvUseHd, k)
+
 			liveUrl.AliveVideoMoreSharpness[i] = map[string]interface{}{
 				"definition_name": v,
 				"definition_p":    k,
@@ -410,8 +400,6 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 				"url":             b.getPlayUrlBySharpness(k, playUrls[1], b.Alive.ChannelId),
 				"encrypt":         "",
 			}
-
-			i++
 		}
 
 		// 快直播O端名单目录
@@ -426,14 +414,14 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 				liveUrl.AliveFastMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 				i := 0
 				for k, v := range supportSharpness {
+					i = b.getIndex(currentUv, limitUvUseHd, k)
+
 					liveUrl.AliveFastMoreSharpness[i] = map[string]interface{}{
 						"definition_name": v,
 						"definition_p":    k,
 						"url":             b.getPlayUrlBySharpness(k, liveUrl.AliveFastWebrtcurl, b.Alive.ChannelId),
 						"encrypt":         "",
 					}
-
-					i++
 				}
 			} else {
 				// 触发成本控制了，记录下
@@ -489,6 +477,32 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		}
 	}
 	return
+}
+
+func (b *BaseInfo) getIndex(currentUv int, limitUvUseHd int, k string) int{
+	i := 0
+	if currentUv > limitUvUseHd {
+		//默认使用高清（0代表默认 default这个命名忽略 历史原因）
+		switch k {
+		case "hd":
+			i = 0
+		case "fluent":
+			i = 2
+		case "default":
+			i = 1
+		}
+	}else {
+		//默认使用原画（0代表默认 default这个命名忽略 历史原因）
+		switch k {
+		case "hd":
+			i = 1
+		case "fluent":
+			i = 2
+		case "default":
+			i = 0
+		}
+	}
+	return i
 }
 
 // 直播静态页的信息采集【用户】
