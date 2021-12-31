@@ -125,6 +125,7 @@ type AliveModuleConf struct {
 	IsOpenPromoter  uint8  `json:"is_open_promoter"`
 	IsAntiScreen    uint8  `json:"is_anti_screen"`
 	AliveJson       string `json:"alive_json"`
+	IsOpenShareReward uint8  `json:"is_open_share_reward"`
 }
 
 type AliveTab struct {
