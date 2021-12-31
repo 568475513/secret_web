@@ -344,7 +344,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 	limitUvUseHd, _ := strconv.Atoi(os.Getenv("DEFAULT_USE_HD_LIMIT_UV"))
 
 	//默认使用高清播放的店铺名单
-	inGrayDefaultUseHd := redis_gray.InGrayShopSpecialHit("abs_go:alive_default_use_hd_switch", b.Alive.AppId)
+	inGrayDefaultUseHd := redis_gray.InGrayShopSpecialHit("alive_default_use_hd_switch", b.Alive.AppId)
 	//成本控制的白名单
 	inCostOptWhiteMenu := redis_gray.InGrayShopSpecialHit("webrtc_cost_opt_white_menu", b.Alive.AppId)
 
