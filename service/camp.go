@@ -89,7 +89,6 @@ func (t *CampService) GetCampTermInfoV2(ids, fields []string) ([]map[string]inte
 	)
 
 	request := Post(fmt.Sprintf("%s%s", os.Getenv("LB_SP_TRA_IN"), termBatchInfo))
-	logging.Info(fmt.Sprintf("训练营数据terms:%s", request))
 	request.SetParams(map[string]interface{}{
 		"select_fields": fields,
 		"ids":           ids,
@@ -98,6 +97,8 @@ func (t *CampService) GetCampTermInfoV2(ids, fields []string) ([]map[string]inte
 	request.SetHeader("Content-Type", "application/json")
 	request.SetTimeout(timeoutTerm * time.Millisecond)
 	err = request.ToJSON(&result)
+	logging.Info(fmt.Sprintf("训练营数据terms:%s", result))
+
 	if err != nil {
 		return terms, err
 	}
