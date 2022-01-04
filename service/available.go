@@ -131,7 +131,14 @@ func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data i
 	logging.Info(request)
 	logging.Info(result)
 	// 权益返回适配处理
-	data = result["data"].(map[string]interface{})
+
+	if result["code"].(float64) != 0 {
+		// logging.Info("[资源]用户：" + ava.UserId + "未购买" + params.ResourceId + "_" + now.String())
+	} else {
+		// logging.Info("[资源]用户：" + ava.UserId + "已购买" + params.ResourceId + "_" + now.String())
+		data = result["data"].(map[string]interface{})
+	}
+
 	return
 }
 
