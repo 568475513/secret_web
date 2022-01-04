@@ -41,7 +41,7 @@ type ResourceAvailable struct {
 
 // 用户权益参数
 type ECourseAvailable struct {
-	ResourceId string
+	ResourceId string `json:"resource_id"`
 }
 
 const (
