@@ -555,16 +555,14 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 				url = util.ParentColumnsUrl(urlColumParams)
 			} else if len(products) == 1 {
 				urlColumParams.Type = e.PaymentTypeProduct
-				//兼容训练营逻辑
-				if strings.Contains(products[0].Id, "term") {
-					urlColumParams.ResourceType = e.ResourceTypeCamp
-				}
+				urlColumParams.ResourceType = int(products[0].SrcType)
 				urlColumParams.ProductId = products[0].Id
 				if req.ContentAppId != "" {
 					urlColumParams.ContentAppId = req.ContentAppId
 					urlColumParams.Source = "2"
 				}
 				url = util.ContentUrl(urlColumParams)
+				logging.Info(fmt.Sprintf("返回的url参数:%v", urlColumParams))
 			} else {
 				code = e.SUCCESS
 			}

@@ -1,6 +1,7 @@
 package course
 
 import (
+	"abs/pkg/enums"
 	"fmt"
 	"strings"
 	"sync"
@@ -121,13 +122,30 @@ func (p *Product) GetCampTermListByIds(relations []*business.ProResRelation) ([]
 	}
 	// 查询字段
 	selectFields := []string{"app_id", "id", "img_url", "img_url_compressed", "title", "summary", "join_count",
-		"price", "display_state", "distribute_percent", "first_distribute_percent", "lesson_start_at", "lesson_stop_at", "recycle_bin_state", "product_type"}
+		"price", "display_state", "distribute_percent", "first_distribute_percent", "lesson_start_at", "lesson_stop_at", "recycle_bin_state"}
 	// 初始化营期请求服务
 	campReq := service.CampService{AppId: p.AppId}
-	term, err := campReq.GetCampTermInfoV2(ids, selectFields)
+	termsInfo, err := campReq.GetCampTermInfoV2(ids, selectFields)
 	//todo::转换 训练营=>product
+	for _, item := range termsInfo {
+		pterm := business.PayProducts{}
+		pterm.AppId = item["app_id"].(string)
+		pterm.Id = item["id"].(string)
+		pterm.Price = int(item["price"].(float64))
+		pterm.State = uint8(item["display_state"].(float64))
+		pterm.Name.String = item["title"].(string)
+		pterm.Summary.String = item["summary"].(string)
+		pterm.SrcType = enums.ResourceTypeCamp
+		pterm.RecycleBinState = uint8(item["recycle_bin_state"].(float64))
+		pterm.PurchaseCount = int(item["join_count"].(float64))
+		pterm.ImgUrl.String = item["img_url"].(string)
+		pterm.DistributePercent = item["distribute_percent"].(float64)
+		pterm.FirstDistributePercent = item["first_distribute_percent"].(float64)
+		pterm.ImgUrlCompressed.String = item["img_url_compressed"].(string)
 
-	logging.Info(fmt.Sprintf("处理之后的训练营数据terms:%v", term))
+		terms = append(terms, &pterm)
+	}
+	logging.Info(fmt.Sprintf("处理之后的训练营数据terms:%v", terms))
 
 	if err != nil {
 		logging.Error(err)
