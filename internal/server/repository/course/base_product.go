@@ -143,7 +143,7 @@ func (p *Product) GetCampTermListByIds(relations []*business.ProResRelation) ([]
 		pterm.PurchaseCount = int(item["join_count"].(float64))
 		pterm.ImgUrl.String = item["img_url"].(string)
 		//pterm.DistributePercent = item["distribute_percent"].(float64)
-		pterm.FirstDistributePercent = item["first_distribute_percent"].(float64)
+		//pterm.FirstDistributePercent = item["first_distribute_percent"].(float64)
 		pterm.ImgUrlCompressed.String = item["img_url_compressed"].(string)
 
 		logging.Info(fmt.Sprintf("处理之后的训练营数据pterm:%v", pterm))
