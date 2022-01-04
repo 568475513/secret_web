@@ -102,7 +102,7 @@ func (ava *AvailableService) IsResourceAvailable(params ResourceAvailable) (expi
 // 鹅课程权益请求
 func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data interface{}, err error) {
 	// 发起请求
-	request := Post(fmt.Sprintf("%sceopenclose%s", os.Getenv("LB_PF_COURSEBUSINESS_IN"), cmdIsECourseAvailable))
+	request := Post(fmt.Sprintf(os.Getenv("LB_PF_COURSEBUSINESS_IN") + cmdIsECourseAvailable))
 
 	// 写死请求数据 模拟
 	ava.AppId = "appm00slggh2325"
