@@ -469,7 +469,7 @@ func (b *BaseInfo) getIndex(currentUv int, limitUvUseHd int, k string) int{
 	//默认使用高清播放的店铺名单
 	inGrayDefaultUseHd := redis_gray.InGrayShopSpecialHit("alive_default_use_hd_switch", b.Alive.AppId)
 
-	if inGrayDefaultUseHd || currentUv > limitUvUseHd {
+	if inGrayDefaultUseHd && currentUv > limitUvUseHd {
 		//默认使用高清（0代表默认 default这个命名忽略 历史原因）
 		switch k {
 		case "hd":
