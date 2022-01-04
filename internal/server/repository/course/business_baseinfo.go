@@ -473,11 +473,11 @@ func (b *BaseInfo) getIndex(currentUv int, limitUvUseHd int, k string) int{
 		//默认使用高清（0代表默认 default这个命名忽略 历史原因）
 		switch k {
 		case "hd":
-			i = 0
-		case "fluent":
-			i = 2
-		case "default":
 			i = 1
+		case "fluent":
+			i = 0
+		case "default":
+			i = 2
 		}
 	}else {
 		//默认使用原画（0代表默认 default这个命名忽略 历史原因）
