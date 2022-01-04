@@ -124,7 +124,7 @@ func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data i
 	}
 
 	// 权益返回适配处理
-	data = result["data"].(map[string]interface{})
+	data = result
 	return
 }
 
