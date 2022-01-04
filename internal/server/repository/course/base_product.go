@@ -3,6 +3,7 @@ package course
 import (
 	"abs/pkg/enums"
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -142,8 +143,10 @@ func (p *Product) GetCampTermListByIds(relations []*business.ProResRelation) ([]
 		pterm.RecycleBinState = uint8(item["recycle_bin_state"].(float64))
 		pterm.PurchaseCount = int(item["join_count"].(float64))
 		pterm.ImgUrl.String = item["img_url"].(string)
-		//pterm.DistributePercent = item["distribute_percent"].(float64)
-		//pterm.FirstDistributePercent = item["first_distribute_percent"].(float64)
+		first_distribute_percent, _ := strconv.ParseFloat((item["first_distribute_percent"].(string)), 64)
+		pterm.FirstDistributePercent = first_distribute_percent
+		distribute_percent, _ := strconv.ParseFloat((item["distribute_percent"].(string)), 64)
+		pterm.DistributePercent = distribute_percent
 		pterm.ImgUrlCompressed.String = item["img_url_compressed"].(string)
 
 		logging.Info(fmt.Sprintf("处理之后的训练营数据pterm:%v", pterm))
