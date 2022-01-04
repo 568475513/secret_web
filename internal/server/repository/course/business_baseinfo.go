@@ -333,36 +333,11 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 	)
 
 	timeStamp := time.Now().Unix()
-	currentUv := 0
 
 	supportSharpness := map[string]interface{}{
 		"default": "原画", //默认原画
 		"hd":  "高清", //高清（720P）
 		"fluent":  "流畅", //流畅（480P）
-	}
-
-	limitUvUseHd, _ := strconv.Atoi(os.Getenv("DEFAULT_USE_HD_LIMIT_UV"))
-
-	//默认使用高清播放的店铺名单
-	inGrayDefaultUseHd := redis_gray.InGrayShopSpecialHit("alive_default_use_hd_switch", b.Alive.AppId)
-	//成本控制的白名单
-	inCostOptWhiteMenu := redis_gray.InGrayShopSpecialHit("webrtc_cost_opt_white_menu", b.Alive.AppId)
-
-	//需要默认使用高清播放的店铺 或者 不在成本控制白名单的店铺 查一下实时在线人数
-	if inGrayDefaultUseHd || !inCostOptWhiteMenu {
-		xiaoEImRedisConn, err := redis_xiaoe_im.GetConn()
-		if err != nil {
-			logging.Error(err)
-		}
-		defer xiaoEImRedisConn.Close()
-		//查询实时在线UV
-		cacheKey := fmt.Sprintf(aliveOnlineUV, b.Alive.Id)
-		currentUv, err = redis.Int(xiaoEImRedisConn.Do("ZCARD", cacheKey))
-
-		if err != nil {
-			//这里只记录查询redis失败日志，不去影响主流程
-			logging.Error(fmt.Sprintf("base_info 查询实时在线人数失败：%s", err.Error()))
-		}
 	}
 
 	if err = util.JsonDecode([]byte(b.Alive.PlayUrl), &playUrls); err != nil {
@@ -382,6 +357,11 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			// 这里需要返回吗？
 			// return
 		}
+
+		currentUv := b.getCurrentUv()
+		//获取超过多少UV默认使用高清播放的配置
+		limitUvUseHd, _ := strconv.Atoi(os.Getenv("DEFAULT_USE_HD_LIMIT_UV"))
+
 		// 普通直播多清晰度
 		liveUrl.AliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 		liveUrl.PcAliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
@@ -407,6 +387,9 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		isGray := redis_gray.InGrayShop("fast_alive_switch", b.AliveRep.AppId)
 		if isGray && isUserWebRtc && enableWebRtc == 1 && util.Substr(playUrls[0], 0, 4) == "rtmp" {
 			limitUv, _ := strconv.Atoi(os.Getenv("WEBRTC_SWITCH_RTMP_UV"))
+
+			//成本控制的白名单
+			inCostOptWhiteMenu := redis_gray.InGrayShopSpecialHit("webrtc_cost_opt_white_menu", b.Alive.AppId)
 
 			if inCostOptWhiteMenu || currentUv < limitUv {
 				liveUrl.AliveFastWebrtcurl = "webrtc" + util.Substr(playUrls[0], 4, len(playUrls[0]))
@@ -482,7 +465,11 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 
 func (b *BaseInfo) getIndex(currentUv int, limitUvUseHd int, k string) int{
 	i := 0
-	if currentUv > limitUvUseHd {
+
+	//默认使用高清播放的店铺名单
+	inGrayDefaultUseHd := redis_gray.InGrayShopSpecialHit("alive_default_use_hd_switch", b.Alive.AppId)
+
+	if inGrayDefaultUseHd || currentUv > limitUvUseHd {
 		//默认使用高清（0代表默认 default这个命名忽略 历史原因）
 		switch k {
 		case "hd":
@@ -505,6 +492,27 @@ func (b *BaseInfo) getIndex(currentUv int, limitUvUseHd int, k string) int{
 	}
 
 	return i
+}
+
+func (b *BaseInfo) getCurrentUv() int{
+	xiaoEImRedisConn, err := redis_xiaoe_im.GetConn()
+	if err != nil {
+		logging.Error(err)
+	}
+	defer xiaoEImRedisConn.Close()
+
+	currentUv := 0
+
+	//查询实时在线UV
+	cacheKey := fmt.Sprintf(aliveOnlineUV, b.Alive.Id)
+	currentUv, err = redis.Int(xiaoEImRedisConn.Do("ZCARD", cacheKey))
+
+	if err != nil {
+		//这里只记录查询redis失败日志，不去影响主流程
+		logging.Error(fmt.Sprintf("base_info 查询实时在线人数失败：%s", err.Error()))
+	}
+
+	return currentUv
 }
 
 // 直播静态页的信息采集【用户】
