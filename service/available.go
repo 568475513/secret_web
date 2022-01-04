@@ -122,9 +122,10 @@ func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data i
 		logging.Error(fmt.Sprintf("权益IsECourseAvailable，Http获取错误：%s", err.Error()))
 		return
 	}
-
+	logging.Error(fmt.Sprintf("权益IsECourseAvailable，Http获取"))
+	logging.Info(request)
 	// 权益返回适配处理
-	data = result
+	data = result["data"].(map[string]interface{})
 	return
 }
 
