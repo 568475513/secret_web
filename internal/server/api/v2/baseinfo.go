@@ -231,7 +231,7 @@ func GetBaseInfo(c *gin.Context) {
 	var eCourseAvailable service.ECourseAvailable
 	availableService.AppId = req.AppId
 	availableService.UserId = userId
-	eCourseAvailable.BuzData["recourse_id"] = req.ResourceId
+	eCourseAvailable.ResourceId = req.ResourceId
 	// 鹅课程权益接口请求哦
 	eCourseAvailableParams, _ = availableService.IsECourseAvailable(eCourseAvailable)
 	//}

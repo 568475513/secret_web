@@ -41,7 +41,7 @@ type ResourceAvailable struct {
 
 // 用户权益参数
 type ECourseAvailable struct {
-	BuzData map[string]interface{} // 必填
+	ResourceId string
 }
 
 const (
@@ -107,12 +107,12 @@ func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data i
 	// 写死请求数据 模拟
 	ava.AppId = "appm00slggh2325"
 	ava.UserId = "u_61b6f28beb92a_WPxIVGI6lS"
-	params.BuzData["resource_id"] = "v_61c97abb60b2567868b46b00"
+	params.ResourceId = "v_61c97abb60b2567868b46b00"
 
 	request.SetParams(map[string]interface{}{
 		"app_id":   ava.AppId,
 		"user_id":  ava.UserId,
-		"buz_data": params.BuzData,
+		"buz_data": params,
 	})
 
 	request.SetHeader("Content-Type", "application/json")
