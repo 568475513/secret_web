@@ -127,10 +127,7 @@ func (p *Product) GetCampTermListByIds(relations []*business.ProResRelation) ([]
 	// 初始化营期请求服务
 	campReq := service.CampService{AppId: p.AppId}
 	termsInfo, err := campReq.GetCampTermInfoV2(ids, selectFields)
-	//todo::转换 训练营=>product
 	for _, item := range termsInfo {
-
-		logging.Info(fmt.Sprintf("处理之后的训练营数据item:%v", item))
 
 		pterm := business.PayProducts{}
 		pterm.AppId = item["app_id"].(string)
@@ -149,11 +146,8 @@ func (p *Product) GetCampTermListByIds(relations []*business.ProResRelation) ([]
 		pterm.DistributePercent = distribute_percent
 		pterm.ImgUrlCompressed.String = item["img_url_compressed"].(string)
 
-		logging.Info(fmt.Sprintf("处理之后的训练营数据pterm:%v", pterm))
-
 		terms = append(terms, &pterm)
 	}
-	logging.Info(fmt.Sprintf("处理之后的训练营数据terms:%v", terms))
 
 	if err != nil {
 		logging.Error(err)

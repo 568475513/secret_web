@@ -562,7 +562,6 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 					urlColumParams.Source = "2"
 				}
 				url = util.ContentUrl(urlColumParams)
-				logging.Info(fmt.Sprintf("返回的url参数:%v", urlColumParams))
 			} else {
 				code = e.SUCCESS
 			}
