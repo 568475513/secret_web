@@ -106,9 +106,9 @@ func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data i
 	request := Post(url)
 	logging.Info(fmt.Sprintf("权益IsECourseAvailable，Url:" + url))
 	// 写死请求数据 模拟
-	//ava.AppId = "appm00slggh2325"
-	//ava.UserId = "u_61b6f28beb92a_WPxIVGI6lS"
-	//params.ResourceId = "v_61c97abb60b2567868b46b00"
+	ava.AppId = "appm00slggh2325"
+	ava.UserId = "u_61b6f28beb92a_WPxIVGI6lS"
+	params.ResourceId = "v_61c97abb60b2567868b46b00"
 
 	requestParams := map[string]interface{}{
 		"app_id":   ava.AppId,
