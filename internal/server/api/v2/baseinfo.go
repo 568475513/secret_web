@@ -225,16 +225,16 @@ func GetBaseInfo(c *gin.Context) {
 	// 申明变量
 	var eCourseAvailableParams interface{}
 	// 如果是鹅课程且有权益这里要处理一下鹅课程的权益 不包括老师哦
-	if available == true && userType == 2 && aliveInfo.SellMode == course.ECourseSellMode {
-		// 这里请求一下而课程的权益
-		var availableService service.AvailableService
-		var eCourseAvailable service.ECourseAvailable
-		availableService.AppId = req.AppId
-		availableService.UserId = userId
-		eCourseAvailable.BuzData["recourse_id"] = req.ResourceId
-		// 鹅课程权益接口请求哦
-		eCourseAvailableParams, _ = availableService.IsECourseAvailable(eCourseAvailable)
-	}
+	//if available == true && userType == 2 && aliveInfo.SellMode == course.ECourseSellMode {
+	// 这里请求一下而课程的权益
+	var availableService service.AvailableService
+	var eCourseAvailable service.ECourseAvailable
+	availableService.AppId = req.AppId
+	availableService.UserId = userId
+	eCourseAvailable.BuzData["recourse_id"] = req.ResourceId
+	// 鹅课程权益接口请求哦
+	eCourseAvailableParams, _ = availableService.IsECourseAvailable(eCourseAvailable)
+	//}
 
 	// 业务数据封装
 	baseInfoRep := course.BaseInfo{Alive: aliveInfo, AliveRep: &aliveRep, UserType: userType}

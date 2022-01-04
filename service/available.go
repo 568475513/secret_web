@@ -103,6 +103,12 @@ func (ava *AvailableService) IsResourceAvailable(params ResourceAvailable) (expi
 func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data interface{}, err error) {
 	// 发起请求
 	request := Post(fmt.Sprintf("%sceopenclose%s", os.Getenv("LB_PF_COURSEBUSINESS_IN"), cmdIsECourseAvailable))
+
+	// 写死请求数据 模拟
+	ava.AppId = "appm00slggh2325"
+	ava.UserId = "u_61b6f28beb92a_WPxIVGI6lS"
+	params.BuzData["resource_id"] = "v_61c97abb60b2567868b46b00"
+
 	request.SetParams(map[string]interface{}{
 		"app_id":   ava.AppId,
 		"user_id":  ava.UserId,
