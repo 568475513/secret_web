@@ -119,7 +119,7 @@ func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data i
 	request.SetTimeout(availableTimeout * time.Millisecond)
 	result, err := request.ToMap()
 	if err != nil {
-		logging.Error(fmt.Sprintf("权益IsECourseAvailable，Http获取错误：%s", err.Error()))
+		logging.Info(fmt.Sprintf("权益IsECourseAvailable，Http获取错误：%s", err.Error()))
 		return
 	}
 	logging.Error(fmt.Sprintf("权益IsECourseAvailable，Http获取"))
