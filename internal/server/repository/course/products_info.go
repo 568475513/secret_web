@@ -66,7 +66,9 @@ func (pi *ProductInfo) GetFromTargetUrl(key string) interface{} {
 
 // GetAliveProductsInfo 获取直播关联父级信息
 // 从业务后台get_resource_info铲过来的屎，看了代码记得洗眼睛，改了代码记得洗手洗键盘
-func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[string]interface{}) {
+func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) []map[string]interface{} {
+	//make初始化，防止json序列化为null
+	result := make([]map[string]interface{}, 0, 0)
 	//申明局部变量
 	var (
 		err           error
@@ -124,7 +126,7 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 	//提取父级id
 	pRelationIds = pi.getProductIds(pRelationList)
 	if len(pRelationIds) == 0 {
-		return
+		return result
 	}
 
 	//查询父级信息
@@ -249,7 +251,7 @@ func (pi *ProductInfo) GetAliveProductsInfo(paymentType int) (result []map[strin
 		result = append(result, tempSlice...)
 	}
 
-	return
+	return result
 }
 
 // GetMoreInfo 拼接展示多个父级课程的中间页url
