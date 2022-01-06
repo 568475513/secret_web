@@ -96,6 +96,7 @@ func (t *CampService) GetCampTermInfoV2(ids, fields []string) ([]map[string]inte
 	request.SetHeader("Content-Type", "application/json")
 	request.SetTimeout(timeoutTerm * time.Millisecond)
 	err = request.ToJSON(&result)
+
 	if err != nil {
 		return terms, err
 	}

@@ -40,12 +40,13 @@ type PayProducts struct {
 	State                  uint8               `json:"state"`
 	SellType               int                 `json:"sell_type"`
 
-	RatePrice  int      `json:"rate_price"`
-	SrcType    uint8    `json:"srcType"`
-	InActivity int      `json:"in_activity"`
-	Tags       []string `json:"tags"`
-	IsTry      int      `json:"is_try"`
-	ResourceId string   `json:"resource_id"`
+	RatePrice    int      `json:"rate_price"`
+	SrcType      uint8    `json:"srcType"`
+	InActivity   int      `json:"in_activity"`
+	Tags         []string `json:"tags"`
+	IsTry        int      `json:"is_try"`
+	ResourceId   string   `json:"resource_id"`
+	ResourceType int      `json:"resource_type"`
 
 	//这里不直接继承model是为了方便service层json decode响应数据
 	CreatedAt json.JSONTime `json:"created_at"`
