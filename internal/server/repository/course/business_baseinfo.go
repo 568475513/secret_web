@@ -558,6 +558,7 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 				urlColumParams.ResourceType = int(products[0].SrcType)
 				urlColumParams.ProductId = products[0].Id
 				urlColumParams.AppId = products[0].AppId
+				urlColumParams.ResourceId = products[0].Id
 				if req.ContentAppId != "" {
 					urlColumParams.ContentAppId = req.ContentAppId
 					urlColumParams.Source = "2"
