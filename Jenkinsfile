@@ -38,19 +38,20 @@ pipeline {
   stages {
 
     stage('git pull') {
-      agent none
-      steps {
-        container('go') {
-            checkout([
-            $class: 'GitSCM',
-            branches: [[name: "${branch}"]],
-            doGenerateSubmoduleConfigurations: false,
-            extensions: [[$class: 'CloneOption', depth: 1, noTags: true, shallow: true, timeout: 10]],
-            userRemoteConfigs: [[credentialsId: 'gitlab', url: "${giturl}",refspec:"+refs/heads/${branch}:refs/remotes/origin/${branch}"]]
-            ])
+          agent none
+          steps {
+            container('go') {
+                checkout([
+                $class: 'GitSCM',
+                branches: [[name: "${branch}"]],
+                doGenerateSubmoduleConfigurations: false,
+                extensions: [[$class: 'CloneOption', depth: 1, noTags: true, shallow: true, timeout: 10, honorRefspec: true]],
+                userRemoteConfigs: [[credentialsId: 'gitlab', url: "${giturl}",refspec:"+refs/heads/${branch}:refs/remotes/origin/${branch}"]]
+                ])
+            }
+          }
         }
-      }
-    }
+
 
 //     stage('单元测试') {
 //           agent none
