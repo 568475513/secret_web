@@ -140,10 +140,10 @@ func (p *Product) GetCampTermListByIds(relations []*business.ProResRelation) ([]
 		pterm.RecycleBinState = uint8(item["recycle_bin_state"].(float64))
 		pterm.PurchaseCount = int(item["join_count"].(float64))
 		pterm.ImgUrl.String = item["img_url"].(string)
-		first_distribute_percent, _ := strconv.ParseFloat((item["first_distribute_percent"].(string)), 64)
-		pterm.FirstDistributePercent = first_distribute_percent
-		distribute_percent, _ := strconv.ParseFloat((item["distribute_percent"].(string)), 64)
-		pterm.DistributePercent = distribute_percent
+		firstDistributePercent, _ := strconv.ParseFloat((item["first_distribute_percent"].(string)), 64)
+		pterm.FirstDistributePercent = firstDistributePercent
+		distributePercent, _ := strconv.ParseFloat((item["distribute_percent"].(string)), 64)
+		pterm.DistributePercent = distributePercent
 		pterm.ImgUrlCompressed.String = item["img_url_compressed"].(string)
 
 		terms = append(terms, &pterm)
