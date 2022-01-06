@@ -359,15 +359,13 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		}
 
 		currentUv := b.getCurrentUv()
-		//获取超过多少UV默认使用高清播放的配置
-		limitUvUseHd, _ := strconv.Atoi(os.Getenv("DEFAULT_USE_HD_LIMIT_UV"))
 
 		// 普通直播多清晰度
 		liveUrl.AliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 		liveUrl.PcAliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 		i := 0
 		for k, v := range supportSharpness {
-			i = b.getIndex(currentUv, limitUvUseHd, k)
+			i = b.getIndex(currentUv, k)
 
 			liveUrl.AliveVideoMoreSharpness[i] = map[string]interface{}{
 				"definition_name": v,
@@ -398,7 +396,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 				liveUrl.AliveFastMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 				i := 0
 				for k, v := range supportSharpness {
-					i = b.getIndex(currentUv, limitUvUseHd, k)
+					i = b.getIndex(currentUv, k)
 
 					liveUrl.AliveFastMoreSharpness[i] = map[string]interface{}{
 						"definition_name": v,
@@ -463,14 +461,21 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 	return
 }
 
-func (b *BaseInfo) getIndex(currentUv int, limitUvUseHd int, k string) int{
-	i := 0
+// 获取播放链接的位置
+func (b *BaseInfo) getIndex(currentUv int, k string) int{
+	//获取超过多少UV默认使用【高清】播放的配置
+	limitUvUseHd, _ := strconv.Atoi(os.Getenv("DEFAULT_USE_HD_LIMIT_UV"))
+	//获取超过多少UV默认使用【流畅】播放的配置
+	limitUvUseFluent, _ := strconv.Atoi(os.Getenv("DEFAULT_USE_FLUENT_LIMIT_UV"))
 
-	//默认使用高清播放的店铺名单
+	//默认使用【高清】播放的店铺名单
 	inGrayDefaultUseHd := redis_gray.InGrayShopSpecialHit("alive_default_use_hd_switch", b.Alive.AppId)
+	//默认使用【流畅】播放的店铺名单
+	inGrayDefaultUseFluent := redis_gray.InGrayShopSpecialHit("alive_default_use_fluent_switch", b.Alive.AppId)
 
-	if inGrayDefaultUseHd && currentUv > limitUvUseHd {
-		//默认使用高清（0代表默认 default这个命名忽略 历史原因）
+	i := 0
+	if inGrayDefaultUseFluent && currentUv > limitUvUseFluent {
+		//默认使用流畅（0代表默认 default这个命名忽略 历史原因）
 		switch k {
 		case "hd":
 			i = 1
@@ -479,7 +484,17 @@ func (b *BaseInfo) getIndex(currentUv int, limitUvUseHd int, k string) int{
 		case "default":
 			i = 2
 		}
-	}else {
+	}else if inGrayDefaultUseHd && currentUv > limitUvUseHd {
+		//默认使用高清（0代表默认 default这个命名忽略 历史原因）
+		switch k {
+		case "hd":
+			i = 0
+		case "fluent":
+			i = 1
+		case "default":
+			i = 2
+		}
+	} else {
 		//默认使用原画（0代表默认 default这个命名忽略 历史原因）
 		switch k {
 		case "hd":
