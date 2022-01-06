@@ -392,41 +392,18 @@ func GetSecondaryInfo(c *gin.Context) {
 		app.FailWithMessage(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), enums.ERROR, c)
 		return
 	}
-
 	baseInfoRep := course.Secondary{Alive: aliveInfo, UserInfo: &userInfo, BuzUri: c.GetString("buz_uri")}
-
-	// 再起一个协程组去处理营销逻辑（他们说以后会抽出去的，不知道以后是多后）
-	err = app.GoroutineNotPanic(func() error {
-		// 写入邀请关系
-		if baseInfoRep.GetInviteState(baseConf.HasInvite, req.PaymentType) && aliveInfo.PaymentType == enums.PaymentTypeFree {
-			inviteBusiness := marketing.InviteBusiness{AppId: appId, UserId: userId}
-			inviteBusiness.AddInviteCountUtilsNew(marketing.InviteUserInfo{
-				ShareUserId:  req.ShareUserId,
-				PaymentType:  2, // 这个payment_type有坑，对老代码妥协的结果
-				ResourceType: enums.ResourceTypeLive,
-				ResourceId:   req.ResourceId,
-				ProductId:    req.ProductId,
-			})
-		}
-		return nil
-	}, func() error {
-		// 助力数据入队列
-		if aliveInfo.PaymentType == enums.PaymentTypeFree && req.ShareUserId != "" {
-			sr := marketing.ShareReward{
-				AppId:       appId,
-				ResourceId:  aliveInfo.Id,
-				ShareUserId: req.ShareUserId,
-				UserId:      userId,
-			}
-			sr.AddToShareRewardList()
-		}
-		return nil
-	})
-	if err != nil {
-		app.FailWithMessage(fmt.Sprintf("营销并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), enums.ERROR, c)
-		return
+	// 写入邀请关系
+	if baseInfoRep.GetInviteState(baseConf.HasInvite, req.PaymentType) && aliveInfo.PaymentType == enums.PaymentTypeFree {
+		inviteBusiness := marketing.InviteBusiness{AppId: appId, UserId: userId}
+		inviteBusiness.AddInviteCountUtilsNew(marketing.InviteUserInfo{
+			ShareUserId:  req.ShareUserId,
+			PaymentType:  2, // 这个payment_type有坑，对老代码妥协的结果
+			ResourceType: enums.ResourceTypeLive,
+			ResourceId:   req.ResourceId,
+			ProductId:    req.ProductId,
+		})
 	}
-
 	// 组装用户信息
 	userInfoMap["phone"] = userInfo.Phone
 	userInfoMap["wx_avatar"] = userInfo.WxAvatar
