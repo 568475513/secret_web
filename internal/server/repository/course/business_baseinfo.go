@@ -468,9 +468,9 @@ func (b *BaseInfo) getIndex(currentUv int, k string) int{
 	//获取超过多少UV默认使用【流畅】播放的配置
 	limitUvUseFluent, _ := strconv.Atoi(os.Getenv("DEFAULT_USE_FLUENT_LIMIT_UV"))
 
-	//默认使用【高清】播放的店铺名单
+	//是否是默认使用【高清】播放的店铺
 	inGrayDefaultUseHd := redis_gray.InGrayShopSpecialHit("alive_default_use_hd_switch", b.Alive.AppId)
-	//默认使用【流畅】播放的店铺名单
+	//是否是默认使用【流畅】播放的店铺
 	inGrayDefaultUseFluent := redis_gray.InGrayShopSpecialHit("alive_default_use_fluent_switch", b.Alive.AppId)
 
 	i := 0
