@@ -31,6 +31,7 @@ var aliveListInfo = []string{
 	"play_url",
 	"push_state",
 	"create_mode",
+	"manual_stop_at",
 }
 
 //根据时间获取用户已订阅直播列表
@@ -166,6 +167,9 @@ func GetLivingAliveList(c *gin.Context) {
 	} else {
 		aliveList = li.GetAliveStateALiveList(aliveList)
 	}
+
+	//剔除已结束的直播
+	aliveList = li.GetAliveListScreenLiving(aliveList)
 
 	//将直播列表按app_id分组
 	result := li.ALiveListGroupByAppId(aliveList)

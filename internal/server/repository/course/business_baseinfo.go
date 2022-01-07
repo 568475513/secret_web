@@ -151,7 +151,7 @@ func (b *BaseInfo) GetAvailableInfo(available, availableProduct bool, expireAt s
 }
 
 // 组装直播店铺配置信息
-func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *alive.AliveModuleConf) map[string]interface{} {
+func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *alive.AliveModuleConf, available bool, userId string) map[string]interface{} {
 	aliveConf := make(map[string]interface{})
 	// 店铺名称
 	aliveConf["wx_app_name"] = baseConf.ShopName
@@ -214,7 +214,7 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	aliveConf["pc_network_school_index_url"] = baseConf.PcCustomDomain
 	aliveConf["is_open_promoter"] = aliveModule.IsOpenPromoter
 	// 版本过期信息
-	versionState := b.getAppExpireTime(baseConf.Profit)
+	versionState := b.GetAppExpireTime(baseConf.Profit)
 	aliveIsRemind := 0
 	// 版本是否过期和功能是否过期0-过期 1-没过期，2-流量余额为0，-1未购买
 	// 该类型直播间是否过期
@@ -304,6 +304,22 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	//该直播是否开启圆桌会议模式，0关闭，1开启
 	aliveConf["is_round_table_on"] = aliveModule.IsRoundTableOn
 
+	//是否开启防录屏
+	aliveConf["anti_screen_jump"] = 0
+	aliveConf["anti_screen_jump_url"] = ""
+	if aliveModule.IsAntiScreen == 1 && b.UserType == 0 && available == true {
+		aliveConf["anti_screen_jump"] = 1
+		aliveConf["anti_screen_jump_url"] = os.Getenv("APP_REDIRECT_DOMAIN") + "open_app?app_id=" + b.AliveRep.AppId + "&params=" + b.GetWakeUpAppParams(userId)
+	}
+
+	tab := &alive.AliveTab{}
+	//该直播是否自定义tab
+	if err := util.JsonDecode([]byte(aliveModule.AliveJson), tab); err != nil || tab.TabOn == "0" {
+		aliveConf["alive_tab"] = 0
+	} else {
+		aliveConf["alive_tab"] = 1
+	}
+
 	return aliveConf
 }
 
@@ -317,8 +333,10 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 	)
 
 	timeStamp := time.Now().Unix()
+
 	supportSharpness := map[string]interface{}{
 		"default": "原画", //默认原画
+		"hd":  "高清", //高清（720P）
 		"fluent":  "流畅", //流畅（480P）
 	}
 
@@ -339,17 +357,18 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			// 这里需要返回吗？
 			// return
 		}
+
+		currentUv := b.getCurrentUv()
+		//获取超过多少UV默认使用高清播放的配置
+		limitUvUseHd, _ := strconv.Atoi(os.Getenv("DEFAULT_USE_HD_LIMIT_UV"))
+
 		// 普通直播多清晰度
 		liveUrl.AliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 		liveUrl.PcAliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 		i := 0
 		for k, v := range supportSharpness {
-			switch k {
-			case "fluent":
-				i = 1
-			case "default":
-				i = 0
-			}
+			i = b.getIndex(currentUv, limitUvUseHd, k)
+
 			liveUrl.AliveVideoMoreSharpness[i] = map[string]interface{}{
 				"definition_name": v,
 				"definition_p":    k,
@@ -367,44 +386,20 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		// 快直播O端名单目录
 		isGray := redis_gray.InGrayShop("fast_alive_switch", b.AliveRep.AppId)
 		if isGray && isUserWebRtc && enableWebRtc == 1 && util.Substr(playUrls[0], 0, 4) == "rtmp" {
-			var (
-				uv      = 0
-				limitUv = 0
-			)
+			limitUv, _ := strconv.Atoi(os.Getenv("WEBRTC_SWITCH_RTMP_UV"))
 
-			//判断成本控制的白名单
+			//成本控制的白名单
 			inCostOptWhiteMenu := redis_gray.InGrayShopSpecialHit("webrtc_cost_opt_white_menu", b.Alive.AppId)
 
-			//不在白名单才去查实时在线人
-			if !inCostOptWhiteMenu {
-				xiaoEImRedisConn, err := redis_xiaoe_im.GetConn()
-				if err != nil {
-					logging.Error(err)
-				}
-				defer xiaoEImRedisConn.Close()
-				//查询实时在线UV
-				cacheKey := fmt.Sprintf(aliveOnlineUV, b.Alive.Id)
-				uv, err = redis.Int(xiaoEImRedisConn.Do("ZCARD", cacheKey))
-				limitUv, _ = strconv.Atoi(os.Getenv("WEBRTC_SWITCH_RTMP_UV"))
-				if err != nil {
-					//这里只记录查询redis失败日志，不去影响主流程
-					logging.Error(fmt.Sprintf("base_info 查询实时在线人数失败：%s", err.Error()))
-				}
-			}
-
-			if inCostOptWhiteMenu || uv < limitUv {
+			if inCostOptWhiteMenu || currentUv < limitUv {
 				liveUrl.AliveFastWebrtcurl = "webrtc" + util.Substr(playUrls[0], 4, len(playUrls[0]))
 				liveUrl.FastAliveSwitch = true
 				//快直播多清晰度
 				liveUrl.AliveFastMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 				i := 0
 				for k, v := range supportSharpness {
-					switch k {
-					case "fluent":
-						i = 1
-					case "default":
-						i = 0
-					}
+					i = b.getIndex(currentUv, limitUvUseHd, k)
+
 					liveUrl.AliveFastMoreSharpness[i] = map[string]interface{}{
 						"definition_name": v,
 						"definition_p":    k,
@@ -415,7 +410,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			} else {
 				// 触发成本控制了，记录下
 				logging.Info(fmt.Sprintf("cost_optimization app_id:%s alive_id:%s uv:%d limit:%d",
-					b.Alive.AppId, b.Alive.Id, uv, limitUv))
+					b.Alive.AppId, b.Alive.Id, currentUv, limitUv))
 			}
 		}
 	} else {
@@ -466,6 +461,58 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		}
 	}
 	return
+}
+
+func (b *BaseInfo) getIndex(currentUv int, limitUvUseHd int, k string) int{
+	i := 0
+
+	//默认使用高清播放的店铺名单
+	inGrayDefaultUseHd := redis_gray.InGrayShopSpecialHit("alive_default_use_hd_switch", b.Alive.AppId)
+
+	if inGrayDefaultUseHd && currentUv > limitUvUseHd {
+		//默认使用高清（0代表默认 default这个命名忽略 历史原因）
+		switch k {
+		case "hd":
+			i = 1
+		case "fluent":
+			i = 0
+		case "default":
+			i = 2
+		}
+	}else {
+		//默认使用原画（0代表默认 default这个命名忽略 历史原因）
+		switch k {
+		case "hd":
+			i = 1
+		case "fluent":
+			i = 2
+		case "default":
+			i = 0
+		}
+	}
+
+	return i
+}
+
+func (b *BaseInfo) getCurrentUv() int{
+	xiaoEImRedisConn, err := redis_xiaoe_im.GetConn()
+	if err != nil {
+		logging.Error(err)
+	}
+	defer xiaoEImRedisConn.Close()
+
+	currentUv := 0
+
+	//查询实时在线UV
+	cacheKey := fmt.Sprintf(aliveOnlineUV, b.Alive.Id)
+	currentUv, err = redis.Int(xiaoEImRedisConn.Do("ZCARD", cacheKey))
+
+	if err != nil {
+		//这里只记录查询redis失败日志，不去影响主流程
+		logging.Error(fmt.Sprintf("base_info 查询实时在线人数失败：%s", err.Error()))
+	}
+
+	return currentUv
 }
 
 // 直播静态页的信息采集【用户】
@@ -539,9 +586,10 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 				url = util.ParentColumnsUrl(urlColumParams)
 			} else if len(products) == 1 {
 				urlColumParams.Type = e.PaymentTypeProduct
-				// urlColumParams.ResourceId = ""
-				// urlColumParams.ResourceType = ""
+				urlColumParams.ResourceType = int(products[0].SrcType)
 				urlColumParams.ProductId = products[0].Id
+				urlColumParams.AppId = products[0].AppId
+				urlColumParams.ResourceId = products[0].Id
 				if req.ContentAppId != "" {
 					urlColumParams.ContentAppId = req.ContentAppId
 					urlColumParams.Source = "2"
@@ -552,6 +600,29 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 			}
 		}
 	}
+
+	return
+}
+
+// 获取防录屏落地页唤起APP参数
+func (b *BaseInfo) GetWakeUpAppParams(userId string) (url string) {
+	params := make(map[string]interface{})
+	params["app_id"] = b.AliveRep.AppId
+	params["resource_id"] = b.AliveRep.AliveId
+	params["resource_type"] = 4
+	params["user_id"] = userId
+	params["content_app_id"] = ""
+	params["encrypt_user_id"] = util.GetEncryptUserId(userId)
+	tempParam := make(map[string]interface{})
+	tempParam["params"] = params
+	tempParam["type"] = 4
+
+	base64Str, err := util.PutParmToStr(tempParam)
+	if err != nil {
+		logging.Error(fmt.Sprintf("GetWakeUpAppParams Error: alive_id: %s, err: %v", b.AliveRep.AliveId, err))
+		return
+	}
+	url = base64Str
 	return
 }
 
@@ -639,6 +710,8 @@ func (b *BaseInfo) getPlayUrlBySharpness(sharpness, playUrl, channelId string) s
 	switch sharpness {
 	case "fluent":
 		replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_FLUENT"))
+	case "hd":
+		replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_HD"))
 	default:
 		replaceStr = ""
 	}
@@ -670,8 +743,8 @@ func (b *BaseInfo) canUseFastLive(versionType int) bool {
 	}
 }
 
-// 获取版本过期信息
-func (b *BaseInfo) getAppExpireTime(profit map[string]interface{}) map[string]interface{} {
+// GetAppExpireTime 获取版本过期信息
+func (b *BaseInfo) GetAppExpireTime(profit map[string]interface{}) map[string]interface{} {
 	// 查询直播间插件功能过期信息
 	versionStateArray := []string{
 		"alive_voice",
@@ -683,6 +756,8 @@ func (b *BaseInfo) getAppExpireTime(profit map[string]interface{}) map[string]in
 		"alive_show_man_time",
 		"alive_reward",
 		"exercise",
+		"hide_resource_count",
+		"hide_sub_count",
 	}
 
 	var permissionArray map[string]interface{}
