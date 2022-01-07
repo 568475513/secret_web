@@ -468,7 +468,7 @@ func (a *AliveInfo) UpdateViewCountToCache(viewCount int, c *gin.Context) (int, 
 		redisConn.Do("set", viewCountKey, viewCount)
 	}
 
-	logging.GetLogger().Info(fmt.Sprintf("aliveId:%s,clientIp:%s,userId:%s,viewCount:%d", a.AliveId, c.ClientIP(), app.GetUserId(c), viewCount))
+	logging.InfoWithCtx(fmt.Sprintf("aliveId:%s,clientIp:%s,userId:%s,viewCount:%d", a.AliveId, c.ClientIP(), app.GetUserId(c), viewCount), c)
 
 	return viewCount, err
 }
