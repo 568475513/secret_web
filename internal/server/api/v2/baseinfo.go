@@ -139,7 +139,7 @@ func GetBaseInfo(c *gin.Context) {
 		goSpan := tracer.StartSpan("直播异步操作", opentracing.ChildOf(childSpan.Context()))
 		defer goSpan.Finish()
 		// 直播Pv数加一
-		aliveInfo.ViewCount, _ = aliveRep.UpdateViewCountToCache(aliveInfo.ViewCount)
+		aliveInfo.ViewCount, _ = aliveRep.UpdateViewCountToCache(aliveInfo.ViewCount, c)
 		// 直播带货商品PV加一
 		aliveRep.IncreasePv(c.Request.Referer(), aliveInfo.Id, int(aliveInfo.AliveType))
 		// 异步丢队列，更新最近查看时间

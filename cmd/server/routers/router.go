@@ -27,8 +27,8 @@ func InitRouter() *gin.Engine {
 	// 调用链路zipkin
 	r.Use(middleware.ZipkinTracer(true))
 
-	// 请求信息日志
-	r.Use(middleware.GinLogger(logging.GetLogger()))
+	// 请求信息日志(暂时先不加，后面有需要打开注释即可)
+	//r.Use(middleware.GinLogger(logging.GetLogger()))
 
 	// 此处可写公共路由...
 	// 健康检测接口

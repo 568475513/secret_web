@@ -1,8 +1,10 @@
 package course
 
 import (
+	"abs/pkg/app"
 	"encoding/json"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"net/url"
 	"time"
 
@@ -418,7 +420,7 @@ func (a *AliveInfo) GetAliveStateForOthers(start time.Time, mst time.Time, stop 
 }
 
 // 直播次数加一，PV+1
-func (a *AliveInfo) UpdateViewCountToCache(viewCount int) (int, error) {
+func (a *AliveInfo) UpdateViewCountToCache(viewCount int, c *gin.Context) (int, error) {
 	redisConn, err := redis_alive.GetLiveInteractConn()
 	// 直接数据库写入
 	if err != nil {
@@ -465,6 +467,8 @@ func (a *AliveInfo) UpdateViewCountToCache(viewCount int) (int, error) {
 		redisConn.Do("set", setTimeKey, time.Now().Unix())
 		redisConn.Do("set", viewCountKey, viewCount)
 	}
+
+	logging.GetLogger().Info(fmt.Sprintf("aliveId:%s,clientIp:%s,userId:%s,viewCount:%d", a.AliveId, c.ClientIP(), app.GetUserId(c), viewCount))
 
 	return viewCount, err
 }
