@@ -94,7 +94,7 @@ func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 		aliveInfoDetail["remainder_time"] = b.Alive.ZbStartAt.Unix() + b.Alive.VideoLength - now.Unix()
 	}
 	// 直播开始时间（时间戳：秒）
-	aliveInfoDetail["zb_start_at"] = b.Alive.ZbStopAt.Unix()
+	aliveInfoDetail["zb_start_at"] = b.Alive.ZbStartAt.Unix()
 	// 直播结束时间（时间戳：秒）
 	aliveInfoDetail["zb_stop_at"] = b.Alive.ZbStopAt.Unix()
 	// 距离直播开始倒计时（单位：秒）
@@ -336,7 +336,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 
 	supportSharpness := map[string]interface{}{
 		"default": "原画", //默认原画
-		"hd":  "高清", //高清（720P）
+		"hd":      "高清", //高清（720P）
 		"fluent":  "流畅", //流畅（480P）
 	}
 
@@ -462,7 +462,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 }
 
 // 获取播放链接的位置
-func (b *BaseInfo) getIndex(currentUv int, k string) int{
+func (b *BaseInfo) getIndex(currentUv int, k string) int {
 	//获取超过多少UV默认使用【高清】播放的配置
 	limitUvUseHd, _ := strconv.Atoi(os.Getenv("DEFAULT_USE_HD_LIMIT_UV"))
 	//获取超过多少UV默认使用【流畅】播放的配置
@@ -484,7 +484,7 @@ func (b *BaseInfo) getIndex(currentUv int, k string) int{
 		case "default":
 			i = 2
 		}
-	}else if inGrayDefaultUseHd && currentUv > limitUvUseHd {
+	} else if inGrayDefaultUseHd && currentUv > limitUvUseHd {
 		//默认使用高清（0代表默认 default这个命名忽略 历史原因）
 		switch k {
 		case "hd":
@@ -509,7 +509,7 @@ func (b *BaseInfo) getIndex(currentUv int, k string) int{
 	return i
 }
 
-func (b *BaseInfo) getCurrentUv() int{
+func (b *BaseInfo) getCurrentUv() int {
 	xiaoEImRedisConn, err := redis_xiaoe_im.GetConn()
 	if err != nil {
 		logging.Error(err)
