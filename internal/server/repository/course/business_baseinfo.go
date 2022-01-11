@@ -341,8 +341,10 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 	)
 
 	timeStamp := time.Now().Unix()
+
 	supportSharpness := map[string]interface{}{
 		"default": "原画", //默认原画
+		"hd":  "高清", //高清（720P）
 		"fluent":  "流畅", //流畅（480P）
 	}
 
@@ -363,17 +365,16 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			// 这里需要返回吗？
 			// return
 		}
+
+		currentUv := b.getCurrentUv()
+
 		// 普通直播多清晰度
 		liveUrl.AliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 		liveUrl.PcAliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 		i := 0
 		for k, v := range supportSharpness {
-			switch k {
-			case "fluent":
-				i = 1
-			case "default":
-				i = 0
-			}
+			i = b.getIndex(currentUv, k)
+
 			liveUrl.AliveVideoMoreSharpness[i] = map[string]interface{}{
 				"definition_name": v,
 				"definition_p":    k,
@@ -391,44 +392,20 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		// 快直播O端名单目录
 		isGray := redis_gray.InGrayShop("fast_alive_switch", b.AliveRep.AppId)
 		if isGray && isUserWebRtc && enableWebRtc == 1 && util.Substr(playUrls[0], 0, 4) == "rtmp" {
-			var (
-				uv      = 0
-				limitUv = 0
-			)
+			limitUv, _ := strconv.Atoi(os.Getenv("WEBRTC_SWITCH_RTMP_UV"))
 
-			//判断成本控制的白名单
+			//成本控制的白名单
 			inCostOptWhiteMenu := redis_gray.InGrayShopSpecialHit("webrtc_cost_opt_white_menu", b.Alive.AppId)
 
-			//不在白名单才去查实时在线人
-			if !inCostOptWhiteMenu {
-				xiaoEImRedisConn, err := redis_xiaoe_im.GetConn()
-				if err != nil {
-					logging.Error(err)
-				}
-				defer xiaoEImRedisConn.Close()
-				//查询实时在线UV
-				cacheKey := fmt.Sprintf(aliveOnlineUV, b.Alive.Id)
-				uv, err = redis.Int(xiaoEImRedisConn.Do("ZCARD", cacheKey))
-				limitUv, _ = strconv.Atoi(os.Getenv("WEBRTC_SWITCH_RTMP_UV"))
-				if err != nil {
-					//这里只记录查询redis失败日志，不去影响主流程
-					logging.Error(fmt.Sprintf("base_info 查询实时在线人数失败：%s", err.Error()))
-				}
-			}
-
-			if inCostOptWhiteMenu || uv < limitUv {
+			if inCostOptWhiteMenu || currentUv < limitUv {
 				liveUrl.AliveFastWebrtcurl = "webrtc" + util.Substr(playUrls[0], 4, len(playUrls[0]))
 				liveUrl.FastAliveSwitch = true
 				//快直播多清晰度
 				liveUrl.AliveFastMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 				i := 0
 				for k, v := range supportSharpness {
-					switch k {
-					case "fluent":
-						i = 1
-					case "default":
-						i = 0
-					}
+					i = b.getIndex(currentUv, k)
+
 					liveUrl.AliveFastMoreSharpness[i] = map[string]interface{}{
 						"definition_name": v,
 						"definition_p":    k,
@@ -439,7 +416,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			} else {
 				// 触发成本控制了，记录下
 				logging.Info(fmt.Sprintf("cost_optimization app_id:%s alive_id:%s uv:%d limit:%d",
-					b.Alive.AppId, b.Alive.Id, uv, limitUv))
+					b.Alive.AppId, b.Alive.Id, currentUv, limitUv))
 			}
 		}
 	} else {
@@ -490,6 +467,75 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		}
 	}
 	return
+}
+
+// 获取播放链接的位置
+func (b *BaseInfo) getIndex(currentUv int, k string) int{
+	//获取超过多少UV默认使用【高清】播放的配置
+	limitUvUseHd, _ := strconv.Atoi(os.Getenv("DEFAULT_USE_HD_LIMIT_UV"))
+	//获取超过多少UV默认使用【流畅】播放的配置
+	limitUvUseFluent, _ := strconv.Atoi(os.Getenv("DEFAULT_USE_FLUENT_LIMIT_UV"))
+
+	//是否是默认使用【高清】播放的店铺
+	inGrayDefaultUseHd := redis_gray.InGrayShopSpecialHit("alive_default_use_hd_switch", b.Alive.AppId)
+	//是否是默认使用【流畅】播放的店铺
+	inGrayDefaultUseFluent := redis_gray.InGrayShopSpecialHit("alive_default_use_fluent_switch", b.Alive.AppId)
+
+	i := 0
+	if inGrayDefaultUseFluent && currentUv > limitUvUseFluent {
+		//默认使用流畅（0代表默认 default这个命名忽略 历史原因）
+		switch k {
+		case "hd":
+			i = 1
+		case "fluent":
+			i = 0
+		case "default":
+			i = 2
+		}
+	}else if inGrayDefaultUseHd && currentUv > limitUvUseHd {
+		//默认使用高清（0代表默认 default这个命名忽略 历史原因）
+		switch k {
+		case "hd":
+			i = 0
+		case "fluent":
+			i = 1
+		case "default":
+			i = 2
+		}
+	} else {
+		//默认使用原画（0代表默认 default这个命名忽略 历史原因）
+		switch k {
+		case "hd":
+			i = 1
+		case "fluent":
+			i = 2
+		case "default":
+			i = 0
+		}
+	}
+
+	return i
+}
+
+func (b *BaseInfo) getCurrentUv() int{
+	xiaoEImRedisConn, err := redis_xiaoe_im.GetConn()
+	if err != nil {
+		logging.Error(err)
+	}
+	defer xiaoEImRedisConn.Close()
+
+	currentUv := 0
+
+	//查询实时在线UV
+	cacheKey := fmt.Sprintf(aliveOnlineUV, b.Alive.Id)
+	currentUv, err = redis.Int(xiaoEImRedisConn.Do("ZCARD", cacheKey))
+
+	if err != nil {
+		//这里只记录查询redis失败日志，不去影响主流程
+		logging.Error(fmt.Sprintf("base_info 查询实时在线人数失败：%s", err.Error()))
+	}
+
+	return currentUv
 }
 
 // 直播静态页的信息采集【用户】
@@ -563,9 +609,10 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 				url = util.ParentColumnsUrl(urlColumParams)
 			} else if len(products) == 1 {
 				urlColumParams.Type = e.PaymentTypeProduct
-				// urlColumParams.ResourceId = ""
-				// urlColumParams.ResourceType = ""
+				urlColumParams.ResourceType = int(products[0].SrcType)
 				urlColumParams.ProductId = products[0].Id
+				urlColumParams.AppId = products[0].AppId
+				urlColumParams.ResourceId = products[0].Id
 				if req.ContentAppId != "" {
 					urlColumParams.ContentAppId = req.ContentAppId
 					urlColumParams.Source = "2"
@@ -686,6 +733,8 @@ func (b *BaseInfo) getPlayUrlBySharpness(sharpness, playUrl, channelId string) s
 	switch sharpness {
 	case "fluent":
 		replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_FLUENT"))
+	case "hd":
+		replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_HD"))
 	default:
 		replaceStr = ""
 	}
