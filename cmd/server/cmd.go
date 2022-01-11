@@ -43,12 +43,12 @@ func initStep() {
 	conf.Init(env)
 	// 设定真实端口
 	conf.ServerConf.HttpPort = port
-	// 自定义日志
+	// 初始化业务日志对象
 	logging.InitLog()
 	// 调用链路日志
-	logging.InitZipkin()
+	//logging.InitZipkin()
 	// 请求以及错误日志
-	logging.InitEs()
+	//logging.InitEs()
 	// 启动各数据库连接
 	models.Init()
 	// 启动相关redis

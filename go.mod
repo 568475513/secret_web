@@ -23,4 +23,5 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 )
 
+//go env -w GOPROXY="https://goproxy.cn,http://goproxy.xiaoe-tools.com,direct"
 replace github.com/gomodule/redigo => talkcheap.xiaoeknow.com/AliveDev/redigo v1.8.4
