@@ -94,7 +94,7 @@ func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 		aliveInfoDetail["remainder_time"] = b.Alive.ZbStartAt.Unix() + b.Alive.VideoLength - now.Unix()
 	}
 	// 直播开始时间（时间戳：秒）
-	aliveInfoDetail["zb_start_at"] = b.Alive.ZbStopAt.Unix()
+	aliveInfoDetail["zb_start_at"] = b.Alive.ZbStartAt.Unix()
 	// 直播结束时间（时间戳：秒）
 	aliveInfoDetail["zb_stop_at"] = b.Alive.ZbStopAt.Unix()
 	// 距离直播开始倒计时（单位：秒）
@@ -336,7 +336,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 
 	supportSharpness := map[string]interface{}{
 		"default": "原画", //默认原画
-		"hd":  "高清", //高清（720P）
+		"hd":      "高清", //高清（720P）
 		"fluent":  "流畅", //流畅（480P）
 	}
 
