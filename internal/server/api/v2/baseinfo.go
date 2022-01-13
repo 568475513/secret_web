@@ -271,7 +271,7 @@ func GetBaseInfo(c *gin.Context) {
 		eCourseAvailableParams, _ = availableService.IsECourseAvailable(eCourseAvailable)
 		// 如果有结果的话， 权益就直接使用鹅课程的哦
 		if eCourseAvailableParams != nil {
-			if eCourseAvailableParams.(map[string]interface{})["is_permission"].(int) == 0 {
+			if eCourseAvailableParams.(map[string]interface{})["is_permission"].(float64) == 0 {
 				availableInfo["available"] = false
 			} else {
 				availableInfo["available"] = true
