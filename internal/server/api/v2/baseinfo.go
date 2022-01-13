@@ -222,20 +222,6 @@ func GetBaseInfo(c *gin.Context) {
 	// 分享免费听逻辑
 	shareListenInfo := shareRes.GetShareListenInfo(&shareInfo, available)
 
-	// 申明变量
-	var eCourseAvailableParams interface{}
-	// 如果是鹅课程且有权益这里要处理一下鹅课程的权益
-	if aliveInfo.SellMode == course.ECourseSellMode {
-		// 这里请求一下而课程的权益
-		var availableService service.AvailableService
-		var eCourseAvailable service.ECourseAvailable
-		availableService.AppId = req.AppId
-		availableService.UserId = userId
-		eCourseAvailable.ResourceId = req.ResourceId
-		// 鹅课程权益接口请求哦
-		eCourseAvailableParams, _ = availableService.IsECourseAvailable(eCourseAvailable)
-	}
-
 	// 业务数据封装
 	baseInfoRep := course.BaseInfo{Alive: aliveInfo, AliveRep: &aliveRep, UserType: userType}
 	aliveInfoDetail := baseInfoRep.GetAliveInfoDetail()
@@ -270,6 +256,25 @@ func GetBaseInfo(c *gin.Context) {
 		}
 	}
 	childSpan.Finish()
+
+	// 申明变量
+	var eCourseAvailableParams interface{}
+	// 如果是鹅课程且有权益这里要处理一下鹅课程的权益
+	if aliveInfo.SellMode == course.ECourseSellMode {
+		// 这里请求一下而课程的权益
+		var availableService service.AvailableService
+		var eCourseAvailable service.ECourseAvailable
+		availableService.AppId = req.AppId
+		availableService.UserId = userId
+		eCourseAvailable.ResourceId = req.ResourceId
+		// 鹅课程权益接口请求哦
+		eCourseAvailableParams, _ = availableService.IsECourseAvailable(eCourseAvailable)
+		// 如果有结果的话， 权益就直接使用鹅课程的哦
+		if eCourseAvailableParams != nil {
+			availableInfo["available"] = eCourseAvailableParams.(map[string]interface{})["is_permission"]
+		}
+
+	}
 
 	// 数据上报服务
 	childSpan = tracer.StartSpan("异步队列处理时间", opentracing.ChildOf(span.Context()))
