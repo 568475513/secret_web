@@ -272,6 +272,9 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	if versionState["alive_show_man_time_is_remind"].(int) != 1 && versionState["alive_show_man_time_is_remind"].(int) != 0 && b.Alive.ConfigShowViewCount == 1 && b.UserType == 0 {
 		aliveConf["is_show_view_count"] = 0
 	}
+	if b.Alive.ConfigShowViewCount == 2 {
+		aliveConf["is_show_view_count"] = 2
+	}
 
 	// 获取直播配置表相关配置
 	// 邀请达人榜需要灰度控制
@@ -284,6 +287,8 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	aliveConf["alive_mode"] = aliveModule.AliveMode
 	aliveConf["is_picture_on"] = aliveModule.IsPictureOn
 	aliveConf["is_audit_first_on"] = aliveModule.IsAuditFirstOn
+	aliveConf["is_online_on"] = aliveModule.IsOnlineOn
+	aliveConf["is_heat_on"] = aliveModule.IsHeatOn
 	aliveConf["is_coupon_on"] = aliveModule.IsCouponOn
 	aliveConf["is_card_on"] = aliveModule.IsCardOn
 	aliveConf["is_prize_on"] = aliveModule.IsPrizeOn
@@ -303,6 +308,9 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	}
 	//该直播是否开启圆桌会议模式，0关闭，1开启
 	aliveConf["is_round_table_on"] = aliveModule.IsRoundTableOn
+
+	//是否开启分享有礼
+	aliveConf["is_open_share_reward"] = aliveModule.IsOpenShareReward
 
 	//是否开启防录屏
 	aliveConf["anti_screen_jump"] = 0
