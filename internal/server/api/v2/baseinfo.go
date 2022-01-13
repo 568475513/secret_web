@@ -259,8 +259,8 @@ func GetBaseInfo(c *gin.Context) {
 
 	// 申明变量
 	var eCourseAvailableParams interface{}
-	// 如果是鹅课程且有权益这里要处理一下鹅课程的权益
-	if aliveInfo.SellMode == course.ECourseSellMode {
+	// 如果是鹅课程且有权益这里要处理一下鹅课程的权益  判断一下是否是讲师， 讲师不需要权益
+	if aliveInfo.SellMode == course.ECourseSellMode && userType != 1 {
 		// 这里请求一下而课程的权益
 		var availableService service.AvailableService
 		var eCourseAvailable service.ECourseAvailable
