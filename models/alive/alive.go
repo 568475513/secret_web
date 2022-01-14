@@ -121,6 +121,8 @@ type AliveModuleConf struct {
 	IsPictureOn     uint8  `json:"is_picture_on"`
 	IsAuditFirstOn  uint8  `json:"is_audit_first_on"`
 	IsOpenPromoter  uint8  `json:"is_open_promoter"`
+	IsOpenQus 		uint8  `json:"is_open_qus"`
+	IsOpenVote 		uint8  `json:"is_open_vote"`
 }
 
 const (
