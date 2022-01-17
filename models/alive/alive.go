@@ -130,6 +130,8 @@ type AliveModuleConf struct {
 
 type AliveTab struct {
 	TabOn string `json:"tab_on"`
+	IsOpenQus 		uint8  `json:"is_open_qus"`
+	IsOpenVote 		uint8  `json:"is_open_vote"`
 }
 
 const (
