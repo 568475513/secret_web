@@ -100,38 +100,38 @@ type AliveForbid struct {
 }
 
 type AliveModuleConf struct {
-	AppId           string `json:"app_id"`
-	AliveId         string `json:"alive_id"`
-	IsCouponOn      uint8  `json:"is_coupon_on"`
-	IsCardOn        uint8  `json:"is_card_on"`
-	IsShowRewardOn  uint8  `json:"is_show_reward_on"`
-	IsInviteOn      uint8  `json:"is_invite_on"`
-	IsMessageOn     uint8  `json:"is_message_on"`
-	IsSignInOn      uint8  `json:"is_sign_in_on"`
-	IsMessageVerify uint8  `json:"is_message_verify"`
-	IsPrizeOn       uint8  `json:"is_prize_on"`
-	MessageAhead    int    `json:"message_ahead"`
-	AliveMode       uint8  `json:"alive_mode"`
-	CompleteTime    uint16 `json:"complete_time"`
-	LookbackName    string `json:"lookback_name"`
-	LookbackTime    string `json:"lookback_time"`
-	IsRedirectIndex uint8  `json:"is_redirect_index"`
-	IsRoundTableOn  uint8  `json:"is_round_table_on"`
-	IsRedPacketOn   uint8  `json:"is_red_packet_on"`
-	IsPictureOn     uint8  `json:"is_picture_on"`
-	IsAuditFirstOn  uint8  `json:"is_audit_first_on"`
-	IsOnlineOn      uint8  `json:"is_online_on"`
-	IsHeatOn        uint8  `json:"is_heat_on"`
-	IsOpenPromoter  uint8  `json:"is_open_promoter"`
-	IsAntiScreen    uint8  `json:"is_anti_screen"`
-	AliveJson       string `json:"alive_json"`
+	AppId             string `json:"app_id"`
+	AliveId           string `json:"alive_id"`
+	IsCouponOn        uint8  `json:"is_coupon_on"`
+	IsCardOn          uint8  `json:"is_card_on"`
+	IsShowRewardOn    uint8  `json:"is_show_reward_on"`
+	IsInviteOn        uint8  `json:"is_invite_on"`
+	IsMessageOn       uint8  `json:"is_message_on"`
+	IsSignInOn        uint8  `json:"is_sign_in_on"`
+	IsMessageVerify   uint8  `json:"is_message_verify"`
+	IsPrizeOn         uint8  `json:"is_prize_on"`
+	MessageAhead      int    `json:"message_ahead"`
+	AliveMode         uint8  `json:"alive_mode"`
+	CompleteTime      uint16 `json:"complete_time"`
+	LookbackName      string `json:"lookback_name"`
+	LookbackTime      string `json:"lookback_time"`
+	IsRedirectIndex   uint8  `json:"is_redirect_index"`
+	IsRoundTableOn    uint8  `json:"is_round_table_on"`
+	IsRedPacketOn     uint8  `json:"is_red_packet_on"`
+	IsPictureOn       uint8  `json:"is_picture_on"`
+	IsAuditFirstOn    uint8  `json:"is_audit_first_on"`
+	IsOnlineOn        uint8  `json:"is_online_on"`
+	IsHeatOn          uint8  `json:"is_heat_on"`
+	IsOpenPromoter    uint8  `json:"is_open_promoter"`
+	IsAntiScreen      uint8  `json:"is_anti_screen"`
+	AliveJson         string `json:"alive_json"`
 	IsOpenShareReward uint8  `json:"is_open_share_reward"`
+	IsOpenQus         uint8  `json:"is_open_qus"`
+	IsOpenVote        uint8  `json:"is_open_vote"`
 }
 
 type AliveTab struct {
 	TabOn string `json:"tab_on"`
-	IsOpenQus 		uint8  `json:"is_open_qus"`
-	IsOpenVote 		uint8  `json:"is_open_vote"`
 }
 
 const (
