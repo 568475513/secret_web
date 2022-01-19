@@ -270,7 +270,13 @@ func GetBaseInfo(c *gin.Context) {
 	// 直播权益信息
 	data["available_info"] = availableInfo
 	// 直播基本信息
-	data["alive_info"] = aliveRep.ReplaceIosResourceDesc(aliveInfoDetail, req.ClientType, c.Request.UserAgent(), baseInfoRep.Alive.PaymentType)
+	aliveInfoDetail = aliveRep.ReplaceIosResourceDesc(aliveInfoDetail, req.ClientType, c.Request.UserAgent(), baseInfoRep.Alive.PaymentType)
+	//如果配置了暖场图 要修改暖场图为封面图
+	if aliveConf["warm_up"].(uint8) == 2 {
+		aliveInfoDetail["img_url"] = aliveInfoDetail["cover_img_url"]
+	}
+	fmt.Println(aliveInfoDetail)
+	data["alive_info"] = aliveInfoDetail
 	// 直播播放信息
 	data["alive_play"] = alivePlayInfo
 	//直播静态化开关
