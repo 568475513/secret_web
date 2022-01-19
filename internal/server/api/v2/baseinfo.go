@@ -275,7 +275,6 @@ func GetBaseInfo(c *gin.Context) {
 	if aliveConf["warm_up"].(uint8) == 2 {
 		aliveInfoDetail["img_url"] = aliveInfoDetail["cover_img_url"]
 	}
-	fmt.Println(aliveInfoDetail)
 	data["alive_info"] = aliveInfoDetail
 	// 直播播放信息
 	data["alive_play"] = alivePlayInfo
