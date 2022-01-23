@@ -32,7 +32,7 @@ const (
 // 初始化数据库连接
 func Init() {
 	var err error
-	db, err = gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+	db, err = gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		os.Getenv("DB_ALIVE_RW_USERNAME"),
 		os.Getenv("DB_ALIVE_RW_PASSWORD"),
 		os.Getenv("DB_ALIVE_RW_HOST"),
