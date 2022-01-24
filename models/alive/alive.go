@@ -128,6 +128,7 @@ type AliveModuleConf struct {
 	IsOpenShareReward uint8  `json:"is_open_share_reward"`
 	IsOpenQus         uint8  `json:"is_open_qus"`
 	IsOpenVote        uint8  `json:"is_open_vote"`
+	WarmUp            uint8  `json:"warm_up"`
 }
 
 type AliveTab struct {
