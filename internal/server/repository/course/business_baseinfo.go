@@ -481,7 +481,20 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			}
 		}
 		if supportRefer == true {
-			liveUrl.AliveVideoUrl = strings.Replace(liveUrl.AliveVideoUrl, "http://liveplay.xiaoeknow.com", "https://live-encrypt-play.xiaoeknow.com", 1)
+			playUrl := os.Getenv("LIVE_PLAY_HOST")
+			playEncryptUrl := os.Getenv("LIVE_PLAY_ENCRYPT_HOST")
+			if liveUrl.AliveVideoUrl != "" {
+				liveUrl.AliveVideoUrl = strings.Replace(liveUrl.AliveVideoUrl, playUrl, playEncryptUrl, 1)
+			}
+			if liveUrl.AliveFastWebrtcurl != "" {
+				liveUrl.AliveFastWebrtcurl = strings.Replace(liveUrl.AliveFastWebrtcurl, playUrl, playEncryptUrl, 1)
+			}
+			for k, _ := range liveUrl.AliveVideoMoreSharpness {
+				liveUrl.AliveVideoMoreSharpness[k]["url"] = strings.Replace(liveUrl.AliveFastWebrtcurl, playUrl, playEncryptUrl, 1)
+			}
+			for k, _ := range liveUrl.AliveFastMoreSharpness {
+				liveUrl.AliveFastMoreSharpness[k]["url"] = strings.Replace(liveUrl.AliveFastWebrtcurl, playUrl, playEncryptUrl, 1)
+			}
 		}
 	}
 	// 防盗链 end
