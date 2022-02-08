@@ -336,7 +336,7 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 }
 
 // 获取直播间相关的链接
-func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId string) (liveUrl LiveUrl) {
+func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId string, ua string) (liveUrl LiveUrl) {
 	var (
 		playUrls     []string
 		err          error
@@ -473,9 +473,16 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 
 	// 防盗链 start
 	isEncryptGrayBool := redis_gray.InGrayShop("alive_encrypt_gray", b.AliveRep.AppId)
-	// play_url不为空--不为小程序--不在O端名单内
-	if isEncryptGrayBool {
-		liveUrl.AliveVideoUrl = strings.Replace(liveUrl.AliveVideoUrl, "http://liveplay.xiaoeknow.com", "https://live-encrypt-play.xiaoeknow.com", 1)
+	if !isEncryptGrayBool && ua != "" {
+		supportRefer := true
+		if strings.Contains(ua, "android") || strings.Contains(ua, "adr") {
+			if !(strings.Contains(ua, "tbs") || strings.Contains(ua, "xweb")) {
+				supportRefer = false
+			}
+		}
+		if supportRefer == true {
+			liveUrl.AliveVideoUrl = strings.Replace(liveUrl.AliveVideoUrl, "http://liveplay.xiaoeknow.com", "https://live-encrypt-play.xiaoeknow.com", 1)
+		}
 	}
 	// 防盗链 end
 
