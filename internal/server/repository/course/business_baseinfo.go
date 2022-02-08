@@ -470,6 +470,15 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			}
 		}
 	}
+
+	// 防盗链 start
+	isEncryptGrayBool := redis_gray.InGrayShop("alive_encrypt_gray", b.AliveRep.AppId)
+	// play_url不为空--不为小程序--不在O端名单内
+	if isEncryptGrayBool {
+		liveUrl.AliveVideoUrl = strings.Replace(liveUrl.AliveVideoUrl, "http://liveplay.xiaoeknow.com", "https://live-encrypt-play.xiaoeknow.com", 1)
+	}
+	// 防盗链 end
+
 	return
 }
 
