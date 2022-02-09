@@ -472,7 +472,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 	}
 
 	// 防盗链 start
-	isEncryptGrayBool := redis_gray.InGrayShop("alive_encrypt_gray", b.AliveRep.AppId)
+	isEncryptGrayBool := redis_gray.InGrayShopNew("alive_encrypt_gray", b.AliveRep.AppId)
 	if isEncryptGrayBool && ua != "" && kpiClient != "9" {
 		supportRefer := true
 		if strings.Contains(ua, "android") || strings.Contains(ua, "adr") {
