@@ -243,7 +243,7 @@ func GetBaseInfo(c *gin.Context) {
 	aliveInfoDetail["old_live_room_url"] = baseInfoRep.GetAliveRoomUrl(req)
 	// 获取播放连接【错误处理需要仓库层打印】
 
-	alivePlayInfo := baseInfoRep.GetAliveLiveUrl(c.GetInt("agent_type"), baseConf.VersionType, baseConf.EnableWebRtc, userId, c.Request.UserAgent())
+	alivePlayInfo := baseInfoRep.GetAliveLiveUrl(c.GetInt("agent_type"), baseConf.VersionType, baseConf.EnableWebRtc, userId, c.Request.UserAgent(), c.GetInt("kpi_client"))
 	// 直播静态化写入操作
 	if available && (aliveInfoDetail["alive_state"].(int) == 1 || aliveInfo.ZbStartAt.Format("2006-01-02") == time.Now().Format("2006-01-02")) {
 		baseInfoRep.SetAliveIdToStaticRedis()
