@@ -489,11 +489,11 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			if liveUrl.AliveFastWebrtcurl != "" {
 				liveUrl.AliveFastWebrtcurl = strings.Replace(liveUrl.AliveFastWebrtcurl, playUrl, playEncryptUrl, 1)
 			}
-			for k, _ := range liveUrl.AliveVideoMoreSharpness {
-				liveUrl.AliveVideoMoreSharpness[k]["url"] = strings.Replace(liveUrl.AliveFastWebrtcurl, playUrl, playEncryptUrl, 1)
+			for k, v := range liveUrl.AliveVideoMoreSharpness {
+				liveUrl.AliveVideoMoreSharpness[k]["url"] = strings.Replace(v["url"].(string), playUrl, playEncryptUrl, 1)
 			}
-			for k, _ := range liveUrl.AliveFastMoreSharpness {
-				liveUrl.AliveFastMoreSharpness[k]["url"] = strings.Replace(liveUrl.AliveFastWebrtcurl, playUrl, playEncryptUrl, 1)
+			for k, v := range liveUrl.AliveFastMoreSharpness {
+				liveUrl.AliveFastMoreSharpness[k]["url"] = strings.Replace(v["url"].(string), playUrl, playEncryptUrl, 1)
 			}
 		}
 	}
