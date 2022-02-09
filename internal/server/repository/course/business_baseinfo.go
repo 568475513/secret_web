@@ -336,7 +336,7 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 }
 
 // 获取直播间相关的链接
-func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId string) (liveUrl LiveUrl) {
+func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId string, ua string, kpiClient string) (liveUrl LiveUrl) {
 	var (
 		playUrls     []string
 		err          error
@@ -470,6 +470,35 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			}
 		}
 	}
+
+	// 防盗链 start
+	isEncryptGrayBool := redis_gray.InGrayShop("alive_encrypt_gray", b.AliveRep.AppId)
+	if isEncryptGrayBool && ua != "" && kpiClient != "9" {
+		supportRefer := true
+		if strings.Contains(ua, "android") || strings.Contains(ua, "adr") {
+			if !(strings.Contains(ua, "tbs") || strings.Contains(ua, "xweb")) {
+				supportRefer = false
+			}
+		}
+		if supportRefer == true {
+			playUrl := os.Getenv("LIVE_PLAY_HOST")
+			playEncryptUrl := os.Getenv("LIVE_PLAY_ENCRYPT_HOST")
+			if liveUrl.AliveVideoUrl != "" {
+				liveUrl.AliveVideoUrl = strings.Replace(liveUrl.AliveVideoUrl, playUrl, playEncryptUrl, 1)
+			}
+			if liveUrl.AliveFastWebrtcurl != "" {
+				liveUrl.AliveFastWebrtcurl = strings.Replace(liveUrl.AliveFastWebrtcurl, playUrl, playEncryptUrl, 1)
+			}
+			for k, v := range liveUrl.AliveVideoMoreSharpness {
+				liveUrl.AliveVideoMoreSharpness[k]["url"] = strings.Replace(v["url"].(string), playUrl, playEncryptUrl, 1)
+			}
+			for k, v := range liveUrl.AliveFastMoreSharpness {
+				liveUrl.AliveFastMoreSharpness[k]["url"] = strings.Replace(v["url"].(string), playUrl, playEncryptUrl, 1)
+			}
+		}
+	}
+	// 防盗链 end
+
 	return
 }
 
