@@ -1,14 +1,15 @@
 package middleware
 
 import (
-	"os"
+	"abs/pkg/conf"
 	"fmt"
 	"net"
 	"net/http"
 	"net/http/httputil"
+	"os"
+	"runtime/debug"
 	"strings"
 	"time"
-	"runtime/debug"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -20,26 +21,24 @@ import (
 func GinLogger(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
-		path := c.Request.URL.Path
-		query := c.Request.URL.RawQuery
+
 		c.Next()
 
-		cost := time.Since(start)
-		logger.Info(path,
-			zap.Int("status", c.Writer.Status()),
+		requestTime := time.Since(start)
+		logger.Info("请求入参信息",
 			zap.String("method", c.Request.Method),
-			zap.String("path", path),
-			zap.String("query", query),
-			zap.String("ip", c.ClientIP()),
-			zap.String("user-agent", c.Request.UserAgent()),
-			zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
-			zap.Duration("cost", cost),
+			zap.String("requestId", c.GetString(conf.AbsRequestId)),
+			zap.String("path", c.Request.URL.Path),
+			zap.String("query", c.Request.URL.RawQuery),
+			zap.String("clientIp", c.ClientIP()),
+			zap.String("userAgent", c.Request.UserAgent()),
+			zap.String("requestTime", requestTime.String()),
 		)
 	}
 }
 
 // GinRecovery recover掉项目可能出现的panic，并使用zap记录相关日志
-func GinRecovery(logger *zap.Logger, esLogger *zap.Logger, isEs bool) gin.HandlerFunc {
+func GinRecovery(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -67,29 +66,15 @@ func GinRecovery(logger *zap.Logger, esLogger *zap.Logger, isEs bool) gin.Handle
 					return
 				}
 
-				if isEs {
-					logger.Error("[Recovery from panic]",
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
-						zap.String("stack", string(debug.Stack())),
-					)
-					// 写入Es日志
-					esLogger.Error("[Recovery from panic]",
-						zap.Any("error", err),
-						zap.String("type", "panic"),
-						zap.String("module_name", "alive_server_go"),
-						zap.String("method", c.Request.Method),
-						zap.String("target_url", c.Request.URL.Path),
-						zap.String("request", string(httpRequest)),
-						zap.String("stack", string(debug.Stack())),
-					)
-				} else {
-					logger.Error("[Recovery from panic]",
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
-						zap.String("stack", string(debug.Stack())),
-					)
-				}
+				logger.Error("[Recovery from panic]",
+					zap.Any("error", err),
+					zap.String("type", "panic"),
+					zap.String("module_name", "alive_server_go"),
+					zap.String("method", c.Request.Method),
+					zap.String("target_url", c.Request.URL.Path),
+					zap.String("request", string(httpRequest)),
+					zap.String("stack", string(debug.Stack())),
+				)
 				fmt.Printf("Error: [%s]\nstack: %s\n", err.(error).Error(), (debug.Stack()))
 				app.FailWithMessage(fmt.Sprintf("[%s]\nstack: %s", err, string(debug.Stack())), http.StatusInternalServerError, c)
 				// c.AbortWithStatus(http.StatusInternalServerError)

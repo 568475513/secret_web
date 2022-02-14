@@ -1,6 +1,7 @@
 package app
 
 import (
+	"abs/pkg/conf"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,17 +10,32 @@ import (
 )
 
 type Response struct {
-	Code int         `json:"code"`
-	Msg  string      `json:"msg"`
-	Data interface{} `json:"data"`
+	Code      int         `json:"code"`
+	Msg       string      `json:"msg"`
+	Data      interface{} `json:"data"`
+	RequestId string      `json:"requestId"`
 }
 
 // Response setting gin.JSON
 func Result(httpCode, errCode int, errMsg string, data interface{}, c *gin.Context) {
+
+	requestId := c.GetString(conf.AbsRequestId)
+
+	//暂时先不加，后面有需要去掉注释即可
+	//logging.GetLogger().Info("请求出参信息",
+	//	zap.String("requestId", requestId),
+	//	zap.Int("status", c.Writer.Status()),
+	//	zap.Int("httpCode", httpCode),
+	//	zap.Int("errCode", errCode),
+	//	zap.String("errMsg", errMsg),
+	//	zap.Any("data", data),
+	//)
+
 	c.JSON(httpCode, Response{
-		Code: errCode,
-		Msg:  errMsg,
-		Data: data,
+		Code:      errCode,
+		Msg:       errMsg,
+		Data:      data,
+		RequestId: requestId,
 	})
 }
 

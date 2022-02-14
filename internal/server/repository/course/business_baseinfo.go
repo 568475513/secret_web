@@ -84,6 +84,8 @@ func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 	aliveInfoDetail["pushzb_start_at"] = b.Alive.ZbStartAt
 	// 推流直播结束时间
 	aliveInfoDetail["pushzb_stop_at"] = b.Alive.ZbStopAt
+	// 直播开始时间（时间戳：秒）
+	aliveInfoDetail["zb_start_at"] = b.Alive.ZbStartAt.Unix()
 	// 获取直播状态
 	aliveInfoDetail["alive_state"] = b.AliveRep.GetAliveStates(b.Alive)
 	// 推流状态，0推流结束，1推流中，2推流未开始
@@ -93,8 +95,6 @@ func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 	if b.Alive.AliveType == e.AliveTypeVideo {
 		aliveInfoDetail["remainder_time"] = b.Alive.ZbStartAt.Unix() + b.Alive.VideoLength - now.Unix()
 	}
-	// 直播开始时间（时间戳：秒）
-	aliveInfoDetail["zb_start_at"] = b.Alive.ZbStopAt.Unix()
 	// 直播结束时间（时间戳：秒）
 	aliveInfoDetail["zb_stop_at"] = b.Alive.ZbStopAt.Unix()
 	// 距离直播开始倒计时（单位：秒）
@@ -215,6 +215,8 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	//PC网校自定义域名
 	aliveConf["pc_network_school_index_url"] = baseConf.PcCustomDomain
 	aliveConf["is_open_promoter"] = aliveModule.IsOpenPromoter
+	aliveConf["is_open_vote"] = aliveModule.IsOpenVote
+	aliveConf["is_open_qus"] = aliveModule.IsOpenQus
 	// 版本过期信息
 	versionState := b.GetAppExpireTime(baseConf.Profit)
 	aliveIsRemind := 0
@@ -274,6 +276,9 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	if versionState["alive_show_man_time_is_remind"].(int) != 1 && versionState["alive_show_man_time_is_remind"].(int) != 0 && b.Alive.ConfigShowViewCount == 1 && b.UserType == 0 {
 		aliveConf["is_show_view_count"] = 0
 	}
+	if b.Alive.ConfigShowViewCount == 2 {
+		aliveConf["is_show_view_count"] = 2
+	}
 
 	// 获取直播配置表相关配置
 	// 邀请达人榜需要灰度控制
@@ -286,6 +291,8 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	aliveConf["alive_mode"] = aliveModule.AliveMode
 	aliveConf["is_picture_on"] = aliveModule.IsPictureOn
 	aliveConf["is_audit_first_on"] = aliveModule.IsAuditFirstOn
+	aliveConf["is_online_on"] = aliveModule.IsOnlineOn
+	aliveConf["is_heat_on"] = aliveModule.IsHeatOn
 	aliveConf["is_coupon_on"] = aliveModule.IsCouponOn
 	aliveConf["is_card_on"] = aliveModule.IsCardOn
 	aliveConf["is_prize_on"] = aliveModule.IsPrizeOn
@@ -297,6 +304,8 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	aliveConf["is_sign_in_on"] = aliveModule.IsSignInOn
 	// 红包功能是否开启，0-关闭，1-开启
 	aliveConf["is_red_packet_on"] = aliveModule.IsRedPacketOn
+	//暖场配置
+	aliveConf["warm_up"] = aliveModule.WarmUp
 
 	if aliveModule.CompleteTime == 0 {
 		aliveConf["is_open_complete_time"] = 0
@@ -306,6 +315,9 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 	//该直播是否开启圆桌会议模式，0关闭，1开启
 	aliveConf["is_round_table_on"] = aliveModule.IsRoundTableOn
 
+	//是否开启分享有礼
+	aliveConf["is_open_share_reward"] = aliveModule.IsOpenShareReward
+
 	//是否开启防录屏
 	aliveConf["anti_screen_jump"] = 0
 	aliveConf["anti_screen_jump_url"] = ""
@@ -314,11 +326,19 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 		aliveConf["anti_screen_jump_url"] = os.Getenv("APP_REDIRECT_DOMAIN") + "open_app?app_id=" + b.AliveRep.AppId + "&params=" + b.GetWakeUpAppParams(userId)
 	}
 
+	tab := &alive.AliveTab{}
+	//该直播是否自定义tab
+	if err := util.JsonDecode([]byte(aliveModule.AliveJson), tab); err != nil || tab.TabOn == "0" {
+		aliveConf["alive_tab"] = 0
+	} else {
+		aliveConf["alive_tab"] = 1
+	}
+
 	return aliveConf
 }
 
 // 获取直播间相关的链接
-func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId string) (liveUrl LiveUrl) {
+func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId string, ua string, kpiClient string) (liveUrl LiveUrl) {
 	var (
 		playUrls     []string
 		err          error
@@ -327,8 +347,10 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 	)
 
 	timeStamp := time.Now().Unix()
+
 	supportSharpness := map[string]interface{}{
 		"default": "原画", //默认原画
+		"hd":      "高清", //高清（720P）
 		"fluent":  "流畅", //流畅（480P）
 	}
 
@@ -349,17 +371,16 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			// 这里需要返回吗？
 			// return
 		}
+
+		currentUv := b.getCurrentUv()
+
 		// 普通直播多清晰度
 		liveUrl.AliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 		liveUrl.PcAliveVideoMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 		i := 0
 		for k, v := range supportSharpness {
-			switch k {
-			case "fluent":
-				i = 1
-			case "default":
-				i = 0
-			}
+			i = b.getIndex(currentUv, k)
+
 			liveUrl.AliveVideoMoreSharpness[i] = map[string]interface{}{
 				"definition_name": v,
 				"definition_p":    k,
@@ -377,44 +398,20 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		// 快直播O端名单目录
 		isGray := redis_gray.InGrayShop("fast_alive_switch", b.AliveRep.AppId)
 		if isGray && isUserWebRtc && enableWebRtc == 1 && util.Substr(playUrls[0], 0, 4) == "rtmp" {
-			var (
-				uv      = 0
-				limitUv = 0
-			)
+			limitUv, _ := strconv.Atoi(os.Getenv("WEBRTC_SWITCH_RTMP_UV"))
 
-			//判断成本控制的白名单
+			//成本控制的白名单
 			inCostOptWhiteMenu := redis_gray.InGrayShopSpecialHit("webrtc_cost_opt_white_menu", b.Alive.AppId)
 
-			//不在白名单才去查实时在线人
-			if !inCostOptWhiteMenu {
-				xiaoEImRedisConn, err := redis_xiaoe_im.GetConn()
-				if err != nil {
-					logging.Error(err)
-				}
-				defer xiaoEImRedisConn.Close()
-				//查询实时在线UV
-				cacheKey := fmt.Sprintf(aliveOnlineUV, b.Alive.Id)
-				uv, err = redis.Int(xiaoEImRedisConn.Do("ZCARD", cacheKey))
-				limitUv, _ = strconv.Atoi(os.Getenv("WEBRTC_SWITCH_RTMP_UV"))
-				if err != nil {
-					//这里只记录查询redis失败日志，不去影响主流程
-					logging.Error(fmt.Sprintf("base_info 查询实时在线人数失败：%s", err.Error()))
-				}
-			}
-
-			if inCostOptWhiteMenu || uv < limitUv {
+			if inCostOptWhiteMenu || currentUv < limitUv {
 				liveUrl.AliveFastWebrtcurl = "webrtc" + util.Substr(playUrls[0], 4, len(playUrls[0]))
 				liveUrl.FastAliveSwitch = true
 				//快直播多清晰度
 				liveUrl.AliveFastMoreSharpness = make([]map[string]interface{}, len(supportSharpness))
 				i := 0
 				for k, v := range supportSharpness {
-					switch k {
-					case "fluent":
-						i = 1
-					case "default":
-						i = 0
-					}
+					i = b.getIndex(currentUv, k)
+
 					liveUrl.AliveFastMoreSharpness[i] = map[string]interface{}{
 						"definition_name": v,
 						"definition_p":    k,
@@ -425,7 +422,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			} else {
 				// 触发成本控制了，记录下
 				logging.Info(fmt.Sprintf("cost_optimization app_id:%s alive_id:%s uv:%d limit:%d",
-					b.Alive.AppId, b.Alive.Id, uv, limitUv))
+					b.Alive.AppId, b.Alive.Id, currentUv, limitUv))
 			}
 		}
 	} else {
@@ -475,7 +472,113 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			}
 		}
 	}
+
+	// 防盗链 start
+	isEncryptGrayBool := redis_gray.InGrayShopNew("alive_encrypt_gray", b.AliveRep.AppId)
+	if isEncryptGrayBool && ua != "" && kpiClient != "9" {
+		supportRefer := true
+		if strings.Contains(ua, "android") || strings.Contains(ua, "adr") {
+			if !(strings.Contains(ua, "tbs") || strings.Contains(ua, "xweb")) {
+				supportRefer = false
+			}
+		}
+		if supportRefer == true {
+			playUrl := os.Getenv("LIVE_PLAY_HOST")
+			playEncryptUrl := os.Getenv("LIVE_PLAY_ENCRYPT_HOST")
+			if liveUrl.AliveVideoUrl != "" {
+				liveUrl.AliveVideoUrl = strings.Replace(liveUrl.AliveVideoUrl, playUrl, playEncryptUrl, 1)
+			}
+			if liveUrl.AliveFastWebrtcurl != "" {
+				liveUrl.AliveFastWebrtcurl = strings.Replace(liveUrl.AliveFastWebrtcurl, playUrl, playEncryptUrl, 1)
+			}
+			for k, v := range liveUrl.AliveVideoMoreSharpness {
+				liveUrl.AliveVideoMoreSharpness[k]["url"] = strings.Replace(v["url"].(string), playUrl, playEncryptUrl, 1)
+			}
+			for k, v := range liveUrl.AliveFastMoreSharpness {
+				liveUrl.AliveFastMoreSharpness[k]["url"] = strings.Replace(v["url"].(string), playUrl, playEncryptUrl, 1)
+			}
+		}
+	}
+	// 防盗链 end
+
 	return
+}
+
+// 获取播放链接的位置
+func (b *BaseInfo) getIndex(currentUv int, k string) int {
+	//获取超过多少UV默认使用【高清】播放的配置
+	limitUvUseHd, _ := strconv.Atoi(os.Getenv("DEFAULT_USE_HD_LIMIT_UV"))
+	//获取超过多少UV默认使用【流畅】播放的配置
+	limitUvUseFluent, _ := strconv.Atoi(os.Getenv("DEFAULT_USE_FLUENT_LIMIT_UV"))
+
+	//是否是默认使用【高清】播放的店铺
+	inGrayDefaultUseHd := redis_gray.InGrayShopSpecialHit("alive_default_use_hd_switch", b.Alive.AppId)
+	//是否是默认使用【流畅】播放的店铺
+	inGrayDefaultUseFluent := redis_gray.InGrayShopSpecialHit("alive_default_use_fluent_switch", b.Alive.AppId)
+
+	i := 0
+	if inGrayDefaultUseFluent && currentUv > limitUvUseFluent {
+		//默认使用流畅（0代表默认 default这个命名忽略 历史原因）
+		switch k {
+		case "hd":
+			i = 1
+		case "fluent":
+			i = 0
+		case "default":
+			i = 2
+		}
+
+		if i == 0 {
+			logging.Info(fmt.Sprintf("default_play_url:use_fluent,app_id:%s,alive_id:%s,current_uv:%d,limit_uv:%d", b.Alive.AppId, b.Alive.Id, currentUv, limitUvUseFluent))
+		}
+	} else if inGrayDefaultUseHd && currentUv > limitUvUseHd {
+		//默认使用高清（0代表默认 default这个命名忽略 历史原因）
+		switch k {
+		case "hd":
+			i = 0
+		case "fluent":
+			i = 1
+		case "default":
+			i = 2
+		}
+
+		if i == 0 {
+			logging.Info(fmt.Sprintf("default_play_url:use_hd,app_id:%s,alive_id:%s,current_uv:%d,limit_uv:%d", b.Alive.AppId, b.Alive.Id, currentUv, limitUvUseHd))
+		}
+	} else {
+		//默认使用原画（0代表默认 default这个命名忽略 历史原因）
+		switch k {
+		case "hd":
+			i = 1
+		case "fluent":
+			i = 2
+		case "default":
+			i = 0
+		}
+	}
+
+	return i
+}
+
+func (b *BaseInfo) getCurrentUv() int {
+	xiaoEImRedisConn, err := redis_xiaoe_im.GetConn()
+	if err != nil {
+		logging.Error(err)
+	}
+	defer xiaoEImRedisConn.Close()
+
+	currentUv := 0
+
+	//查询实时在线UV
+	cacheKey := fmt.Sprintf(aliveOnlineUV, b.Alive.Id)
+	currentUv, err = redis.Int(xiaoEImRedisConn.Do("ZCARD", cacheKey))
+
+	if err != nil {
+		//这里只记录查询redis失败日志，不去影响主流程
+		logging.Error(fmt.Sprintf("base_info 查询实时在线人数失败：%s", err.Error()))
+	}
+
+	return currentUv
 }
 
 // 直播静态页的信息采集【用户】
@@ -549,9 +652,10 @@ func (b *BaseInfo) BaseInfoPageRedirect(
 				url = util.ParentColumnsUrl(urlColumParams)
 			} else if len(products) == 1 {
 				urlColumParams.Type = e.PaymentTypeProduct
-				// urlColumParams.ResourceId = ""
-				// urlColumParams.ResourceType = ""
+				urlColumParams.ResourceType = int(products[0].SrcType)
 				urlColumParams.ProductId = products[0].Id
+				urlColumParams.AppId = products[0].AppId
+				urlColumParams.ResourceId = products[0].Id
 				if req.ContentAppId != "" {
 					urlColumParams.ContentAppId = req.ContentAppId
 					urlColumParams.Source = "2"
@@ -672,6 +776,8 @@ func (b *BaseInfo) getPlayUrlBySharpness(sharpness, playUrl, channelId string) s
 	switch sharpness {
 	case "fluent":
 		replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_FLUENT"))
+	case "hd":
+		replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_HD"))
 	default:
 		replaceStr = ""
 	}

@@ -74,7 +74,7 @@ func GetBaseInfo(c *gin.Context) {
 	childSpan.Finish()
 	if err != nil {
 		//错误信息记录日志 不直接返回
-		logging.Error(fmt.Sprintf("获取直播专栏关联信息错误:%s", err.Error()))
+		logging.ErrorWithCtx(fmt.Sprintf("获取直播专栏关联信息错误:%s", err.Error()), c)
 		//app.FailWithMessage(fmt.Sprintf("获取直播专栏关联信息错误:%s", err.Error()), enums.ERROR, c)
 		//return
 	}
@@ -140,7 +140,7 @@ func GetBaseInfo(c *gin.Context) {
 		goSpan := tracer.StartSpan("直播异步操作", opentracing.ChildOf(childSpan.Context()))
 		defer goSpan.Finish()
 		// 直播Pv数加一
-		aliveInfo.ViewCount, _ = aliveRep.UpdateViewCountToCache(aliveInfo.ViewCount)
+		aliveInfo.ViewCount, _ = aliveRep.UpdateViewCountToCache(aliveInfo.ViewCount, c)
 		// 直播带货商品PV加一
 		aliveRep.IncreasePv(c.Request.Referer(), aliveInfo.Id, int(aliveInfo.AliveType))
 
@@ -156,7 +156,7 @@ func GetBaseInfo(c *gin.Context) {
 	// 错误处理【需要扔掉一些不要的】
 	if err != nil {
 		//错误记录日志 不抛出异常
-		logging.Error(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)))
+		logging.ErrorWithCtx(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), c)
 		//app.FailWithMessage(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), enums.ERROR, c)
 		//return
 	}
@@ -164,7 +164,7 @@ func GetBaseInfo(c *gin.Context) {
 	if baseConf.VersionType == enums.VERSION_TYPE_TRAINING_TRY || baseConf.VersionType == enums.VERSION_TYPE_TRAINING_STD {
 		isRedirect, err := appRep.TrainingIsRedirect(req.AppId, userId)
 		if err != nil {
-			logging.Error(err.Error())
+			logging.ErrorWithCtx(err.Error(), c)
 		}
 		if isRedirect {
 			app.OkWithCodeData("Redirect.", map[string]string{
@@ -247,7 +247,7 @@ func GetBaseInfo(c *gin.Context) {
 	// 补充老直播间链接 util.GetAliveRoomUrl(req.ResourceId, req.ProductId, req.ChannelId, req.AppId, enums.AliveRoomPage)
 	aliveInfoDetail["old_live_room_url"] = baseInfoRep.GetAliveRoomUrl(req)
 	// 获取播放连接【错误处理需要仓库层打印】
-	alivePlayInfo := baseInfoRep.GetAliveLiveUrl(c.GetInt("agent_type"), baseConf.VersionType, baseConf.EnableWebRtc, userId)
+	alivePlayInfo := baseInfoRep.GetAliveLiveUrl(c.GetInt("agent_type"), baseConf.VersionType, baseConf.EnableWebRtc, userId, c.Request.UserAgent(), c.Request.Header.Get("kpi_client"))
 	// 直播静态化写入操作
 	if available && (aliveInfoDetail["alive_state"].(int) == 1 || aliveInfo.ZbStartAt.Format("2006-01-02") == time.Now().Format("2006-01-02")) {
 		baseInfoRep.SetAliveIdToStaticRedis()
@@ -301,7 +301,12 @@ func GetBaseInfo(c *gin.Context) {
 	// 直播权益信息
 	data["available_info"] = availableInfo
 	// 直播基本信息
-	data["alive_info"] = aliveRep.ReplaceIosResourceDesc(aliveInfoDetail, req.ClientType, c.Request.UserAgent(), baseInfoRep.Alive.PaymentType)
+	aliveInfoDetail = aliveRep.ReplaceIosResourceDesc(aliveInfoDetail, req.ClientType, c.Request.UserAgent(), baseInfoRep.Alive.PaymentType)
+	//如果配置了暖场图 要修改暖场图为封面图
+	if aliveConf["warm_up"].(uint8) == 2 {
+		aliveInfoDetail["img_url"] = aliveInfoDetail["cover_img_url"]
+	}
+	data["alive_info"] = aliveInfoDetail
 	// 直播播放信息
 	data["alive_play"] = alivePlayInfo
 	//直播静态化开关

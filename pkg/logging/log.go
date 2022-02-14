@@ -1,7 +1,8 @@
 package logging
 
 import (
-	"fmt"
+	"abs/pkg/conf"
+	"github.com/gin-gonic/gin"
 	"runtime/debug"
 
 	"go.uber.org/zap"
@@ -11,11 +12,15 @@ import (
 func Info(v interface{}) {
 	switch v.(type) {
 	case string:
-		ILogger.Info(v.(string))
+		GetLogger().Info(v.(string))
 	case map[string]interface{}:
-		ILogger.Info("Map", zap.Any("info", v))
+		GetLogger().Info("Map",
+			zap.Any("Data", v),
+		)
 	default:
-		ILogger.Info("Info!!!", zap.Any("Data", v))
+		GetLogger().Info("Info!!!",
+			zap.Any("Data", v),
+		)
 	}
 }
 
@@ -23,11 +28,14 @@ func Info(v interface{}) {
 func Warn(param interface{}) {
 	switch param.(type) {
 	case string:
-		ILogger.Warn(param.(string), zap.Any("error", param))
+		GetLogger().Warn(param.(string))
 	case error:
-		ILogger.Warn(param.(error).Error(), zap.Error(param.(error)), zap.Stack("stack"))
+		GetLogger().Warn(param.(error).Error())
 	default:
-		ILogger.Warn("Warn!!!", zap.Any("warn", param), zap.Stack("stack"))
+		GetLogger().Warn("Warn!!!",
+			zap.Any("Data", param),
+			zap.Stack("stack"),
+		)
 	}
 }
 
@@ -35,41 +43,92 @@ func Warn(param interface{}) {
 func Error(param interface{}) {
 	switch param.(type) {
 	case string:
-		ELogger.Error(param.(string))
-		EsLogger.Error(param.(string),
-			zap.String("error", param.(string)),
-			zap.String("type", "error"),
-			zap.String("module_name", "alive_server_go"),
-			zap.String("method", "-"),
-			zap.String("target_url", "-"),
-			zap.String("request", "-"),
+		GetLogger().Error(param.(string),
 			zap.String("stack", string(debug.Stack())),
 		)
 	case error:
-		// ELogger.Error(param.(error).Error(), zap.Error(param.(error)), zap.String("stack", string(debug.Stack())))
-		ELogger.Error(fmt.Sprintf("Error: %s\n stack: %s\n", param.(error).Error(), string(debug.Stack())))
-		EsLogger.Error(param.(error).Error(),
-			zap.Any("error", param.(error)),
-			zap.String("type", "error"),
-			zap.String("module_name", "alive_server_go"),
-			zap.String("method", "-"),
-			zap.String("target_url", "-"),
-			zap.String("request", "-"),
+		GetLogger().Error(param.(error).Error(),
 			zap.String("stack", string(debug.Stack())),
 		)
 	default:
-		ELogger.Error("Error!!!", zap.Any("error", param), zap.String("stack", string(debug.Stack())))
+		GetLogger().Error("Error!!!",
+			zap.Any("error", param.(error)),
+			zap.String("stack", string(debug.Stack())),
+		)
+	}
+}
+
+// Info With Ctx output logs at info level
+func InfoWithCtx(v interface{}, ctx *gin.Context) {
+	switch v.(type) {
+	case string:
+		GetLogger().Info(v.(string),
+			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
+		)
+	case map[string]interface{}:
+		GetLogger().Info("Map",
+			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
+			zap.Any("info", v),
+		)
+	default:
+		GetLogger().Info("Info!!!",
+			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
+			zap.Any("Data", v),
+		)
+	}
+}
+
+// Warn With Ctx output logs at warn level
+func WarnWithCtx(param interface{}, ctx *gin.Context) {
+	switch param.(type) {
+	case string:
+		GetLogger().Warn(param.(string),
+			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
+		)
+	case error:
+		GetLogger().Warn(param.(error).Error(),
+			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
+		)
+	default:
+		GetLogger().Warn("Warn!!!",
+			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
+			zap.Any("warn", param),
+			zap.Stack("stack"),
+		)
+	}
+}
+
+// Error With Ctx output logs at error level
+func ErrorWithCtx(param interface{}, ctx *gin.Context) {
+	switch param.(type) {
+	case string:
+		GetLogger().Error(param.(string),
+			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
+			zap.String("stack", string(debug.Stack())),
+		)
+	case error:
+		GetLogger().Error(param.(error).Error(),
+			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
+			zap.String("stack", string(debug.Stack())),
+		)
+	default:
+		GetLogger().Error("Error!!!",
+			zap.String("requestId", ctx.GetString(conf.AbsRequestId)),
+			zap.Any("error", param.(error)),
+			zap.String("stack", string(debug.Stack())),
+		)
 	}
 }
 
 // 一般日志插入ES日志文件
-func LogToEs(msg string, data interface{}) {
-	EsLogger.Error(msg,
-		zap.Any("info", data),
-		zap.String("type", "info"),
-		zap.String("module_name", "alive_server_go"),
-		zap.String("method", "-"),
-		zap.String("target_url", "-"),
-		zap.String("request", "-"),
-	)
-}
+//Deprecated
+//func LogToEs(msg string, data interface{}) {
+//	GetLogger().Error(msg,
+//		zap.Any("info", data),
+//		zap.String("type", "info"),
+//		zap.String("module_name", "alive_server_go"),
+//		zap.String("method", "-"),
+//		zap.String("target_url", "-"),
+//		zap.String("request", "-"),
+//	)
+//}
