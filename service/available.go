@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"abs/pkg/app"
@@ -103,7 +104,7 @@ func (ava *AvailableService) IsResourceAvailable(params ResourceAvailable) (expi
 // 鹅课程权益请求
 func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data interface{}, err error) {
 	// 发起请求
-	url := fmt.Sprintf(os.Getenv("LB_PF_COURSEBUSINESS_IN") + cmdIsECourseAvailable)
+	url := fmt.Sprintf(strings.TrimRight(os.Getenv("LB_PF_COURSEBUSINESS_IN"), "/") + cmdIsECourseAvailable)
 	request := Post(url)
 	logging.Info(fmt.Sprintf("权益IsECourseAvailable，Url:" + url))
 	// 写死请求数据 模拟
