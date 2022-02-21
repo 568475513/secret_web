@@ -271,10 +271,13 @@ func GetBaseInfo(c *gin.Context) {
 		eCourseAvailableParams, _ = availableService.IsECourseAvailable(eCourseAvailable)
 		// 如果有结果的话， 权益就直接使用鹅课程的哦
 		if eCourseAvailableParams != nil {
-			if eCourseAvailableParams.(map[string]interface{})["is_permission"].(float64) == 0 {
-				availableInfo["available"] = false
-			} else {
+			// http://doc.xiaoeknow.com/web/#/145?page_id=14978  权益 + 订阅 + 解锁 都满足才返回拥有权益
+			if eCourseAvailableParams.(map[string]interface{})["is_permission"].(float64) == 1 &&
+				eCourseAvailableParams.(map[string]interface{})["is_subscribe"].(float64) == 1 &&
+				eCourseAvailableParams.(map[string]interface{})["is_unlock"].(float64) == 1 {
 				availableInfo["available"] = true
+			} else {
+				availableInfo["available"] = false
 			}
 
 		}
