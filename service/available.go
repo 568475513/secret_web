@@ -102,7 +102,7 @@ func (ava *AvailableService) IsResourceAvailable(params ResourceAvailable) (expi
 }
 
 // 鹅课程权益请求
-func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data interface{}, err error) {
+func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data interface{}, code int, redirectUrl string, err error) {
 	// 发起请求
 	url := fmt.Sprintf(strings.TrimRight(os.Getenv("LB_PF_COURSEBUSINESS_IN"), "/") + cmdIsECourseAvailable)
 	request := Post(url)
@@ -135,11 +135,15 @@ func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data i
 	logging.Info(result)
 	// 权益返回适配处理
 
-	if result["code"].(float64) != 0 {
+	if result["code"].(float64) == 0 {
 		// logging.Info("[资源]用户：" + ava.UserId + "未购买" + params.ResourceId + "_" + now.String())
-	} else {
-		// logging.Info("[资源]用户：" + ava.UserId + "已购买" + params.ResourceId + "_" + now.String())
 		data = result["data"].(map[string]interface{})
+	} else if result["code"].(float64) == 302 {
+		// logging.Info("[资源]用户：" + ava.UserId + "已购买" + params.ResourceId + "_" + now.String())
+		code = e.RESOURCE_REDIRECT
+		redirectUrl = result["data"].(string)
+	} else {
+
 	}
 
 	return

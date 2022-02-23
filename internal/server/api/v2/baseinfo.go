@@ -264,11 +264,22 @@ func GetBaseInfo(c *gin.Context) {
 		// 这里请求一下而课程的权益
 		var availableService service.AvailableService
 		var eCourseAvailable service.ECourseAvailable
+		var eCourseCode int
+		var eCourseRedirectUrl string
 		availableService.AppId = req.AppId
 		availableService.UserId = userId
 		eCourseAvailable.ResourceId = req.ResourceId
 		// 鹅课程权益接口请求哦
-		eCourseAvailableParams, _ = availableService.IsECourseAvailable(eCourseAvailable)
+		eCourseAvailableParams, eCourseCode, eCourseRedirectUrl, _ = availableService.IsECourseAvailable(eCourseAvailable)
+		if eCourseCode == enums.RESOURCE_REDIRECT {
+			app.OkWithCodeData("Redirect.", map[string]string{
+				"redirect": eCourseRedirectUrl,
+				// 这个命名为了兼容，要不然不会写那么傻逼
+				"uRL": eCourseRedirectUrl,
+			}, 11302, c)
+			return
+		}
+
 		// 如果有结果的话， 权益就直接使用鹅课程的哦
 		if eCourseAvailableParams != nil {
 			// http://doc.xiaoeknow.com/web/#/145?page_id=14978  权益 + 订阅 + 解锁 都满足才返回拥有权益
