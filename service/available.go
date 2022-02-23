@@ -111,7 +111,7 @@ func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data i
 	//ava.AppId = "appm00slggh2325"
 	//ava.UserId = "u_61b6f28beb92a_WPxIVGI6lS"
 	//params.ResourceId = "v_61c97abb60b2567868b46b00"
-	params.IsDirect = 0 // 这个固定
+	params.IsDirect = 1 // 这个固定
 
 	requestParams := map[string]interface{}{
 		"app_id":   ava.AppId,
@@ -141,7 +141,7 @@ func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data i
 	} else if result["code"].(float64) == 302 {
 		// logging.Info("[资源]用户：" + ava.UserId + "已购买" + params.ResourceId + "_" + now.String())
 		code = e.RESOURCE_REDIRECT
-		redirectUrl = result["data"].(string)
+		redirectUrl = result["forward_url"].(string)
 	} else {
 
 	}
