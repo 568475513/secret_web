@@ -2,6 +2,8 @@ package app
 
 import (
 	"abs/pkg/conf"
+	"abs/pkg/logging"
+	"go.uber.org/zap"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,15 +23,16 @@ func Result(httpCode, errCode int, errMsg string, data interface{}, c *gin.Conte
 
 	requestId := c.GetString(conf.AbsRequestId)
 
-	//暂时先不加，后面有需要去掉注释即可
-	//logging.GetLogger().Info("请求出参信息",
-	//	zap.String("requestId", requestId),
-	//	zap.Int("status", c.Writer.Status()),
-	//	zap.Int("httpCode", httpCode),
-	//	zap.Int("errCode", errCode),
-	//	zap.String("errMsg", errMsg),
-	//	zap.Any("data", data),
-	//)
+	logging.GetLogger().Info("responseData",
+		zap.String("appId", GetUserId(c)),
+		zap.String("userId", GetAppId(c)),
+		zap.String("requestId", requestId),
+		zap.Int("status", c.Writer.Status()),
+		zap.Int("httpCode", httpCode),
+		zap.Int("errCode", errCode),
+		zap.String("errMsg", errMsg),
+		zap.Any("data", data),
+	)
 
 	c.JSON(httpCode, Response{
 		Code: errCode,
