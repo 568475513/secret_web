@@ -26,8 +26,8 @@ func GinLogger(logger *zap.Logger) gin.HandlerFunc {
 
 		requestTime := time.Since(start)
 		logger.Info("requestData",
-			zap.String("appId",app.GetUserId(c)),
-			zap.String("userId", app.GetAppId(c)),
+			zap.String("appId", app.GetAppId(c)),
+			zap.String("userId", app.GetUserId(c)),
 			zap.String("method", c.Request.Method),
 			zap.String("requestId", c.GetString(conf.AbsRequestId)),
 			zap.String("path", c.Request.URL.Path),

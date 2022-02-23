@@ -24,8 +24,8 @@ func Result(httpCode, errCode int, errMsg string, data interface{}, c *gin.Conte
 	requestId := c.GetString(conf.AbsRequestId)
 
 	logging.GetLogger().Info("responseData",
-		zap.String("appId", GetUserId(c)),
-		zap.String("userId", GetAppId(c)),
+		zap.String("appId", GetAppId(c)),
+		zap.String("userId", GetUserId(c)),
 		zap.String("requestId", requestId),
 		zap.Int("status", c.Writer.Status()),
 		zap.Int("httpCode", httpCode),
