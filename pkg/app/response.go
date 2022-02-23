@@ -28,7 +28,6 @@ func Result(httpCode, errCode int, errMsg string, data interface{}, c *gin.Conte
 		zap.String("userId", GetUserId(c)),
 		zap.String("requestId", requestId),
 		zap.Int("status", c.Writer.Status()),
-		zap.Int("httpCode", httpCode),
 		zap.Int("errCode", errCode),
 		zap.String("errMsg", errMsg),
 		zap.Any("data", data),
