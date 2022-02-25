@@ -43,7 +43,7 @@ type ResourceAvailable struct {
 // 用户权益参数
 type ECourseAvailable struct {
 	ResourceId string `json:"resource_id"`
-	IsDirect   int    `json:"is_direct"`
+	IsDirect   string `json:"is_direct"`
 }
 
 const (
@@ -111,7 +111,7 @@ func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data i
 	//ava.AppId = "appm00slggh2325"
 	//ava.UserId = "u_61b6f28beb92a_WPxIVGI6lS"
 	//params.ResourceId = "v_61c97abb60b2567868b46b00"
-	params.IsDirect = 1 // 这个固定
+	//params.IsDirect = "1" // 这个固定
 
 	requestParams := map[string]interface{}{
 		"app_id":   ava.AppId,

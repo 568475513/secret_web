@@ -269,6 +269,8 @@ func GetBaseInfo(c *gin.Context) {
 		availableService.AppId = req.AppId
 		availableService.UserId = userId
 		eCourseAvailable.ResourceId = req.ResourceId
+		eCourseAvailable.IsDirect = c.DefaultPostForm("is_direct", "1") // 前端传入 0 不用重定向  1 重定向
+
 		// 鹅课程权益接口请求哦
 		eCourseAvailableParams, eCourseCode, eCourseRedirectUrl, _ = availableService.IsECourseAvailable(eCourseAvailable)
 		if eCourseCode == enums.RESOURCE_REDIRECT {
