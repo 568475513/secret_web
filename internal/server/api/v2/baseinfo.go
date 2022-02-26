@@ -269,7 +269,7 @@ func GetBaseInfo(c *gin.Context) {
 		availableService.AppId = req.AppId
 		availableService.UserId = userId
 		eCourseAvailable.ResourceId = req.ResourceId
-		eCourseAvailable.IsDirect = c.DefaultQuery("is_direct", "1") // 前端传入 0 不用重定向  1 重定向
+		eCourseAvailable.IsDirect = c.DefaultQuery("is_direct", "0") // 前端传入 0 不用重定向  1 重定向
 		logging.Info("eCourseAvailable")
 		logging.Info(eCourseAvailable)
 		// 鹅课程权益接口请求哦
