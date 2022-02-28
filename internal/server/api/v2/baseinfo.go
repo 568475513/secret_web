@@ -33,6 +33,7 @@ func GetBaseInfo(c *gin.Context) {
 		err error
 		req validator.BaseInfoRuleV2
 	)
+
 	userId := app.GetUserId(c) //u_60a211b56ace0_oWlPQsXXHZ
 	req.AppId = app.GetAppId(c)
 	if err = app.ParseRequest(c, &req); err != nil {
@@ -142,9 +143,11 @@ func GetBaseInfo(c *gin.Context) {
 		aliveInfo.ViewCount, _ = aliveRep.UpdateViewCountToCache(aliveInfo.ViewCount, c)
 		// 直播带货商品PV加一
 		aliveRep.IncreasePv(c.Request.Referer(), aliveInfo.Id, int(aliveInfo.AliveType))
+
 		// 异步丢队列，更新最近查看时间
 		eliveInfo := course.EliveInfo{}
 		eliveInfo.UpdateAccessTimeToQueue(req.AppId, req.ResourceId, userId, userType)
+
 		return nil
 	})
 
@@ -215,8 +218,10 @@ func GetBaseInfo(c *gin.Context) {
 			available = true
 		}
 	}
+
 	// 分享免费听逻辑
 	shareListenInfo := shareRes.GetShareListenInfo(&shareInfo, available)
+
 	// 业务数据封装
 	baseInfoRep := course.BaseInfo{Alive: aliveInfo, AliveRep: &aliveRep, UserType: userType}
 	aliveInfoDetail := baseInfoRep.GetAliveInfoDetail()
@@ -252,6 +257,47 @@ func GetBaseInfo(c *gin.Context) {
 	}
 	childSpan.Finish()
 
+	// 申明变量
+	var eCourseAvailableParams interface{}
+	// 如果是鹅课程且有权益这里要处理一下鹅课程的权益  判断一下是否是讲师， 讲师不需要权益
+	if aliveInfo.SellMode == course.ECourseSellMode && userType != 1 {
+		// 这里请求一下而课程的权益
+		var availableService service.AvailableService
+		var eCourseAvailable service.ECourseAvailable
+		var eCourseCode int
+		var eCourseRedirectUrl string
+		availableService.AppId = req.AppId
+		availableService.UserId = userId
+		eCourseAvailable.ResourceId = req.ResourceId
+		eCourseAvailable.IsDirect = c.DefaultQuery("is_direct", "0") // 前端传入 0 不用重定向  1 重定向
+		logging.Info("eCourseAvailable")
+		logging.Info(eCourseAvailable)
+		// 鹅课程权益接口请求哦
+		eCourseAvailableParams, eCourseCode, eCourseRedirectUrl, _ = availableService.IsECourseAvailable(eCourseAvailable)
+		if eCourseCode == enums.RESOURCE_REDIRECT {
+			app.OkWithCodeData("Redirect.", map[string]string{
+				"redirect": eCourseRedirectUrl,
+				// 这个命名为了兼容，要不然不会写那么傻逼
+				"uRL": eCourseRedirectUrl,
+			}, 11302, c)
+			return
+		}
+
+		// 如果有结果的话， 权益就直接使用鹅课程的哦
+		if eCourseAvailableParams != nil {
+			// http://doc.xiaoeknow.com/web/#/145?page_id=14978  权益 + 订阅 + 解锁 都满足才返回拥有权益
+			if eCourseAvailableParams.(map[string]interface{})["is_permission"].(float64) == 1 &&
+				eCourseAvailableParams.(map[string]interface{})["is_subscribe"].(float64) == 1 &&
+				eCourseAvailableParams.(map[string]interface{})["is_unlock"].(float64) == 1 {
+				availableInfo["available"] = true
+			} else {
+				availableInfo["available"] = false
+			}
+
+		}
+
+	}
+
 	// 数据上报服务
 	childSpan = tracer.StartSpan("异步队列处理时间", opentracing.ChildOf(span.Context()))
 	dataAsyn := data.AsynData{AppId: req.AppId, UserId: userId, ResourceId: req.ResourceId, ProductId: req.ProductId, PaymentType: int(aliveInfo.PaymentType)}
@@ -267,6 +313,8 @@ func GetBaseInfo(c *gin.Context) {
 	data := make(map[string]interface{})
 	// 父级专栏信息列表
 	// data["parent_columns"] = products
+	// 鹅课程权益数据
+	data["e_course_data"] = eCourseAvailableParams
 	// 直播权益信息
 	data["available_info"] = availableInfo
 	// 直播基本信息

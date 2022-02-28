@@ -17,9 +17,9 @@ import (
 // 日志实列
 var (
 	// 调用链路打印对象
-	ZLogger  *zap.Logger
+	ZLogger *zap.Logger
 	// Job日志对象
-	JLogger  *zap.Logger
+	JLogger *zap.Logger
 )
 
 // loggerPoolSize 预定义日志池大小
@@ -35,9 +35,9 @@ func InitLog() {
 		if conf.Env == "production" {
 			//正式环境日志输出到指定目录 方便采集
 			pathFile = fmt.Sprintf("%s/%s_%s_%d.log", os.Getenv("ES_LOG_PATCH"), os.Getenv("ES_LOG_NAME"), time.Now().Format(os.Getenv("TIMEFORMAT")), i)
-		}else {
+		} else {
 			//非正式环境日志输出到当前项目runtime目录 方便开发
-			pathFile = util.GetRuntimeDir()+getLogFilePath("info")
+			pathFile = util.GetRuntimeDir() + getLogFilePath("info")
 		}
 
 		writeSyncer := getLogWriter(pathFile, conf.ZapConf.MaxSize*2, conf.ZapConf.MaxBackups, 3)

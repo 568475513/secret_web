@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"abs/pkg/app"
@@ -39,11 +40,20 @@ type ResourceAvailable struct {
 	VersionType  int
 }
 
+// 用户权益参数
+type ECourseAvailable struct {
+	ResourceId string `json:"resource_id"`
+	IsDirect   string `json:"is_direct"`
+}
+
 const (
 	// 专栏是否可用
 	cmdIsProductAvailable = "/isProductAvailable"
 	// 资源是否可用
 	cmdIsResourceAvailable = "/isResourceAvailable"
+
+	cmdIsECourseAvailable = "/xe.course.business.e_course.content.access.get/1.0.0"
+
 	// 权益超时设置ms[time.Millisecond]
 	availableTimeout = 1000
 )
@@ -88,6 +98,54 @@ func (ava *AvailableService) IsResourceAvailable(params ResourceAvailable) (expi
 			available = data["resource"].(bool)
 		}
 	}
+	return
+}
+
+// 鹅课程权益请求
+func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data interface{}, code int, redirectUrl string, err error) {
+	// 发起请求
+	url := fmt.Sprintf(strings.TrimRight(os.Getenv("LB_PF_COURSEBUSINESS_IN"), "/") + cmdIsECourseAvailable)
+	request := Post(url)
+	logging.Info(fmt.Sprintf("权益IsECourseAvailable，Url:" + url))
+	// 写死请求数据 模拟
+	//ava.AppId = "appm00slggh2325"
+	//ava.UserId = "u_61b6f28beb92a_WPxIVGI6lS"
+	//params.ResourceId = "v_61c97abb60b2567868b46b00"
+	//params.IsDirect = "1" // 这个固定
+
+	requestParams := map[string]interface{}{
+		"app_id":   ava.AppId,
+		"user_id":  ava.UserId,
+		"buz_data": params,
+	}
+
+	request.SetParams(requestParams)
+	logging.Info(fmt.Sprintf("权益IsECourseAvailable，params:"))
+	logging.Info(requestParams)
+
+	request.SetHeader("Content-Type", "application/json")
+	request.SetTimeout(availableTimeout * time.Millisecond)
+	result, err := request.ToMap()
+	if err != nil {
+		logging.Info(fmt.Sprintf("权益IsECourseAvailable，Http获取错误：%s", err.Error()))
+		return
+	}
+	logging.Info(fmt.Sprintf("权益IsECourseAvailable，Http获取"))
+	logging.Info(request)
+	logging.Info(result)
+	// 权益返回适配处理
+
+	if result["code"].(float64) == 0 {
+		// logging.Info("[资源]用户：" + ava.UserId + "未购买" + params.ResourceId + "_" + now.String())
+		data = result["data"].(map[string]interface{})
+	} else if result["code"].(float64) == 302 {
+		// logging.Info("[资源]用户：" + ava.UserId + "已购买" + params.ResourceId + "_" + now.String())
+		code = e.RESOURCE_REDIRECT
+		redirectUrl = result["forward_url"].(string)
+	} else {
+
+	}
+
 	return
 }
 
