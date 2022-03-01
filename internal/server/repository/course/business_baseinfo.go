@@ -513,6 +513,8 @@ func (b *BaseInfo) getIndex(currentUv int, k string) int {
 	inGrayDefaultUseHd := redis_gray.InGrayShopSpecialHit("alive_default_use_hd_switch", b.Alive.AppId)
 	//是否是默认使用【流畅】播放的店铺
 	inGrayDefaultUseFluent := redis_gray.InGrayShopSpecialHit("alive_default_use_fluent_switch", b.Alive.AppId)
+	//是否是默认使用【极速高清】播放的店铺
+	inGrayDefaultSpeedHd := redis_gray.InGrayShopSpecialHit("speed_gray_list", b.AliveRep.AppId)
 
 	i := 0
 	if inGrayDefaultUseFluent && currentUv > limitUvUseFluent {
@@ -531,6 +533,20 @@ func (b *BaseInfo) getIndex(currentUv int, k string) int {
 		}
 	} else if inGrayDefaultUseHd && currentUv > limitUvUseHd {
 		//默认使用高清（0代表默认 default这个命名忽略 历史原因）
+		switch k {
+		case "hd":
+			i = 0
+		case "fluent":
+			i = 1
+		case "default":
+			i = 2
+		}
+
+		if i == 0 {
+			logging.Info(fmt.Sprintf("default_play_url:use_hd,app_id:%s,alive_id:%s,current_uv:%d,limit_uv:%d", b.Alive.AppId, b.Alive.Id, currentUv, limitUvUseHd))
+		}
+	}else if inGrayDefaultSpeedHd {
+		//默认使用极速高清（0代表默认 default这个命名忽略 历史原因）
 		switch k {
 		case "hd":
 			i = 0
