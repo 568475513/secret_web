@@ -775,7 +775,11 @@ func (b *BaseInfo) getPlayUrlBySharpness(sharpness, playUrl, channelId string) s
 	case "fluent":
 		replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_FLUENT"))
 	case "hd":
-		replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_HD"))
+		if redis_gray.InGrayShopSpecialHit("speed_gray_list", b.AliveRep.AppId) {
+			replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SPEED_SWITCH_HD"))
+		}else {
+			replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_HD"))
+		}
 	default:
 		replaceStr = ""
 	}
