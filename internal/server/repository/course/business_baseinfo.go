@@ -555,10 +555,6 @@ func (b *BaseInfo) getIndex(currentUv int, k string) int {
 		case "default":
 			i = 2
 		}
-
-		if i == 0 {
-			logging.Info(fmt.Sprintf("default_play_url:use_hd,app_id:%s,alive_id:%s,current_uv:%d,limit_uv:%d", b.Alive.AppId, b.Alive.Id, currentUv, limitUvUseHd))
-		}
 	} else {
 		//默认使用原画（0代表默认 default这个命名忽略 历史原因）
 		switch k {
