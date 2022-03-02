@@ -417,6 +417,11 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 						"encrypt":         "",
 					}
 				}
+				//是否是默认使用【极速高清】播放的店铺
+				inGrayDefaultSpeedHd := redis_gray.InGrayShopSpecialHit("speed_gray_list", b.AliveRep.AppId)
+				if inGrayDefaultSpeedHd {
+					liveUrl.FastAliveSwitch = false
+				}
 			} else {
 				// 触发成本控制了，记录下
 				logging.Info(fmt.Sprintf("cost_optimization app_id:%s alive_id:%s uv:%d limit:%d",
