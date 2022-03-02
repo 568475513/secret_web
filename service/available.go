@@ -106,7 +106,6 @@ func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data i
 	// 发起请求
 	url := fmt.Sprintf(strings.TrimRight(os.Getenv("LB_PF_COURSEBUSINESS_IN"), "/") + cmdIsECourseAvailable)
 	request := Post(url)
-	logging.Info(fmt.Sprintf("权益IsECourseAvailable，Url:" + url))
 	// 写死请求数据 模拟
 	//ava.AppId = "appm00slggh2325"
 	//ava.UserId = "u_61b6f28beb92a_WPxIVGI6lS"
@@ -120,9 +119,6 @@ func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data i
 	}
 
 	request.SetParams(requestParams)
-	logging.Info(fmt.Sprintf("权益IsECourseAvailable，params:"))
-	logging.Info(requestParams)
-
 	request.SetHeader("Content-Type", "application/json")
 	request.SetTimeout(availableTimeout * time.Millisecond)
 	result, err := request.ToMap()
@@ -130,11 +126,7 @@ func (ava *AvailableService) IsECourseAvailable(params ECourseAvailable) (data i
 		logging.Info(fmt.Sprintf("权益IsECourseAvailable，Http获取错误：%s", err.Error()))
 		return
 	}
-	logging.Info(fmt.Sprintf("权益IsECourseAvailable，Http获取"))
-	logging.Info(request)
-	logging.Info(result)
 	// 权益返回适配处理
-
 	if result["code"].(float64) == 0 {
 		// logging.Info("[资源]用户：" + ava.UserId + "未购买" + params.ResourceId + "_" + now.String())
 		data = result["data"].(map[string]interface{})
