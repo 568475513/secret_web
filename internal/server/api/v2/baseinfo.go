@@ -293,7 +293,7 @@ func GetBaseInfo(c *gin.Context) {
 			}
 		}
 	} else {
-		eCourseAvailableParams = map[string]float64{"is_permission": 1, "is_subscribe": 1, "is_unlock": 1}
+		eCourseAvailableParams = map[string]interface{}{"is_permission": 1, "is_subscribe": 1, "is_unlock": 1, "course_id": "", "is_free": 1, "is_try": 1}
 	}
 
 	// 数据上报服务
