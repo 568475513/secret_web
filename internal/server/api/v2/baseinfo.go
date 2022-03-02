@@ -270,8 +270,6 @@ func GetBaseInfo(c *gin.Context) {
 		availableService.UserId = userId
 		eCourseAvailable.ResourceId = req.ResourceId
 		eCourseAvailable.IsDirect = c.DefaultQuery("is_direct", "0") // 前端传入 0 不用重定向  1 重定向
-		logging.Info("eCourseAvailable")
-		logging.Info(eCourseAvailable)
 		// 鹅课程权益接口请求哦
 		eCourseAvailableParams, eCourseCode, eCourseRedirectUrl, _ = availableService.IsECourseAvailable(eCourseAvailable)
 		if eCourseCode == enums.RESOURCE_REDIRECT {
@@ -293,9 +291,9 @@ func GetBaseInfo(c *gin.Context) {
 			} else {
 				availableInfo["available"] = false
 			}
-
 		}
-
+	} else {
+		eCourseAvailableParams = map[string]float64{"is_permission": 1, "is_subscribe": 1, "is_unlock": 1}
 	}
 
 	// 数据上报服务
