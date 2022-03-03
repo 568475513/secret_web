@@ -294,7 +294,7 @@ func GetBaseInfo(c *gin.Context) {
 		}
 
 		// 维护原有逻辑 老师默认是true  这里因为老师也需要判断鹅课程的权益 不然不会写到这里面判断
-		if userType != 1 {
+		if userType == 1 {
 			availableInfo["available"] = true
 		}
 	}
