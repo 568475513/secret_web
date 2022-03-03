@@ -269,7 +269,14 @@ func GetBaseInfo(c *gin.Context) {
 		availableService.AppId = req.AppId
 		availableService.UserId = userId
 		eCourseAvailable.ResourceId = req.ResourceId
-		eCourseAvailable.IsDirect = c.DefaultQuery("is_direct", "0") // 前端传入 0 不用重定向  1 重定向
+
+		// 老师默认传0  不重定向 不接收前端的值
+		if userType == 1 {
+			eCourseAvailable.IsDirect = "0"
+		} else {
+			eCourseAvailable.IsDirect = c.DefaultQuery("is_direct", "0") // 前端传入 0 不用重定向  1 重定向
+		}
+
 		// 鹅课程权益接口请求哦
 		eCourseAvailableParams, eCourseCode, eCourseRedirectUrl, _ = availableService.IsECourseAvailable(eCourseAvailable)
 		if eCourseCode == enums.RESOURCE_REDIRECT {
