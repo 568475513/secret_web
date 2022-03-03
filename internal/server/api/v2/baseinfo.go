@@ -259,8 +259,8 @@ func GetBaseInfo(c *gin.Context) {
 
 	// 申明变量
 	var eCourseAvailableParams interface{}
-	// 如果是鹅课程且有权益这里要处理一下鹅课程的权益  判断一下是否是讲师， 讲师不需要权益
-	if aliveInfo.SellMode == course.ECourseSellMode && userType != 1 {
+	// 如果是鹅课程且有权益这里要处理一下鹅课程的权益
+	if aliveInfo.SellMode == course.ECourseSellMode {
 		// 这里请求一下而课程的权益
 		var availableService service.AvailableService
 		var eCourseAvailable service.ECourseAvailable
@@ -292,8 +292,11 @@ func GetBaseInfo(c *gin.Context) {
 				availableInfo["available"] = false
 			}
 		}
-	} else {
-		eCourseAvailableParams = map[string]interface{}{"is_permission": 1, "is_subscribe": 1, "is_unlock": 1, "course_id": "", "is_free": 1, "is_try": 1}
+
+		// 维护原有逻辑 老师默认是true  这里因为老师也需要判断鹅课程的权益 不然不会写到这里面判断
+		if userType != 1 {
+			availableInfo["available"] = true
+		}
 	}
 
 	// 数据上报服务
