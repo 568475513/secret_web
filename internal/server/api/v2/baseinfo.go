@@ -138,6 +138,16 @@ func GetBaseInfo(c *gin.Context) {
 		}
 		available, err = ap.IsAliveAccess()
 		return nil
+	}, func() (err error) {
+		// 直播异步操作
+		goSpan := tracer.StartSpan("直播异步操作", opentracing.ChildOf(childSpan.Context()))
+		defer goSpan.Finish()
+		// 直播Pv数加一
+		aliveInfo.ViewCount, _ = aliveRep.UpdateViewCountToCache(aliveInfo.ViewCount, c)
+		// 直播带货商品PV加一
+		aliveRep.IncreasePv(c.Request.Referer(), aliveInfo.Id, int(aliveInfo.AliveType))
+
+		return nil
 	})
 
 	// 错误处理【需要扔掉一些不要的】
@@ -150,14 +160,6 @@ func GetBaseInfo(c *gin.Context) {
 
 	// 因为这里需要依赖上方的userType 所以这边另起一个异步跑
 	err = app.GoroutineNotPanic(func() (err error) {
-		// 直播异步操作
-		goSpan := tracer.StartSpan("直播异步操作", opentracing.ChildOf(childSpan.Context()))
-		defer goSpan.Finish()
-		// 直播Pv数加一
-		aliveInfo.ViewCount, _ = aliveRep.UpdateViewCountToCache(aliveInfo.ViewCount, c)
-		// 直播带货商品PV加一
-		aliveRep.IncreasePv(c.Request.Referer(), aliveInfo.Id, int(aliveInfo.AliveType))
-
 		// 异步丢队列，更新最近查看时间
 		eliveInfo := course.EliveInfo{}
 		eliveInfo.UpdateAccessTimeToQueue(req.AppId, req.ResourceId, userId, userType)
