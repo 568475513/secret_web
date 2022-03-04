@@ -84,15 +84,18 @@ func GetBaseInfo(c *gin.Context) {
 	childSpan = tracer.StartSpan("协程组查询数据包", opentracing.ChildOf(span.Context()))
 	bT := time.Now()
 	var (
-		aliveModule      *malive.AliveModuleConf
-		available        bool
-		availableProduct bool
-		expireAt         string
-		products         []*mbusiness.PayProducts
-		termList         []*mbusiness.PayProducts
-		baseConf         *service.AppBaseConf
-		roleInfo         map[string]interface{}
-		userType         uint
+		aliveModule            *malive.AliveModuleConf
+		available              bool
+		availableProduct       bool
+		expireAt               string
+		products               []*mbusiness.PayProducts
+		termList               []*mbusiness.PayProducts
+		baseConf               *service.AppBaseConf
+		roleInfo               map[string]interface{}
+		userType               uint
+		eCourseAvailableParams interface{}
+		eCourseCode            int
+		eCourseRedirectUrl     string
 	)
 
 	// 初始化权益实例
@@ -148,6 +151,24 @@ func GetBaseInfo(c *gin.Context) {
 		eliveInfo := course.EliveInfo{}
 		eliveInfo.UpdateAccessTimeToQueue(req.AppId, req.ResourceId, userId, userType)
 
+		return nil
+	}, func() (err error) {
+		if aliveInfo.SellMode == course.ECourseSellMode {
+			// 这里请求一下而课程的权益
+			var availableService service.AvailableService
+			var eCourseAvailable service.ECourseAvailable
+			availableService.AppId = req.AppId
+			availableService.UserId = userId
+			eCourseAvailable.ResourceId = req.ResourceId
+			// 老师默认传0  不重定向 不接收前端的值
+			if userType == 1 {
+				eCourseAvailable.IsDirect = "0"
+			} else {
+				eCourseAvailable.IsDirect = c.DefaultQuery("is_direct", "0") // 前端传入 0 不用重定向  1 重定向
+			}
+			// 鹅课程权益接口请求哦
+			eCourseAvailableParams, eCourseCode, eCourseRedirectUrl, _ = availableService.IsECourseAvailable(eCourseAvailable)
+		}
 		return nil
 	})
 
@@ -257,28 +278,8 @@ func GetBaseInfo(c *gin.Context) {
 	}
 	childSpan.Finish()
 
-	// 申明变量
-	var eCourseAvailableParams interface{}
-	// 如果是鹅课程且有权益这里要处理一下鹅课程的权益
+	// 如果是鹅课程且有权益这里要处理一下鹅课程的权益   这边结果在上面协程处已经处理了
 	if aliveInfo.SellMode == course.ECourseSellMode {
-		// 这里请求一下而课程的权益
-		var availableService service.AvailableService
-		var eCourseAvailable service.ECourseAvailable
-		var eCourseCode int
-		var eCourseRedirectUrl string
-		availableService.AppId = req.AppId
-		availableService.UserId = userId
-		eCourseAvailable.ResourceId = req.ResourceId
-
-		// 老师默认传0  不重定向 不接收前端的值
-		if userType == 1 {
-			eCourseAvailable.IsDirect = "0"
-		} else {
-			eCourseAvailable.IsDirect = c.DefaultQuery("is_direct", "0") // 前端传入 0 不用重定向  1 重定向
-		}
-
-		// 鹅课程权益接口请求哦
-		eCourseAvailableParams, eCourseCode, eCourseRedirectUrl, _ = availableService.IsECourseAvailable(eCourseAvailable)
 		if eCourseCode == enums.RESOURCE_REDIRECT {
 			app.OkWithCodeData("Redirect.", map[string]string{
 				"redirect": eCourseRedirectUrl,
@@ -287,7 +288,6 @@ func GetBaseInfo(c *gin.Context) {
 			}, 11302, c)
 			return
 		}
-
 		// 如果有结果的话， 权益就直接使用鹅课程的哦
 		if eCourseAvailableParams != nil {
 			// http://doc.xiaoeknow.com/web/#/145?page_id=14978  权益 + 订阅 + 解锁 都满足才返回拥有权益
@@ -299,7 +299,6 @@ func GetBaseInfo(c *gin.Context) {
 				availableInfo["available"] = false
 			}
 		}
-
 		// 维护原有逻辑 老师默认是true  这里因为老师也需要判断鹅课程的权益 不然不会写到这里面判断
 		if userType == 1 {
 			availableInfo["available"] = true
