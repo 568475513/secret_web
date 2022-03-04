@@ -138,7 +138,18 @@ func GetBaseInfo(c *gin.Context) {
 		}
 		available, err = ap.IsAliveAccess()
 		return nil
-	}, func() (err error) {
+	})
+
+	// 错误处理【需要扔掉一些不要的】
+	if err != nil {
+		//错误记录日志 不抛出异常
+		logging.ErrorWithCtx(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), c)
+		//app.FailWithMessage(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), enums.ERROR, c)
+		//return
+	}
+
+	// 因为这里需要依赖上方的userType 所以这边另起一个异步跑
+	err = app.GoroutineNotPanic(func() (err error) {
 		// 直播异步操作
 		goSpan := tracer.StartSpan("直播异步操作", opentracing.ChildOf(childSpan.Context()))
 		defer goSpan.Finish()
@@ -172,15 +183,13 @@ func GetBaseInfo(c *gin.Context) {
 		return nil
 	})
 
-	childSpan.Finish()
-	// fmt.Println("BaseInfo的协程处理时间: ", time.Since(bT))
-	// 错误处理【需要扔掉一些不要的】
 	if err != nil {
 		//错误记录日志 不抛出异常
-		logging.ErrorWithCtx(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), c)
-		//app.FailWithMessage(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), enums.ERROR, c)
-		//return
+		logging.ErrorWithCtx(fmt.Sprintf("需要userType的并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), c)
 	}
+
+	childSpan.Finish()
+
 	//企学院授权跳转逻辑
 	if baseConf.VersionType == enums.VERSION_TYPE_TRAINING_TRY || baseConf.VersionType == enums.VERSION_TYPE_TRAINING_STD {
 		isRedirect, err := appRep.TrainingIsRedirect(req.AppId, userId)
