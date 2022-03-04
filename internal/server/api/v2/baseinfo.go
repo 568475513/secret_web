@@ -84,15 +84,18 @@ func GetBaseInfo(c *gin.Context) {
 	childSpan = tracer.StartSpan("协程组查询数据包", opentracing.ChildOf(span.Context()))
 	bT := time.Now()
 	var (
-		aliveModule      *malive.AliveModuleConf
-		available        bool
-		availableProduct bool
-		expireAt         string
-		products         []*mbusiness.PayProducts
-		termList         []*mbusiness.PayProducts
-		baseConf         *service.AppBaseConf
-		roleInfo         map[string]interface{}
-		userType         uint
+		aliveModule            *malive.AliveModuleConf
+		available              bool
+		availableProduct       bool
+		expireAt               string
+		products               []*mbusiness.PayProducts
+		termList               []*mbusiness.PayProducts
+		baseConf               *service.AppBaseConf
+		roleInfo               map[string]interface{}
+		userType               uint
+		eCourseAvailableParams interface{}
+		eCourseCode            int
+		eCourseRedirectUrl     string
 	)
 
 	// 初始化权益实例
@@ -144,15 +147,9 @@ func GetBaseInfo(c *gin.Context) {
 		// 直播带货商品PV加一
 		aliveRep.IncreasePv(c.Request.Referer(), aliveInfo.Id, int(aliveInfo.AliveType))
 
-		// 异步丢队列，更新最近查看时间
-		eliveInfo := course.EliveInfo{}
-		eliveInfo.UpdateAccessTimeToQueue(req.AppId, req.ResourceId, userId, userType)
-
 		return nil
 	})
 
-	childSpan.Finish()
-	// fmt.Println("BaseInfo的协程处理时间: ", time.Since(bT))
 	// 错误处理【需要扔掉一些不要的】
 	if err != nil {
 		//错误记录日志 不抛出异常
@@ -160,6 +157,41 @@ func GetBaseInfo(c *gin.Context) {
 		//app.FailWithMessage(fmt.Sprintf("并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), enums.ERROR, c)
 		//return
 	}
+
+	// 因为这里需要依赖上方的userType 所以这边另起一个异步跑
+	err = app.GoroutineNotPanic(func() (err error) {
+		// 异步丢队列，更新最近查看时间
+		eliveInfo := course.EliveInfo{}
+		eliveInfo.UpdateAccessTimeToQueue(req.AppId, req.ResourceId, userId, userType)
+
+		return nil
+	}, func() (err error) {
+		if aliveInfo.SellMode == course.ECourseSellMode {
+			// 这里请求一下而课程的权益
+			var availableService service.AvailableService
+			var eCourseAvailable service.ECourseAvailable
+			availableService.AppId = req.AppId
+			availableService.UserId = userId
+			eCourseAvailable.ResourceId = req.ResourceId
+			// 老师默认传0  不重定向 不接收前端的值
+			if userType == 1 {
+				eCourseAvailable.IsDirect = "0"
+			} else {
+				eCourseAvailable.IsDirect = c.DefaultQuery("is_direct", "0") // 前端传入 0 不用重定向  1 重定向
+			}
+			// 鹅课程权益接口请求哦
+			eCourseAvailableParams, eCourseCode, eCourseRedirectUrl, _ = availableService.IsECourseAvailable(eCourseAvailable)
+		}
+		return nil
+	})
+
+	if err != nil {
+		//错误记录日志 不抛出异常
+		logging.ErrorWithCtx(fmt.Sprintf("需要userType的并行请求组错误: %s[%s]", err.Error(), time.Since(bT)), c)
+	}
+
+	childSpan.Finish()
+
 	//企学院授权跳转逻辑
 	if baseConf.VersionType == enums.VERSION_TYPE_TRAINING_TRY || baseConf.VersionType == enums.VERSION_TYPE_TRAINING_STD {
 		isRedirect, err := appRep.TrainingIsRedirect(req.AppId, userId)
@@ -257,28 +289,8 @@ func GetBaseInfo(c *gin.Context) {
 	}
 	childSpan.Finish()
 
-	// 申明变量
-	var eCourseAvailableParams interface{}
-	// 如果是鹅课程且有权益这里要处理一下鹅课程的权益
+	// 如果是鹅课程且有权益这里要处理一下鹅课程的权益   这边结果在上面协程处已经处理了
 	if aliveInfo.SellMode == course.ECourseSellMode {
-		// 这里请求一下而课程的权益
-		var availableService service.AvailableService
-		var eCourseAvailable service.ECourseAvailable
-		var eCourseCode int
-		var eCourseRedirectUrl string
-		availableService.AppId = req.AppId
-		availableService.UserId = userId
-		eCourseAvailable.ResourceId = req.ResourceId
-
-		// 老师默认传0  不重定向 不接收前端的值
-		if userType == 1 {
-			eCourseAvailable.IsDirect = "0"
-		} else {
-			eCourseAvailable.IsDirect = c.DefaultQuery("is_direct", "0") // 前端传入 0 不用重定向  1 重定向
-		}
-
-		// 鹅课程权益接口请求哦
-		eCourseAvailableParams, eCourseCode, eCourseRedirectUrl, _ = availableService.IsECourseAvailable(eCourseAvailable)
 		if eCourseCode == enums.RESOURCE_REDIRECT {
 			app.OkWithCodeData("Redirect.", map[string]string{
 				"redirect": eCourseRedirectUrl,
@@ -287,7 +299,6 @@ func GetBaseInfo(c *gin.Context) {
 			}, 11302, c)
 			return
 		}
-
 		// 如果有结果的话， 权益就直接使用鹅课程的哦
 		if eCourseAvailableParams != nil {
 			// http://doc.xiaoeknow.com/web/#/145?page_id=14978  权益 + 订阅 + 解锁 都满足才返回拥有权益
@@ -299,7 +310,6 @@ func GetBaseInfo(c *gin.Context) {
 				availableInfo["available"] = false
 			}
 		}
-
 		// 维护原有逻辑 老师默认是true  这里因为老师也需要判断鹅课程的权益 不然不会写到这里面判断
 		if userType == 1 {
 			availableInfo["available"] = true
