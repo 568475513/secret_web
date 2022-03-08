@@ -12,8 +12,7 @@ import (
 func Info(v interface{}) {
 	switch v.(type) {
 	case string:
-		GetLogger().Info(v.(string),
-		)
+		GetLogger().Info(v.(string))
 	case map[string]interface{}:
 		GetLogger().Info("Map",
 			zap.Any("Data", v),
@@ -29,11 +28,9 @@ func Info(v interface{}) {
 func Warn(param interface{}) {
 	switch param.(type) {
 	case string:
-		GetLogger().Warn(param.(string),
-		)
+		GetLogger().Warn(param.(string))
 	case error:
-		GetLogger().Warn(param.(error).Error(),
-		)
+		GetLogger().Warn(param.(error).Error())
 	default:
 		GetLogger().Warn("Warn!!!",
 			zap.Any("Data", param),

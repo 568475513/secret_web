@@ -78,6 +78,7 @@ type Alive struct {
 	ForbidTalk             uint8               `json:"forbid_talk"`
 	ShowOnWall             uint8               `json:"show_on_wall"`
 	CanRecord              uint8               `json:"can_record"`
+	SellMode               int                 `json:"sell_mode"`
 
 	// 非db数据
 	IsTry      uint8 `json:"is_try"`

@@ -12,10 +12,10 @@ import (
 )
 
 type Response struct {
-	Code int         `json:"code"`
-	Msg  string      `json:"msg"`
-	Data interface{} `json:"data"`
-	RequestId string `json:"requestId"`
+	Code      int         `json:"code"`
+	Msg       string      `json:"msg"`
+	Data      interface{} `json:"data"`
+	RequestId string      `json:"requestId"`
 }
 
 // Response setting gin.JSON
@@ -34,9 +34,9 @@ func Result(httpCode, errCode int, errMsg string, data interface{}, c *gin.Conte
 	)
 
 	c.JSON(httpCode, Response{
-		Code: errCode,
-		Msg:  errMsg,
-		Data: data,
+		Code:      errCode,
+		Msg:       errMsg,
+		Data:      data,
 		RequestId: requestId,
 	})
 }

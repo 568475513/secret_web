@@ -56,7 +56,7 @@ const (
 )
 
 //直播静态化切换主流程
-func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interface{},staticSwitch bool, err error) {
+func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interface{}, staticSwitch bool, err error) {
 
 	StaticRedisCon, err := alive_static.GetStaticRedisCon()
 	if err != nil {
@@ -65,7 +65,7 @@ func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interf
 	defer StaticRedisCon.Close()
 	RoomData = make(map[string]interface{})
 
-	if staticSwitch =  c.CheckAliveStaticSwitch(StaticRedisCon);staticSwitch {
+	if staticSwitch = c.CheckAliveStaticSwitch(StaticRedisCon); staticSwitch {
 		staticDataValues, err := redis.Values(StaticRedisCon.Do("HGETALL", fmt.Sprintf(currentDayAliveInfo, c.AppId, c.AliveId))) //获取直播静态数据
 		staticData := &StaticData{}
 		if err := redis.ScanStruct(staticDataValues, staticData); err != nil {
@@ -160,20 +160,20 @@ func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interf
 					}
 				}
 				RoomData["alive_conf"] = map[string]interface{}{
-					"alive_mode":       0,
-					"is_picture_on":    0,
-					"is_audit_first_on":0,
-					"is_online_on":0,
-					"is_heat_on":0,
-					"show_on_wall":     1,
-					"alive_type_state": 1,
+					"alive_mode":        0,
+					"is_picture_on":     0,
+					"is_audit_first_on": 0,
+					"is_online_on":      0,
+					"is_heat_on":        0,
+					"show_on_wall":      1,
+					"alive_type_state":  1,
 				}
 				RoomData["share_info"] = ""
 				RoomData["caption_define"] = ""
 				RoomData["index_url"] = ""
 				RoomData["is_static_switch"] = true
 
-				return RoomData,staticSwitch, err
+				return RoomData, staticSwitch, err
 			}
 		}
 
@@ -194,10 +194,10 @@ func (c *AliveStatic) AliveStaticMain(agentType int) (RoomData map[string]interf
 			RoomData["index_url"] = ""
 			RoomData["is_static_switch"] = true
 
-			return RoomData,staticSwitch, err
+			return RoomData, staticSwitch, err
 		}
 	}
-	return RoomData,staticSwitch, err
+	return RoomData, staticSwitch, err
 }
 
 //检查是否开启直播静态化开关

@@ -104,6 +104,8 @@ func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 	aliveInfoDetail["manual_stop_at"] = b.Alive.ManualStopAt
 	aliveInfoDetail["view_count"] = b.Alive.ViewCount
 	aliveInfoDetail["comment_count"] = b.Alive.CommentCount
+	// 直播的售卖类型
+	aliveInfoDetail["sell_mode"] = b.Alive.SellMode
 	// 只有讲师才需要push_url
 	if b.UserType == 1 {
 		aliveInfoDetail["push_url"] = b.Alive.PushUrl
@@ -777,7 +779,7 @@ func (b *BaseInfo) getPlayUrlBySharpness(sharpness, playUrl, channelId string) s
 	case "hd":
 		if redis_gray.InGrayShopSpecialHit("speed_gray_list", b.AliveRep.AppId) {
 			replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SPEED_SWITCH_HD"))
-		}else {
+		} else {
 			replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_HD"))
 		}
 	default:

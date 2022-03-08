@@ -61,6 +61,8 @@ const (
 	//资源介绍信息缓存
 	resourceCacheKeyPre = "alive_resource_desc:%s:%s" //缓存key
 	resourceCacheTime   = "15"                        //缓存时间(s)
+
+	ECourseSellMode = 6 // 鹅课程的售卖类型   外部引用好像只能是首字母大写
 )
 
 // 获取直播详情
@@ -137,6 +139,7 @@ func (a *AliveInfo) GetAliveInfo() (cacheAliveInfo *alive.Alive, err error) {
 		"forbid_talk",
 		"show_on_wall",
 		"can_record",
+		"sell_mode",
 	})
 	// 未查到在此处返回
 	if err != nil || cacheAliveInfo.Id == "" {
