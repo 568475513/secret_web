@@ -419,6 +419,11 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 						"encrypt":         "",
 					}
 				}
+				//是否是默认使用【极速高清】播放的店铺
+				inGrayDefaultS720P1 := redis_gray.InGrayShopSpecialHit("S720P1_gray_list", b.AliveRep.AppId)
+				if inGrayDefaultS720P1 {
+					liveUrl.FastAliveSwitch = false
+				}
 			} else {
 				// 触发成本控制了，记录下
 				logging.Info(fmt.Sprintf("cost_optimization app_id:%s alive_id:%s uv:%d limit:%d",
@@ -777,7 +782,9 @@ func (b *BaseInfo) getPlayUrlBySharpness(sharpness, playUrl, channelId string) s
 	case "fluent":
 		replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_FLUENT"))
 	case "hd":
-		if redis_gray.InGrayShopSpecialHit("speed_gray_list", b.AliveRep.AppId) {
+		if redis_gray.InGrayShopSpecialHit("S720P1_gray_list", b.AliveRep.AppId) {
+			replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_S720P1_SWITCH_HD"))
+		}else if redis_gray.InGrayShopSpecialHit("speed_gray_list", b.AliveRep.AppId) {
 			replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SPEED_SWITCH_HD"))
 		} else {
 			replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_HD"))
