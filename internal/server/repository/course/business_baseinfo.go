@@ -361,6 +361,17 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		// 不能返回，有特殊的PlayUrl
 		// return
 	}
+
+	//阿里云灰度名单
+	aliyunGrayList := redis_gray.InGrayShopSpecialHit("aliyun_gray_list", b.Alive.AppId)
+	if aliyunGrayList {
+		playUrl := os.Getenv("LIVE_PLAY_HOST")
+		aliyunPlayUrl := os.Getenv("ALIYUN_LIVE_PLAY_HOST")
+		for key, value := range playUrls {
+			playUrls[key] = strings.Replace(value, playUrl, aliyunPlayUrl, 1)
+		}
+	}
+
 	if len(playUrls) >= 3 && (b.Alive.AliveType == e.AliveTypePush || b.Alive.AliveType == e.AliveOldTypePush) {
 		liveUrl.PcAliveVideoUrl = playUrls[1]
 		liveUrl.AliveVideoUrl, liveUrl.MiniAliveVideoUrl = playUrls[2], playUrls[2]
@@ -796,9 +807,7 @@ func (b *BaseInfo) getPlayUrlBySharpness(sharpness, playUrl, channelId string) s
 	case "fluent":
 		replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_FLUENT"))
 	case "hd":
-		if redis_gray.InGrayShopSpecialHit("S720P1_gray_list", b.AliveRep.AppId) {
-			replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_S720P1_SWITCH_HD"))
-		}else if redis_gray.InGrayShopSpecialHit("speed_gray_list", b.AliveRep.AppId) {
+		if redis_gray.InGrayShopSpecialHit("speed_gray_list", b.AliveRep.AppId) {
 			replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SPEED_SWITCH_HD"))
 		} else {
 			replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_HD"))
