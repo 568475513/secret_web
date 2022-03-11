@@ -88,6 +88,8 @@ func (b *BaseInfo) GetAliveInfoDetail() map[string]interface{} {
 	aliveInfoDetail["zb_start_at"] = b.Alive.ZbStartAt.Unix()
 	// 获取直播状态
 	aliveInfoDetail["alive_state"] = b.AliveRep.GetAliveStates(b.Alive)
+	// 是否转播：0-自创建，1-转播创建
+	aliveInfoDetail["create_mode"] = b.Alive.CreateMode
 	// 推流状态，0推流结束，1推流中，2推流未开始
 	aliveInfoDetail["push_state"] = b.Alive.PushState
 	// 直播剩余时长（秒）
