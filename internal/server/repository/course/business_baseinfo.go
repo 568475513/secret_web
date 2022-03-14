@@ -534,7 +534,7 @@ func (b *BaseInfo) getIndex(currentUv int, k string) int {
 	//是否是默认使用【流畅】播放的店铺
 	inGrayDefaultUseFluent := redis_gray.InGrayShopSpecialHit("alive_default_use_fluent_switch", b.Alive.AppId)
 	//是否是默认使用【极速高清】播放的店铺
-	inGrayDefaultS720P1 := redis_gray.InGrayShopSpecialHit("speed_gray_list", b.AliveRep.AppId)
+	inGrayDefaultS720P1 := redis_gray.InGrayShopSpecialHit("S720P1_gray_list", b.AliveRep.AppId)
 
 	i := 0
 	if inGrayDefaultUseFluent && currentUv > limitUvUseFluent {
