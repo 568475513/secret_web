@@ -361,6 +361,17 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		// 不能返回，有特殊的PlayUrl
 		// return
 	}
+
+	//阿里云灰度名单
+	aliyunGrayList := redis_gray.InGrayShopSpecialHit("aliyun_gray_list", b.Alive.AppId)
+	if aliyunGrayList {
+		playUrl := os.Getenv("LIVE_PLAY_HOST")
+		aliyunPlayUrl := os.Getenv("ALIYUN_LIVE_PLAY_HOST")
+		for key, value := range playUrls {
+			playUrls[key] = strings.Replace(value, playUrl, aliyunPlayUrl, 1)
+		}
+	}
+
 	if len(playUrls) >= 3 && (b.Alive.AliveType == e.AliveTypePush || b.Alive.AliveType == e.AliveOldTypePush) {
 		liveUrl.PcAliveVideoUrl = playUrls[1]
 		liveUrl.AliveVideoUrl, liveUrl.MiniAliveVideoUrl = playUrls[2], playUrls[2]
@@ -423,7 +434,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 				}
 				//是否是默认使用【极速高清】播放的店铺
 				inGrayDefaultS720P1 := redis_gray.InGrayShopSpecialHit("S720P1_gray_list", b.AliveRep.AppId)
-				if inGrayDefaultS720P1 {
+				if inGrayDefaultS720P1 || aliyunGrayList{
 					liveUrl.FastAliveSwitch = false
 				}
 			} else {
@@ -523,7 +534,7 @@ func (b *BaseInfo) getIndex(currentUv int, k string) int {
 	//是否是默认使用【流畅】播放的店铺
 	inGrayDefaultUseFluent := redis_gray.InGrayShopSpecialHit("alive_default_use_fluent_switch", b.Alive.AppId)
 	//是否是默认使用【极速高清】播放的店铺
-	inGrayDefaultS720P1 := redis_gray.InGrayShopSpecialHit("speed_gray_list", b.AliveRep.AppId)
+	inGrayDefaultS720P1 := redis_gray.InGrayShopSpecialHit("S720P1_gray_list", b.AliveRep.AppId)
 
 	i := 0
 	if inGrayDefaultUseFluent && currentUv > limitUvUseFluent {
