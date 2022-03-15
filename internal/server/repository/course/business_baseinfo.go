@@ -340,7 +340,7 @@ func (b *BaseInfo) GetAliveConfInfo(baseConf *service.AppBaseConf, aliveModule *
 }
 
 // 获取直播间相关的链接
-func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId string, ua string, kpiClient string,alive_mode uint8) (liveUrl LiveUrl) {
+func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId string, ua string, kpiClient string,aliveMode uint8) (liveUrl LiveUrl) {
 	var (
 		playUrls     []string
 		err          error
@@ -397,13 +397,13 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			liveUrl.AliveVideoMoreSharpness[i] = map[string]interface{}{
 				"definition_name": v,
 				"definition_p":    k,
-				"url":             b.getPlayUrlBySharpness(k, playUrls[2], b.Alive.ChannelId,alive_mode,currentUv),
+				"url":             b.getPlayUrlBySharpness(k, playUrls[2], b.Alive.ChannelId,aliveMode,currentUv),
 				"encrypt":         "",
 			}
 			liveUrl.PcAliveVideoMoreSharpness[i] = map[string]interface{}{
 				"definition_name": v,
 				"definition_p":    k,
-				"url":             b.getPlayUrlBySharpness(k, playUrls[1], b.Alive.ChannelId,alive_mode,currentUv),
+				"url":             b.getPlayUrlBySharpness(k, playUrls[1], b.Alive.ChannelId,aliveMode,currentUv),
 				"encrypt":         "",
 			}
 		}
@@ -428,7 +428,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 					liveUrl.AliveFastMoreSharpness[i] = map[string]interface{}{
 						"definition_name": v,
 						"definition_p":    k,
-						"url":             b.getPlayUrlBySharpness(k, liveUrl.AliveFastWebrtcurl, b.Alive.ChannelId,alive_mode,currentUv),
+						"url":             b.getPlayUrlBySharpness(k, liveUrl.AliveFastWebrtcurl, b.Alive.ChannelId,aliveMode,currentUv),
 						"encrypt":         "",
 					}
 				}
@@ -459,13 +459,13 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 			liveUrl.AliveVideoMoreSharpness[0] = map[string]interface{}{
 				"definition_name": "原画",
 				"definition_p":    "default",
-				"url":             b.getPlayUrlBySharpness("default", recordedUrl, b.Alive.ChannelId,alive_mode,0),
+				"url":             b.getPlayUrlBySharpness("default", recordedUrl, b.Alive.ChannelId,aliveMode,0),
 				"encrypt":         "",
 			}
 			liveUrl.AliveVideoMoreSharpness[1] = map[string]interface{}{
 				"definition_name": "流畅",
 				"definition_p":    "fluent",
-				"url":             b.getPlayUrlBySharpness("fluent", recordedUrl, b.Alive.ChannelId,alive_mode,0),
+				"url":             b.getPlayUrlBySharpness("fluent", recordedUrl, b.Alive.ChannelId,aliveMode,0),
 				"encrypt":         "",
 			}
 		}
@@ -801,7 +801,7 @@ func (b *BaseInfo) isUseFastLive(userId string) (bool, error) {
 }
 
 // 根据清晰度替换播放链接, sharpness可切换的清晰度：default默认，fluent流畅
-func (b *BaseInfo) getPlayUrlBySharpness(sharpness, playUrl, channelId string,alive_mode uint8,currentUv int) string {
+func (b *BaseInfo) getPlayUrlBySharpness(sharpness, playUrl, channelId string,aliveMode uint8,currentUv int) string {
 	replaceStr := ""
 	limitUv, _ := strconv.Atoi(os.Getenv("WEBRTC_SWITCH_RTMP_720P3_UV"))
 	switch sharpness {
@@ -813,7 +813,7 @@ func (b *BaseInfo) getPlayUrlBySharpness(sharpness, playUrl, channelId string,al
 		}else if redis_gray.InGrayShopSpecialHit("speed_gray_list", b.AliveRep.AppId) {
 			replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SPEED_SWITCH_HD"))
 		} else {
-			if currentUv > limitUv && alive_mode == 1{
+			if currentUv > limitUv && aliveMode == 1{
 				replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_720P3_SWITCH_HD"))
 			}else {
 				replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_HD"))
