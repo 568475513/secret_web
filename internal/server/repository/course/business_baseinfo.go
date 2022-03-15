@@ -434,7 +434,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 				}
 				//是否是默认使用【极速高清】播放的店铺
 				inGrayDefaultS720P1 := redis_gray.InGrayShopSpecialHit("S720P1_gray_list", b.AliveRep.AppId)
-				if inGrayDefaultS720P1 {
+				if inGrayDefaultS720P1 || aliyunGrayList{
 					liveUrl.FastAliveSwitch = false
 				}
 			} else {
