@@ -413,6 +413,8 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 		if isGray && isUserWebRtc && enableWebRtc == 1 && util.Substr(playUrls[0], 0, 4) == "rtmp" {
 			limitUv, _ := strconv.Atoi(os.Getenv("WEBRTC_SWITCH_RTMP_UV"))
 
+			limitS720P1Uv, _ := strconv.Atoi(os.Getenv("WEBRTC_SWITCH_S720P1_RTMP_UV"))
+
 			//成本控制的白名单
 			inCostOptWhiteMenu := redis_gray.InGrayShopSpecialHit("webrtc_cost_opt_white_menu", b.Alive.AppId)
 
@@ -434,7 +436,7 @@ func (b *BaseInfo) GetAliveLiveUrl(agentType, version, enableWebRtc int, UserId 
 				}
 				//是否是默认使用【极速高清】播放的店铺
 				inGrayDefaultS720P1 := redis_gray.InGrayShopSpecialHit("S720P1_gray_list", b.AliveRep.AppId)
-				if inGrayDefaultS720P1 || aliyunGrayList{
+				if (inGrayDefaultS720P1 && currentUv > limitS720P1Uv) || aliyunGrayList{
 					liveUrl.FastAliveSwitch = false
 				}
 			} else {
@@ -803,7 +805,7 @@ func (b *BaseInfo) isUseFastLive(userId string) (bool, error) {
 // 根据清晰度替换播放链接, sharpness可切换的清晰度：default默认，fluent流畅
 func (b *BaseInfo) getPlayUrlBySharpness(sharpness, playUrl, channelId string,aliveMode uint8,currentUv int) string {
 	replaceStr := ""
-	limitUv, _ := strconv.Atoi(os.Getenv("WEBRTC_SWITCH_RTMP_720P3_UV"))
+	limitUv, _ := strconv.Atoi(os.Getenv("VIDEO_VERTICAL_720P3_UV"))
 	switch sharpness {
 	case "fluent":
 		replaceStr = fmt.Sprintf("%s_%s", channelId, os.Getenv("ALIVE_SHARPNESS_SWITCH_FLUENT"))
