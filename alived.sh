@@ -19,61 +19,61 @@ if [ $1 == "start" ]; then
     echo "start..."
     cd ${dir}
     #   nohup go run main.go > ./runtime/run.log 2>&1 &
-    # rm -f ./absGoDev
-    go build -tags=jsoniter -o absGoDev -ldflags "-w -s"
+    # rm -f ./absGo
+    go build -tags=jsoniter -o absGo -ldflags "-w -s"
     if [ $# -eq 2 ] && [ $2 == "-d" ]; then
-        nohup ./absGoDev server > ./runtime/run.log 2>&1 &
+        nohup ./absGo server > ./runtime/run.log 2>&1 &
         # tail -n 20 ./runtime/run.log
         # tail -f ./runtime/run.log
     else
-        ./absGoDev server
+        ./absGo server
     fi
     echo "start success!"
   # 平滑重启服务
   elif [ $1 == "restart" ]; then
     echo "restart..."
     cd ${dir}
-    rm -f ./absGoDev
-    go build -tags=jsoniter -o absGoDev -ldflags "-w -s"
-    ps aux | grep "absGoDev server" | grep -v grep | awk '{print $2}' | xargs kill -9
+    rm -f ./absGo
+    go build -tags=jsoniter -o absGo -ldflags "-w -s"
+    ps aux | grep "absGo server" | grep -v grep | awk '{print $2}' | xargs kill -9
     if [ $# -eq 2 ] && [ $2 == "-d" ]; then
-        nohup ./absGoDev server  > ./runtime/run.log 2>&1 &
+        nohup ./absGo server  > ./runtime/run.log 2>&1 &
         # tail -n 20 ./runtime/run.log
     else
-        ./absGoDev server
+        ./absGo server
     fi
     echo "restart success!"
   # 停止服务
   elif [ $1 == "stop" ]; then
     echo "stop..."
-    ps aux | grep "absGoDev server" | grep -v grep | awk '{print $2}' | xargs kill
+    ps aux | grep "absGo server" | grep -v grep | awk '{print $2}' | xargs kill
     echo "stop success!"
   # job服务系列
   elif [ $1 == "startjob" ]; then
     echo "start job..."
     cd ${dir}
-    # rm ./absGoDev
-    # go build -tags=jsoniter -o absGoDev -ldflags "-w -s"
+    # rm ./absGo
+    # go build -tags=jsoniter -o absGo -ldflags "-w -s"
     if [ $# -eq 2 ] && [ $2 == "-d" ]; then
-        nohup ./absGoDev job > ./runtime/runjob.log 2>&1 &
+        nohup ./absGo job > ./runtime/runjob.log 2>&1 &
     else
-        ./absGoDev job
+        ./absGo job
     fi
     echo "start job success!"
   elif [ $1 == "restartjob" ]; then
     echo "restart job..."
     cd ${dir}
-    rm -f ./absGoDev
-    go build -tags=jsoniter -o absGoDev -ldflags "-w -s"
-    ps aux | grep "absGoDev job" | grep -v grep | awk '{print $2}' | xargs kill -9
+    rm -f ./absGo
+    go build -tags=jsoniter -o absGo -ldflags "-w -s"
+    ps aux | grep "absGo job" | grep -v grep | awk '{print $2}' | xargs kill -9
     if [ $# -eq 2 ] && [ $2 == "-d" ]; then
-        nohup ./absGoDev job > ./runtime/runjob.log 2>&1 &
+        nohup ./absGo job > ./runtime/runjob.log 2>&1 &
     else
-        ./absGoDev job
+        ./absGo job
     fi
     echo "restart job success!"
   elif [ $1 == "stopjob" ]; then
     echo "stop job..."
-    ps aux | grep "absGoDev job" | grep -v grep | awk '{print $2}' | xargs kill
+    ps aux | grep "absGo job" | grep -v grep | awk '{print $2}' | xargs kill
     echo "stop job success!"
 fi
