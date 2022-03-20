@@ -24,8 +24,6 @@ func InitRouter() *gin.Engine {
 	r.Use(middleware.Cors())
 	// 处理公共请求参数以及网关转发参数
 	r.Use(middleware.ReqParamHandle())
-	// 调用链路zipkin
-	r.Use(middleware.ZipkinTracer(true))
 
 	// 请求信息日志
 	r.Use(middleware.GinLogger(logging.GetLogger()))
@@ -38,8 +36,7 @@ func InitRouter() *gin.Engine {
 
 	// 加载其它路由组
 	group := r.Group("")
-	groups.AliveBaseRouter(group) // 注册直播基础路由组
-	groups.AliveAppRouter(group)  // 注册app接口路由组
+	groups.SecretBaseRouter(group) // 注册直播基础路由组
 
 	// 性能分析 ...
 	// goPprof handel
