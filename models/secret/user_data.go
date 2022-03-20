@@ -27,13 +27,20 @@ type PreventDomain struct {
 	PreventNums   int    `json:"prevent_nums"`
 }
 
+type PreventInfo struct {
+	UserId     string `json:"user_id"`
+	DomainType int    `json:"domain_type"`
+	Domain     string `json:"domain"`
+	UserIp     string `json:"user_ip"`
+}
+
 //获取用户拦截类型数
-func GetPreventCountByUserId(userId string) (tcs []Prevent, err error) {
+func GetPreventCountByUserId(userId, userIp string) (tcs []Prevent, err error) {
 
 	var (
 		tc Prevent
 	)
-	rs, err := db.Table("t_secret_user_data").Select("domain_type , count(id) as count").Where("user_id = ? ", userId).Group("domain_type").Rows()
+	rs, err := db.Table("t_secret_user_data").Select("domain_type , count(id) as count").Where("user_id = ? ", userId).Or("user_ip = ?", userIp).Group("domain_type").Rows()
 	if err != nil && err != gorm.ErrRecordNotFound || rs == nil {
 		return nil, nil
 	}
@@ -45,12 +52,12 @@ func GetPreventCountByUserId(userId string) (tcs []Prevent, err error) {
 }
 
 //获取用户类型详细数据
-func GetPreventDetailByUserId(userId string, dt int) (ps []PreventDomain, err error) {
+func GetPreventDetailByUserId(userId, userIp string, dt int) (ps []PreventDomain, err error) {
 
 	var (
 		p PreventDomain
 	)
-	rs, err := db.Table("t_secret_user_data").Select("count(id) as prevent_nums ,domain").Where("user_id = ? and domain_type=? ", userId, dt).Group("domain").Rows()
+	rs, err := db.Table("t_secret_user_data").Select("count(id) as prevent_nums ,domain").Where("user_id = ? and domain_type=? ", userId, dt).Or("user_ip =?", userIp).Group("domain").Rows()
 	if err != nil && err != gorm.ErrRecordNotFound || rs == nil {
 		return ps, nil
 	}
@@ -59,4 +66,12 @@ func GetPreventDetailByUserId(userId string, dt int) (ps []PreventDomain, err er
 		ps = append(ps, p)
 	}
 	return ps, nil
+}
+
+//记录用户拦截信息
+func InsertPreventInfo(userId, userIp, domain string, domainType int) (err error) {
+
+	p := PreventInfo{UserId: userId, UserIp: userIp, Domain: domain, DomainType: domainType}
+	err = db.Table("t_secret_user_data").Create(p).Error
+	return err
 }

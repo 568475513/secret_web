@@ -8,6 +8,7 @@ import (
 
 type User struct {
 	UserId        string           `json:"user_id"`
+	UserIp        string           `json:"user_ip"`
 	UserName      string           `json:"user_name"`
 	PreventSwitch int              `json:"prevent_switch"`
 	PreventInfo   []secret.Prevent `json:"prevent_info"`
@@ -33,9 +34,10 @@ func (u *User) GetUserInfo() (*User, error) {
 	//用户基本信息赋值
 	u.UserId = ui.UserId
 	u.UserName = ui.UserName
+	u.UserIp = ui.UserIp
 
 	//获取用户拦截信息
-	pi, err := secret.GetPreventCountByUserId(u.UserId)
+	pi, err := secret.GetPreventCountByUserId(u.UserId, u.UserIp)
 	if err != nil || pi == nil {
 		logging.Error(err)
 		return nil, err

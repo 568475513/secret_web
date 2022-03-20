@@ -5,8 +5,11 @@ import (
 	"abs/pkg/logging"
 )
 
-type Uid struct {
-	UserId string
+type U struct {
+	UserId     string
+	UserIp     string
+	Domain     string
+	DomainType int
 }
 
 //拦截信息结构体
@@ -17,13 +20,14 @@ type Prevent struct {
 	PreventData []secret.PreventDomain `json:"prevent_data"`
 }
 
-func (u *Uid) GetPreventById() (ps []Prevent, err error) {
+//获取用户拦截信息
+func (u *U) GetPreventById() (ps []Prevent, err error) {
 
 	var (
 		p     Prevent
 		Types []int
 	)
-	pi, err := secret.GetPreventCountByUserId(u.UserId)
+	pi, err := secret.GetPreventCountByUserId(u.UserId, u.UserIp)
 	if err != nil {
 		logging.Error(err)
 		return
@@ -44,8 +48,19 @@ func (u *Uid) GetPreventById() (ps []Prevent, err error) {
 		p.PreventName = v.DomainName
 		p.PreventNum = TypesNums[v.DomainType]
 		p.PreventType = v.DomainType
-		p.PreventData, err = secret.GetPreventDetailByUserId(u.UserId, v.DomainType)
+		p.PreventData, err = secret.GetPreventDetailByUserId(u.UserId, u.UserIp, v.DomainType)
 		ps = append(ps, p)
 	}
 	return
+}
+
+//记录用户拦截信息
+func (u *U) InsertUserPreventInfo() (err error) {
+
+	err = secret.InsertPreventInfo(u.UserId, u.UserIp, u.Domain, u.DomainType)
+	if err != nil {
+		logging.Error(err)
+		return
+	}
+	return nil
 }
