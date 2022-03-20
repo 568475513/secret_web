@@ -39,13 +39,13 @@ var ZapConf = &ZapSetting{}
 
 // Init 初始化配置项
 func Init(env string) {
-	// 获取环境变量
-	env = getEnvMode(env)
-
-	Env = env
+	//// 获取环境变量
+	//env = getEnvMode(env)
+	//
+	//Env = env
 
 	// 读取对应环境变量
-	err := godotenv.Load(".env." + env)
+	err := godotenv.Load(".env")
 	fmt.Printf(">开始初始化配置[%s]...\n", env)
 	if err != nil {
 		log.Fatalf("Load config env err: %v", err)
