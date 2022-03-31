@@ -3,13 +3,14 @@ package prevent
 import (
 	secret "abs/models/secret"
 	"abs/pkg/logging"
+	"abs/pkg/util"
 )
 
 type U struct {
 	UserId     string
 	UserIp     string
 	Domain     string
-	DomainType int
+	DomainType string
 }
 
 //拦截信息结构体
@@ -57,7 +58,27 @@ func (u *U) GetPreventById() (ps []Prevent, err error) {
 //记录用户拦截信息
 func (u *U) InsertUserPreventInfo() (err error) {
 
-	err = secret.InsertPreventInfo(u.UserId, u.UserIp, u.Domain, u.DomainType)
+	ui, err := secret.GetUserInfo(u.UserId, u.UserIp)
+	if err != nil || ui == nil {
+		logging.Error(err)
+		return
+	}
+
+	list, err := secret.GetDomainType(u.DomainType)
+	if err != nil {
+		logging.Error(err)
+		return
+	}
+	//获取用户所得积分
+	ui.UserPrice = util.GetPrice(ui.UserPrice)
+
+	err = secret.UpdateUserPrice(ui.UserId, ui.UserIp, ui.UserPrice)
+	if err != nil {
+		logging.Error(err)
+		return
+	}
+
+	err = secret.InsertPreventInfo(u.UserId, u.UserIp, u.Domain, list.DomainType)
 	if err != nil {
 		logging.Error(err)
 		return

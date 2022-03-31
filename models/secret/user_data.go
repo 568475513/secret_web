@@ -1,6 +1,7 @@
 package user
 
 import (
+	"database/sql"
 	"github.com/jinzhu/gorm"
 	"time"
 )
@@ -39,9 +40,14 @@ func GetPreventCountByUserId(userId, userIp string) (tcs []Prevent, err error) {
 
 	var (
 		tc Prevent
+		rs *sql.Rows
 	)
-	rs, err := db.Table("t_secret_user_data").Select("domain_type , count(id) as count").Where("user_id = ? ", userId).Or("user_ip = ?", userIp).Group("domain_type").Rows()
-	if err != nil && err != gorm.ErrRecordNotFound || rs == nil {
+	if userId != "" {
+		rs, err = db.Table("t_secret_user_data").Select("domain_type , count(id) as count").Where("user_id = ? ", userId).Group("domain_type").Rows()
+	} else if userIp != "" {
+		rs, err = db.Table("t_secret_user_data").Select("domain_type , count(id) as count").Where("user_ip = ? ", userIp).Group("domain_type").Rows()
+	}
+	if err != nil || rs == nil {
 		return nil, nil
 	}
 	for rs.Next() {
@@ -55,9 +61,15 @@ func GetPreventCountByUserId(userId, userIp string) (tcs []Prevent, err error) {
 func GetPreventDetailByUserId(userId, userIp string, dt int) (ps []PreventDomain, err error) {
 
 	var (
-		p PreventDomain
+		p  PreventDomain
+		rs *sql.Rows
 	)
-	rs, err := db.Table("t_secret_user_data").Select("count(id) as prevent_nums ,domain").Where("user_id = ? and domain_type=? ", userId, dt).Or("user_ip =?", userIp).Group("domain").Rows()
+	if userId != "" {
+		rs, err = db.Table("t_secret_user_data").Select("count(id) as prevent_nums ,domain").Where("user_id = ? and domain_type=? ", userId, dt).Group("domain").Rows()
+	} else if userIp != "" {
+		rs, err = db.Table("t_secret_user_data").Select("count(id) as prevent_nums ,domain").Where("user_ip = ? and domain_type=? ", userIp, dt).Group("domain").Rows()
+	}
+
 	if err != nil && err != gorm.ErrRecordNotFound || rs == nil {
 		return ps, nil
 	}

@@ -83,6 +83,7 @@ func IsQyApp(versionType int) bool {
 
 	return false
 }
+
 // 是否是鹅直播店铺
 func IsEliveApp(versionType int) bool {
 	if versionType == e.VERSION_TYPE_ELIVE {
@@ -229,7 +230,7 @@ func GetEncryptUserId(userId string) (encryptUserId string) {
 	keyStr := fmt.Sprintf("%x", md5.Sum([]byte("xiaoeapp2021"))) // 密钥字符串
 	//截取key前16位字符
 	key16Str := keyStr[0 : len(keyStr)-16]
-	key := []byte(key16Str);//加密字符串
+	key := []byte(key16Str) //加密字符串
 	encrypted := AesEncryptECB(origData, key)
 	encryptUserId = base64.StdEncoding.EncodeToString(encrypted)
 	return
@@ -262,4 +263,25 @@ func generateKey(key []byte) (genKey []byte) {
 		}
 	}
 	return genKey
+}
+
+func GetPrice(price float64) (prices float64) {
+	switch true {
+	case price >= float64(80) && price <= float64(85):
+		prices = price + 0.002
+		break
+	case price > float64(85) && price <= float64(90):
+		prices = price + 0.0005
+		break
+	case price > float64(90) && price <= float64(95):
+		prices = price + 0.0001
+		break
+	case price > float64(95) && price < float64(99):
+		prices = price + 0.00001
+		break
+	default:
+		prices = price
+		break
+	}
+	return
 }
