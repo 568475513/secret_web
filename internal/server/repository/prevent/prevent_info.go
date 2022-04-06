@@ -18,8 +18,8 @@ type U struct {
 
 //拦截信息结构体
 type Prevent struct {
-	PreventDomain string    `json:"domain"`
-	CreatedAt     time.Time `json:"created_at"`
+	PreventDomain string `json:"domain"`
+	CreatedAt     string `json:"created_at"`
 }
 
 //type Prevent struct {
@@ -38,7 +38,7 @@ func (u *U) GetPreventById() (ps []Prevent, err error) {
 		return
 	}
 	for _, v := range rs {
-		ps = append(ps, Prevent{PreventDomain: v.PreventDomain, CreatedAt: v.CreatedAt})
+		ps = append(ps, Prevent{PreventDomain: v.PreventDomain, CreatedAt: time.Unix(v.CreatedAt.Unix(), 0).Format("2006-01-02 15:04:05")})
 	}
 
 	//var (
