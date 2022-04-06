@@ -18,6 +18,7 @@ type User struct {
 
 type UserPrevent struct {
 	PreventName string `json:"prevent_name"`
+	PreventType int    `json:"prevent_type"`
 	PreventNum  int    `json:"prevent_num"`
 }
 
@@ -55,7 +56,7 @@ func (u *User) GetUserInfo() (*User, error) {
 		return nil, err
 	}
 	for _, v := range pi {
-		u.PreventInfo = append(u.PreventInfo, UserPrevent{PreventName: d[v.PreventName].DomainName, PreventNum: v.PreventNum})
+		u.PreventInfo = append(u.PreventInfo, UserPrevent{PreventName: d[v.PreventName].DomainName, PreventNum: v.PreventNum, PreventType: v.PreventName})
 	}
 	return u, nil
 }

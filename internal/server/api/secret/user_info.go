@@ -20,6 +20,9 @@ func UserPreventInfo(c *gin.Context) {
 	}
 	u.UserId = req.UserId
 	u.UserIp = req.UserIp
+	u.DomainType = req.DomainType
+	u.Page = req.Page
+	u.PageSize = req.PageSize
 	ps, err := u.GetPreventById()
 	if err != nil {
 		app.FailWithMessage("获取用户数据异常", enums.ERROR, c)

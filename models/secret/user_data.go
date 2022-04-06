@@ -28,6 +28,11 @@ type PreventDomain struct {
 	PreventNums   int    `json:"prevent_nums"`
 }
 
+type PreventDetail struct {
+	PreventDomain string    `json:"domain"`
+	CreatedAt     time.Time `json:"created_at"`
+}
+
 type PreventInfo struct {
 	UserId     string `json:"user_id"`
 	DomainType int    `json:"domain_type"`
@@ -58,23 +63,23 @@ func GetPreventCountByUserId(userId, userIp string) (tcs []Prevent, err error) {
 }
 
 //获取用户类型详细数据
-func GetPreventDetailByUserId(userId, userIp string, dt int) (ps []PreventDomain, err error) {
+func GetPreventDetailByUserId(userId, userIp, dt string, page, page_size int) (ps []PreventDetail, err error) {
 
 	var (
-		p  PreventDomain
+		p  PreventDetail
 		rs *sql.Rows
 	)
 	if userId != "" {
-		rs, err = db.Table("t_secret_user_data").Select("count(id) as prevent_nums ,domain").Where("user_id = ? and domain_type=? ", userId, dt).Group("domain").Rows()
+		rs, err = db.Table("t_secret_user_data").Select("domain, created_at").Where("user_id = ? and domain_type=? ", userId, dt).Limit(page_size).Offset((page - 1) * page_size).Order("created_at desc").Rows()
 	} else if userIp != "" {
-		rs, err = db.Table("t_secret_user_data").Select("count(id) as prevent_nums ,domain").Where("user_ip = ? and domain_type=? ", userIp, dt).Group("domain").Rows()
+		rs, err = db.Table("t_secret_user_data").Select("domain, created_at").Where("user_ip = ? and domain_type=? ", userIp, dt).Limit(page_size).Offset((page - 1) * page_size).Order("created_at desc").Rows()
 	}
 
 	if err != nil && err != gorm.ErrRecordNotFound || rs == nil {
 		return ps, nil
 	}
 	for rs.Next() {
-		rs.Scan(&p.PreventNums, &p.PreventDomain)
+		rs.Scan(&p.PreventDomain, &p.CreatedAt)
 		ps = append(ps, p)
 	}
 	return ps, nil
