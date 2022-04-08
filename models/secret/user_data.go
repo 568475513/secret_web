@@ -30,12 +30,14 @@ type PreventDomain struct {
 
 type PreventDetail struct {
 	PreventDomain string    `json:"domain"`
+	DomainTag     string    `json:"domain_tag"`
 	CreatedAt     time.Time `json:"created_at"`
 }
 
 type PreventInfo struct {
 	UserId     string `json:"user_id"`
 	DomainType int    `json:"domain_type"`
+	DomainTag  string `json:"domain_tag"`
 	Domain     string `json:"domain"`
 	UserIp     string `json:"user_ip"`
 }
@@ -70,25 +72,25 @@ func GetPreventDetailByUserId(userId, userIp, dt string, page, page_size int) (p
 		rs *sql.Rows
 	)
 	if userId != "" {
-		rs, err = db.Table("t_secret_user_data").Select("domain, created_at").Where("user_id = ? and domain_type=? ", userId, dt).Limit(page_size).Offset((page - 1) * page_size).Order("created_at desc").Rows()
+		rs, err = db.Table("t_secret_user_data").Select("domain, created_at, domain_tag").Where("user_id = ? and domain_type=? ", userId, dt).Limit(page_size).Offset((page - 1) * page_size).Order("created_at desc").Rows()
 	} else if userIp != "" {
-		rs, err = db.Table("t_secret_user_data").Select("domain, created_at").Where("user_ip = ? and domain_type=? ", userIp, dt).Limit(page_size).Offset((page - 1) * page_size).Order("created_at desc").Rows()
+		rs, err = db.Table("t_secret_user_data").Select("domain, created_at, domain_tag").Where("user_ip = ? and domain_type=? ", userIp, dt).Limit(page_size).Offset((page - 1) * page_size).Order("created_at desc").Rows()
 	}
 
 	if err != nil && err != gorm.ErrRecordNotFound || rs == nil {
 		return ps, nil
 	}
 	for rs.Next() {
-		rs.Scan(&p.PreventDomain, &p.CreatedAt)
+		rs.Scan(&p.PreventDomain, &p.CreatedAt, &p.DomainTag)
 		ps = append(ps, p)
 	}
 	return ps, nil
 }
 
 //记录用户拦截信息
-func InsertPreventInfo(userId, userIp, domain string, domainType int) (err error) {
+func InsertPreventInfo(userId, userIp, domain, domainTag string, domainType int) (err error) {
 
-	p := PreventInfo{UserId: userId, UserIp: userIp, Domain: domain, DomainType: domainType}
+	p := PreventInfo{UserId: userId, UserIp: userIp, Domain: domain, DomainType: domainType, DomainTag: domainTag}
 	err = db.Table("t_secret_user_data").Create(p).Error
 	return err
 }

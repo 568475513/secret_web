@@ -22,6 +22,7 @@ func DomainPrevent(c *gin.Context) {
 	u.UserIp = req.UserIp
 	u.DomainType = req.DomainType
 	u.Domain = req.Domain
+	u.DomainTag = req.DomainTag
 	err = u.InsertUserPreventInfo()
 	if err != nil {
 		app.FailWithMessage("录入用户数据异常", enums.ERROR, c)
