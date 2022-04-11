@@ -8,19 +8,21 @@ import (
 )
 
 type U struct {
-	UserId     string
-	UserIp     string
-	Domain     string
-	DomainType string
-	DomainTag  string
-	Page       int
-	PageSize   int
+	UserId       string
+	UserIp       string
+	Domain       string
+	DomainType   string
+	DomainTag    string
+	DomainSource string
+	Page         int
+	PageSize     int
 }
 
 //拦截信息结构体
 type Prevent struct {
 	PreventDomain string `json:"domain"`
 	DomainTag     string `json:"domain_tag"`
+	DomainSource  string `json:"domain_source"`
 	CreatedAt     string `json:"created_at"`
 }
 
@@ -40,7 +42,7 @@ func (u *U) GetPreventById() (ps []Prevent, err error) {
 		return
 	}
 	for _, v := range rs {
-		ps = append(ps, Prevent{PreventDomain: v.PreventDomain, CreatedAt: time.Unix(v.CreatedAt.Unix(), 0).Format("2006-01-02 15:04:05"), DomainTag: v.DomainTag})
+		ps = append(ps, Prevent{PreventDomain: v.PreventDomain, CreatedAt: time.Unix(v.CreatedAt.Unix(), 0).Format("2006-01-02 15:04:05"), DomainTag: v.DomainTag, DomainSource: v.DomainSource})
 	}
 
 	//var (
@@ -98,7 +100,7 @@ func (u *U) InsertUserPreventInfo() (err error) {
 		return
 	}
 
-	err = secret.InsertPreventInfo(u.UserId, u.UserIp, u.Domain, u.DomainTag, list.DomainType)
+	err = secret.InsertPreventInfo(u.UserId, u.UserIp, u.Domain, u.DomainTag, u.DomainSource, list.DomainType)
 	if err != nil {
 		logging.Error(err)
 		return
