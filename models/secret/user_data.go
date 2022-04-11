@@ -42,6 +42,12 @@ type PreventInfo struct {
 	UserIp     string `json:"user_ip"`
 }
 
+type UserWeekData struct {
+	DomainType int    `json:"domain_type"`
+	Count      int    `json:"count"`
+	DomainName string `json:"domain_name"`
+}
+
 //获取用户拦截类型数
 func GetPreventCountByUserId(userId, userIp string) (tcs []Prevent, err error) {
 
@@ -93,4 +99,20 @@ func InsertPreventInfo(userId, userIp, domain, domainTag string, domainType int)
 	p := PreventInfo{UserId: userId, UserIp: userIp, Domain: domain, DomainType: domainType, DomainTag: domainTag}
 	err = db.Table("t_secret_user_data").Create(p).Error
 	return err
+}
+
+// 根据id查询用户区间数据
+func SelectUserDataTime(userId string) (rs map[string][]UserWeekData, err error) {
+
+	var uw UserWeekData
+	rs = map[string][]UserWeekData{}
+	re, err := db.Table("t_secret_user_data").Select("domain_type , count(id) as count").Where("user_id = ?", userId).Group("domain_type").Rows()
+	if err != nil && err != gorm.ErrRecordNotFound || re == nil {
+		return
+	}
+	for re.Next() {
+		re.Scan(&uw.DomainType, &uw.Count)
+		rs[userId] = append(rs[userId], UserWeekData{Count: uw.Count, DomainType: uw.DomainType})
+	}
+	return
 }

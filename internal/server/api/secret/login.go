@@ -27,6 +27,7 @@ func UserLogin(c *gin.Context) {
 			app.FailWithMessage("获取用户信息异常", enums.ERROR, c)
 		}
 	} else { //用户注册
+		u.RegisterId = req.RegisterId
 		u.GetUserOnlyId()
 
 	}

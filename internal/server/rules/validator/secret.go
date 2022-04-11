@@ -1,9 +1,9 @@
 package validator
 
 type SecretUserLoginRule struct {
-	UserId string `form:"user_id" json:"user_id"` // 用户id
-	UserIp string `form:"user_ip" json:"user_ip"` //拦截用户ip
-
+	UserId     string `form:"user_id" json:"user_id"`         // 用户id
+	UserIp     string `form:"user_ip" json:"user_ip"`         //拦截用户ip
+	RegisterId string `form:"register_id" json:"register_id"` //极光推送注册id
 }
 
 type SecretUserInfoRule struct {

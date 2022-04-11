@@ -3,7 +3,10 @@ package user
 import (
 	secret "abs/models/secret"
 	"abs/pkg/logging"
+	cache "github.com/patrickmn/go-cache"
 	uuid "github.com/satori/go.uuid"
+	"strconv"
+	"time"
 )
 
 type User struct {
@@ -14,6 +17,7 @@ type User struct {
 	UserPrice            float64       `json:"user_price"`
 	PreventSwitch        int           `json:"prevent_switch"`
 	PreventInfo          []UserPrevent `json:"prevent_info"`
+	RegisterId           string        `json:"register_id"`
 }
 
 type UserPrevent struct {
@@ -29,7 +33,7 @@ func (u *User) GetUserOnlyId() *User {
 	u.UserId = user_id.String()
 	u.UserPrice = 80
 	u.UserDnsPreventDomain = "https://" + u.UserId + ".privacy.prisecurity.com/dns-query"
-	secret.RegisterUser(u.UserId, u.UserDnsPreventDomain)
+	secret.RegisterUser(u.UserId, u.UserDnsPreventDomain, u.RegisterId)
 	return u
 }
 
@@ -47,6 +51,7 @@ func (u *User) GetUserInfo() (*User, error) {
 	u.UserIp = ui.UserIp
 	u.UserPrice = ui.UserPrice
 	u.UserDnsPreventDomain = ui.UserDnsPreventDomain
+	u.RegisterId = ui.RegisterId
 	//获取拦截类型
 	d, err := secret.GetAllDomainType()
 	//获取用户拦截信息
@@ -59,4 +64,31 @@ func (u *User) GetUserInfo() (*User, error) {
 		u.PreventInfo = append(u.PreventInfo, UserPrevent{PreventName: d[v.PreventName].DomainName, PreventNum: v.PreventNum, PreventType: v.PreventName})
 	}
 	return u, nil
+}
+
+var Cache *cache.Cache
+
+//获取用户周报数据
+func (u *User) WeekGetUserData() (err error) {
+
+	Cache = cache.New(5*time.Minute, 60*time.Second)
+	// 获取用户id列表
+	err, ids := secret.GetUserId()
+	if err != nil {
+		logging.Error(err)
+	}
+	//获取拦截类型
+	d, err := secret.GetAllDomainType()
+	for _, v := range ids {
+		re, err := secret.SelectUserDataTime(v)
+		if err != nil {
+			logging.Error(err)
+		}
+		for _, v2 := range re[v] {
+			dn := d[v2.DomainType].DomainName
+			v2.DomainName = dn
+			Cache.Set(v+"_"+strconv.Itoa(v2.DomainType), map[string]interface{}{"count": v2.Count, "name": v2.DomainName}, time.Hour*24)
+		}
+	}
+	return
 }
