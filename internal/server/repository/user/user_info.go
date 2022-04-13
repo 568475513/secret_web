@@ -66,19 +66,19 @@ func (u *User) GetUserInfo() (*User, error) {
 	for _, v := range pi {
 		u.PreventInfo = append(u.PreventInfo, UserPrevent{PreventName: d[v.PreventName].DomainName, PreventNum: v.PreventNum, PreventType: v.PreventName})
 	}
-	t := time.Now().Weekday().String()
+	//t := time.Now().Weekday().String()
 	//如果当天是周天则返回周报信息
-	if t == "Sunday" {
-		var s []interface{}
-		for _, v := range d {
-			r, t := Cache.Get(u.UserId + "_" + strconv.Itoa(v.DomainType))
-			if t == true && r != nil {
-				s = append(s, r)
-				Cache.Delete(u.UserId + "_" + strconv.Itoa(v.DomainType))
-			}
+	//if t == "Sunday" {
+	var s []interface{}
+	for _, v := range d {
+		r, t := Cache.Get(u.UserId + "_" + strconv.Itoa(v.DomainType))
+		if t == true && r != nil {
+			s = append(s, r)
+			Cache.Delete(u.UserId + "_" + strconv.Itoa(v.DomainType))
 		}
-		u.PreventWeekData = s
 	}
+	u.PreventWeekData = s
+	//}
 	return u, nil
 }
 
