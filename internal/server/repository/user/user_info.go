@@ -27,6 +27,11 @@ type UserPrevent struct {
 	PreventNum  int    `json:"prevent_num"`
 }
 
+type UserPrice struct {
+	Price int
+	Count int
+}
+
 var Cache *cache.Cache
 
 func init() {
@@ -78,7 +83,7 @@ func (u *User) GetUserInfo() (*User, error) {
 		r, t := Cache.Get(u.UserId + "_" + strconv.Itoa(v.DomainType))
 		if t == true && r != nil {
 			s = append(s, r)
-			Cache.Delete(u.UserId + "_" + strconv.Itoa(v.DomainType))
+			//Cache.Delete(u.UserId + "_" + strconv.Itoa(v.DomainType))
 		}
 	}
 	u.PreventWeekData = s
@@ -102,10 +107,15 @@ func (u *User) WeekGetUserData() (err error) {
 			logging.Error(err)
 		}
 		for _, v2 := range re[v] {
-			dn := d[v2.DomainType].DomainName
+			dn := d[v2.DomainType].DomainName + "风险"
 			v2.DomainName = dn
 			Cache.Set(v+"_"+strconv.Itoa(v2.DomainType), map[string]interface{}{"count": v2.Count, "name": v2.DomainName}, time.Hour*24)
 		}
 	}
+	return
+}
+
+//获取每日用户数据
+func (u *User) GetUserPriceDay() (err error) {
 	return
 }

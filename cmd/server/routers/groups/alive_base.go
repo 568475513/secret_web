@@ -18,6 +18,8 @@ func SecretBaseRouter(Router *gin.RouterGroup) {
 		// 用户拦截信息接口
 		apiRouterV2.POST("domain_prevent_add", secret.DomainPrevent)
 		// 用户数据存储缓存
-		apiRouterV2.GET("prevent_script", secret.WeekUserDataScript)
+		apiRouterV2.GET("prevent_script_week", secret.WeekUserDataScript)
+		// 每日推送用户数据
+		apiRouterV2.GET("prevent_script_day", secret.DayUserDataScript)
 	}
 }
