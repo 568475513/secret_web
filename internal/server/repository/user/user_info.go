@@ -29,6 +29,10 @@ type UserPrevent struct {
 
 var Cache *cache.Cache
 
+func init() {
+	Cache = cache.New(5*time.Minute, 60*time.Second)
+}
+
 //获取用户id并注册
 func (u *User) GetUserOnlyId() *User {
 
@@ -85,7 +89,6 @@ func (u *User) GetUserInfo() (*User, error) {
 //获取用户周报数据
 func (u *User) WeekGetUserData() (err error) {
 
-	Cache = cache.New(5*time.Minute, 60*time.Second)
 	// 获取用户id列表
 	err, ids := secret.GetUserId()
 	if err != nil {
