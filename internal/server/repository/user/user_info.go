@@ -3,8 +3,10 @@ package user
 import (
 	secret "abs/models/secret"
 	"abs/pkg/logging"
+	"fmt"
 	cache "github.com/patrickmn/go-cache"
 	uuid "github.com/satori/go.uuid"
+	jpushclient "github.com/ylywyn/jpush-api-go-client"
 	"strconv"
 	"time"
 )
@@ -31,6 +33,9 @@ type UserPrice struct {
 	Price int
 	Count int
 }
+
+const appKey = "bd74f19f44a832ba9850dbfa"
+const secretKey = "f9e05403c564b4b48523f2ff"
 
 var Cache *cache.Cache
 
@@ -117,5 +122,41 @@ func (u *User) WeekGetUserData() (err error) {
 
 //获取每日用户数据
 func (u *User) GetUserPriceDay() (err error) {
+	var (
+		pf     jpushclient.Platform
+		ad     jpushclient.Audience
+		op     jpushclient.Option
+		notice jpushclient.Notice
+	)
+	pf.Add(jpushclient.IOS)
+	op.ApnsProduction = true
+	// 获取用户id以及registerId列表
+	err, ids := secret.GetUserIdAndRegisterID()
+	if err != nil {
+		logging.Error(err)
+	}
+	for k, v := range ids {
+		count, err := secret.GetCountByUserId(k)
+		if err != nil {
+			logging.Error(err)
+		}
+		price := ((v.UserPrice - 50) / 50) * 100
+		ad.SetID([]string{v.RegisterId})
+		notice.SetIOSNotice(&jpushclient.IOSNotice{Alert: fmt.Sprintf("您的个人信息反追踪能力已提升 %d %s，过\n去24小时内已为您拦截%d条，点击查看详情", int(price), "%", count.PreventNum)})
+		payload := jpushclient.NewPushPayLoad()
+		payload.SetPlatform(&pf)
+		payload.SetAudience(&ad)
+		payload.SetNotice(&notice)
+		payload.SetOptions(&op)
+		bytes, _ := payload.ToBytes()
+		fmt.Printf("%s\r\n", string(bytes))
+		c := jpushclient.NewPushClient(secretKey, appKey)
+		str, err := c.Send(bytes)
+		if err != nil {
+			fmt.Printf("err:%s", err.Error())
+		} else {
+			fmt.Printf("ok:%s", str)
+		}
+	}
 	return
 }

@@ -21,6 +21,7 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.1.1
 	github.com/tencentyun/tls-sig-api-v2-golang v1.1.0 // indirect
+	github.com/ylywyn/jpush-api-go-client v0.0.0-20190906031852-8c4466c6e369
 	go.uber.org/zap v1.10.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 )

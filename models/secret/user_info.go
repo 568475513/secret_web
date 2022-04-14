@@ -22,10 +22,11 @@ type SecretUser struct {
 }
 
 type UId struct {
-	UserId               string `json:"user_id"`
-	UserName             string `json:"user_name"`
-	UserDnsPreventDomain string `json:"user_dns_prevent_domain"`
-	RegisterId           string `json:"register_id"`
+	UserId               string  `json:"user_id"`
+	UserName             string  `json:"user_name"`
+	UserDnsPreventDomain string  `json:"user_dns_prevent_domain"`
+	RegisterId           string  `json:"register_id"`
+	UserPrice            float64 `json:"user_price"`
 }
 
 // 获取用户信息
@@ -75,9 +76,29 @@ func GetUserId() (err error, ids []string) {
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return
 	}
-	for rs.Next() {
-		rs.Scan(&ui.UserId)
-		ids = append(ids, ui.UserId)
+	if rs != nil {
+		for rs.Next() {
+			rs.Scan(&ui.UserId)
+			ids = append(ids, ui.UserId)
+		}
+	}
+	return
+}
+
+//获取用户id和极光推送id
+func GetUserIdAndRegisterID() (err error, ids map[string]UId) {
+
+	var ui UId
+	ids = make(map[string]UId)
+	rs, err := db.Table("t_secret_user").Select("user_id, register_id, user_price").Where("register_id != ''").Rows()
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return
+	}
+	if rs != nil {
+		for rs.Next() {
+			rs.Scan(&ui.UserId, &ui.RegisterId, &ui.UserPrice)
+			ids[ui.UserId] = ui
+		}
 	}
 	return
 }

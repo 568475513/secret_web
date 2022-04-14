@@ -72,6 +72,23 @@ func GetPreventCountByUserId(userId, userIp string) (tcs []Prevent, err error) {
 	return
 }
 
+//获取用户拦截数
+func GetCountByUserId(userId string) (tcs Prevent, err error) {
+
+	var (
+		rs *sql.Rows
+	)
+	rs, err = db.Table("t_secret_user_data").Select("count(id) as count").Where("user_id = ? ", userId).Rows()
+
+	if err != nil || rs == nil {
+		return tcs, nil
+	}
+	for rs.Next() {
+		rs.Scan(&tcs.PreventNum)
+	}
+	return
+}
+
 //获取用户类型详细数据
 func GetPreventDetailByUserId(userId, userIp, dt string, page, page_size int) (ps []PreventDetail, err error) {
 
