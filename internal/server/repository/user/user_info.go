@@ -80,19 +80,19 @@ func (u *User) GetUserInfo() (*User, error) {
 	for _, v := range pi {
 		u.PreventInfo = append(u.PreventInfo, UserPrevent{PreventName: d[v.PreventName].DomainName, PreventNum: v.PreventNum, PreventType: v.PreventName})
 	}
-	//t := time.Now().Weekday().String()
+	t := time.Now().Weekday().String()
 	//如果当天是周天则返回周报信息
-	//if t == "Sunday" {
-	var s []interface{}
-	for _, v := range d {
-		r, t := Cache.Get(u.UserId + "_" + strconv.Itoa(v.DomainType))
-		if t == true && r != nil {
-			s = append(s, r)
-			//Cache.Delete(u.UserId + "_" + strconv.Itoa(v.DomainType))
+	if t == "Sunday" {
+		var s []interface{}
+		for _, v := range d {
+			r, t := Cache.Get(u.UserId + "_" + strconv.Itoa(v.DomainType))
+			if t == true && r != nil {
+				s = append(s, r)
+				Cache.Delete(u.UserId + "_" + strconv.Itoa(v.DomainType))
+			}
 		}
+		u.PreventWeekData = s
 	}
-	u.PreventWeekData = s
-	//}
 	return u, nil
 }
 
@@ -143,6 +143,42 @@ func (u *User) GetUserPriceDay() (err error) {
 		price := ((v.UserPrice - 50) / 50) * 100
 		ad.SetID([]string{v.RegisterId})
 		notice.SetIOSNotice(&jpushclient.IOSNotice{Alert: fmt.Sprintf("您的个人信息反追踪能力已提升 %d %s，过\n去24小时内已为您拦截%d条，点击查看详情", int(price), "%", count.PreventNum)})
+		payload := jpushclient.NewPushPayLoad()
+		payload.SetPlatform(&pf)
+		payload.SetAudience(&ad)
+		payload.SetNotice(&notice)
+		payload.SetOptions(&op)
+		bytes, _ := payload.ToBytes()
+		fmt.Printf("%s\r\n", string(bytes))
+		c := jpushclient.NewPushClient(secretKey, appKey)
+		str, err := c.Send(bytes)
+		if err != nil {
+			fmt.Printf("err:%s", err.Error())
+		} else {
+			fmt.Printf("ok:%s", str)
+		}
+	}
+	return
+}
+
+//获取每日用户数据
+func (u *User) GetUserDataWeekPush() (err error) {
+	var (
+		pf     jpushclient.Platform
+		ad     jpushclient.Audience
+		op     jpushclient.Option
+		notice jpushclient.Notice
+	)
+	pf.Add(jpushclient.IOS)
+	op.ApnsProduction = true
+	// 获取用户id以及registerId列表
+	err, ids := secret.GetUserIdAndRegisterID()
+	if err != nil {
+		logging.Error(err)
+	}
+	for _, v := range ids {
+		ad.SetID([]string{v.RegisterId})
+		notice.SetIOSNotice(&jpushclient.IOSNotice{Alert: "您本周的安全报告已生成，请点击查看详情"})
 		payload := jpushclient.NewPushPayLoad()
 		payload.SetPlatform(&pf)
 		payload.SetAudience(&ad)

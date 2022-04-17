@@ -25,3 +25,13 @@ func DayUserDataScript(c *gin.Context) {
 	err = u.GetUserPriceDay()
 	app.OkWithData(err, c)
 }
+
+// 发送每周日用户周报推送
+func DayUserDataPushScript(c *gin.Context) {
+	var (
+		err error
+		u   user.User
+	)
+	err = u.GetUserDataWeekPush()
+	app.OkWithData(err, c)
+}
