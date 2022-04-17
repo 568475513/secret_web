@@ -45,11 +45,12 @@ func GetUserInfo(userId, userIp string) (su *SecretUser, err error) {
 }
 
 //注册用户信息
-func RegisterUser(userId, userDPD, registerId string) (err error) {
+func RegisterUser(userId, userDPD, registerId string, price float64) (err error) {
 	var ui UId
 	ui.UserId = userId
 	ui.UserDnsPreventDomain = userDPD
 	ui.RegisterId = registerId
+	ui.UserPrice = price
 	err = db.Table("t_secret_user").Create(ui).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return

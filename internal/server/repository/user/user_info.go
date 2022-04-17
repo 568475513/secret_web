@@ -50,7 +50,7 @@ func (u *User) GetUserOnlyId() *User {
 	u.UserId = user_id.String()
 	u.UserPrice = 80.00000
 	u.UserDnsPreventDomain = "https://privacy.prisecurity.com/dns-query/" + u.UserId
-	secret.RegisterUser(u.UserId, u.UserDnsPreventDomain, u.RegisterId)
+	secret.RegisterUser(u.UserId, u.UserDnsPreventDomain, u.RegisterId, u.UserPrice)
 	return u
 }
 
