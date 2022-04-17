@@ -108,7 +108,9 @@ func SelectUserDataTime(userId string) (rs map[string][]UserWeekData, err error)
 
 	var uw UserWeekData
 	rs = map[string][]UserWeekData{}
-	re, err := db.Table("t_secret_user_data").Select("domain_type , count(id) as count").Where("user_id = ?", userId).Group("domain_type").Rows()
+	t := time.Now().Add(-7 * time.Hour * 24).Format("2006-01-02")
+	now := time.Now().Format("2006-01-02")
+	re, err := db.Table("t_secret_user_data").Select("domain_type , count(id) as count").Where("user_id = ? and created_at >= ? and created_at < ? ", userId, t, now).Group("domain_type").Rows()
 	if err != nil && err != gorm.ErrRecordNotFound || re == nil {
 		return
 	}

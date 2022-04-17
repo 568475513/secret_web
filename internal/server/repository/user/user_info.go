@@ -18,6 +18,7 @@ type User struct {
 	PreventSwitch        int           `json:"prevent_switch"`
 	PreventInfo          []UserPrevent `json:"prevent_info"`
 	RegisterId           string        `json:"register_id"`
+	PreventWeekData      interface{}   `json:"prevent_week_data"`
 }
 
 type UserPrevent struct {
@@ -25,6 +26,8 @@ type UserPrevent struct {
 	PreventType int    `json:"prevent_type"`
 	PreventNum  int    `json:"prevent_num"`
 }
+
+var Cache *cache.Cache
 
 //获取用户id并注册
 func (u *User) GetUserOnlyId() *User {
@@ -63,10 +66,21 @@ func (u *User) GetUserInfo() (*User, error) {
 	for _, v := range pi {
 		u.PreventInfo = append(u.PreventInfo, UserPrevent{PreventName: d[v.PreventName].DomainName, PreventNum: v.PreventNum, PreventType: v.PreventName})
 	}
+	t := time.Now().Weekday().String()
+	//如果当天是周天则返回周报信息
+	if t == "Sunday" {
+		var s []interface{}
+		for _, v := range d {
+			r, t := Cache.Get(u.UserId + "_" + strconv.Itoa(v.DomainType))
+			if t == true && r != nil {
+				s = append(s, r)
+				Cache.Delete(u.UserId + "_" + strconv.Itoa(v.DomainType))
+			}
+		}
+		u.PreventWeekData = s
+	}
 	return u, nil
 }
-
-var Cache *cache.Cache
 
 //获取用户周报数据
 func (u *User) WeekGetUserData() (err error) {
