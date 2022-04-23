@@ -268,16 +268,16 @@ func generateKey(key []byte) (genKey []byte) {
 func GetPrice(price float64) (prices float64) {
 	switch true {
 	case price >= float64(80) && price <= float64(85):
-		prices = price + 0.002
+		prices = price + 0.005
 		break
 	case price > float64(85) && price <= float64(90):
-		prices = price + 0.0005
+		prices = price + 0.002
 		break
 	case price > float64(90) && price <= float64(95):
-		prices = price + 0.0001
+		prices = price + 0.001
 		break
 	case price > float64(95) && price < float64(99):
-		prices = price + 0.00001
+		prices = price + 0.0002
 		break
 	default:
 		prices = price
