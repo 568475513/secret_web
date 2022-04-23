@@ -34,8 +34,8 @@ type UserPrice struct {
 	Count int
 }
 
-const appKey = "bd74f19f44a832ba9850dbfa"
-const secretKey = "f9e05403c564b4b48523f2ff"
+const appKey = "11066b2bfdf825c774968dce"
+const secretKey = "d245c0ece98da21888765fa6"
 
 var Cache *cache.Cache
 
