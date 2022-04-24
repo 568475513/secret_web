@@ -69,6 +69,13 @@ func UpdateUserPrice(userId, userIp string, price float64) (err error) {
 	return
 }
 
+//更新用户registerId
+func UpdateUserRegisterId(userId, registerID string) (err error) {
+
+	err = db.Table("t_secret_user").Where("user_id=?", userId).Update("register_id", registerID).Error
+	return
+}
+
 //获取用户id
 func GetUserId() (err error, ids []string) {
 

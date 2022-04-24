@@ -22,6 +22,7 @@ func UserLogin(c *gin.Context) {
 	//如果用户id不存在则注册，反之则登录获取用户信息
 	if req.UserId != "" { //	用户登录
 		u.UserId = req.UserId
+		u.RegisterId = req.RegisterId
 		_, err := u.GetUserInfo() //获取用户基本信息
 		if err != nil {
 			app.FailWithMessage("获取用户信息异常", enums.ERROR, c)

@@ -68,7 +68,17 @@ func (u *User) GetUserInfo() (*User, error) {
 	u.UserIp = ui.UserIp
 	u.UserPrice = ui.UserPrice
 	u.UserDnsPreventDomain = ui.UserDnsPreventDomain
-	u.RegisterId = ui.RegisterId
+
+	//判断用户是否存在registerId
+	if u.RegisterId != "" && ui.RegisterId == "" {
+		err := secret.UpdateUserRegisterId(u.UserId, u.RegisterId)
+		if err != nil {
+			logging.Error(err)
+		}
+	} else {
+		u.RegisterId = ui.RegisterId
+	}
+
 	//获取拦截类型
 	d, err := secret.GetAllDomainType()
 	//获取用户拦截信息
