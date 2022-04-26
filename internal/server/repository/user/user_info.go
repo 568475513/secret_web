@@ -152,7 +152,7 @@ func (u *User) GetUserPriceDay() (err error) {
 		}
 		price := ((v.UserPrice - 50) / 50) * 100
 		ad.SetID([]string{v.RegisterId})
-		notice.SetIOSNotice(&jpushclient.IOSNotice{Alert: fmt.Sprintf("您的个人信息反追踪能力已提升 %d %s，过\n去24小时内已为您拦截%d条，点击查看详情", int(price), "%", count.PreventNum)})
+		notice.SetIOSNotice(&jpushclient.IOSNotice{Alert: fmt.Sprintf("您的个人信息反追踪能力已提升 %d %s，过去24小时内已为您拦截%d条，点击查看详情", int(price), "%", count.PreventNum)})
 		payload := jpushclient.NewPushPayLoad()
 		payload.SetPlatform(&pf)
 		payload.SetAudience(&ad)
