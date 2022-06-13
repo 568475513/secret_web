@@ -8,14 +8,16 @@ import (
 )
 
 type U struct {
-	UserId       string
-	UserIp       string
-	Domain       string
-	DomainType   string
-	DomainTag    string
-	DomainSource string
-	Page         int
-	PageSize     int
+	UserId           string
+	UserIp           string
+	Domain           string
+	DomainType       string
+	DomainTag        string
+	DomainSource     string
+	DomainSourceInfo string
+	RiskLevel        string
+	Page             int
+	PageSize         int
 }
 
 //拦截信息结构体
@@ -100,7 +102,7 @@ func (u *U) InsertUserPreventInfo() (err error) {
 		return
 	}
 
-	err = secret.InsertPreventInfo(u.UserId, u.UserIp, u.Domain, u.DomainTag, u.DomainSource, list.DomainType)
+	err = secret.InsertPreventInfo(u.UserId, u.UserIp, u.Domain, u.DomainTag, u.DomainSource, u.DomainSourceInfo, u.RiskLevel, list.DomainType)
 	if err != nil {
 		logging.Error(err)
 		return
