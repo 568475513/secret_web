@@ -16,6 +16,7 @@ type U struct {
 	DomainSource     string
 	DomainSourceInfo string
 	RiskLevel        string
+	HighRisk         int
 	Page             int
 	PageSize         int
 }
@@ -26,6 +27,35 @@ type Prevent struct {
 	DomainTag     string `json:"domain_tag"`
 	DomainSource  string `json:"domain_source"`
 	CreatedAt     string `json:"created_at"`
+}
+
+//拦截信息列表结构体
+type PreventList struct {
+	PreventDomain    string `json:"domain"`
+	DomainTag        string `json:"domain_tag"`
+	DomainSource     string `json:"domain_source"`
+	DomainSourceInfo string `json:"domain_source_info"`
+	RiskLevel        string `json:"risk_level"`
+	CreatedAt        string `json:"created_at"`
+}
+
+//拦截信息分类结构体
+type PreventClassify struct {
+	DomainTag        string `json:"domain_tag"`
+	DomainSource     string `json:"domain_source"`
+	DomainSourceInfo string `json:"domain_source_info"`
+	Count            int    `json:"count"`
+	CreatedAt        string `json:"created_at"`
+}
+
+//拦截信息分类结构体
+type PreventClassifyDetail struct {
+	PreventDomain    string `json:"domain"`
+	DomainTag        string `json:"domain_tag"`
+	DomainSource     string `json:"domain_source"`
+	DomainSourceInfo string `json:"domain_source_info"`
+	RiskLevel        string `json:"risk_level"`
+	CreatedAt        string `json:"created_at"`
 }
 
 //type Prevent struct {
@@ -45,6 +75,138 @@ func (u *U) GetPreventById() (ps []Prevent, err error) {
 	}
 	for _, v := range rs {
 		ps = append(ps, Prevent{PreventDomain: v.PreventDomain, CreatedAt: time.Unix(v.CreatedAt.Unix(), 0).Format("2006-01-02 15:04:05"), DomainTag: v.DomainTag, DomainSource: v.DomainSource})
+	}
+
+	//var (
+	//	p     Prevent
+	//	//Types []int
+	//)
+
+	//pi, err := secret.GetPreventCountByUserId(u.UserId, u.UserIp)
+	//if err != nil {
+	//	logging.Error(err)
+	//	return
+	//}
+	//
+	//TypesNums := make(map[int]int)
+	//for _, v := range pi {
+	//	Types = append(Types, v.PreventName)
+	//	TypesNums[v.PreventName] = v.PreventNum
+	//}
+	//domains, err := secret.GetDomainNameByType(Types)
+	//if err != nil {
+	//	logging.Error(err)
+	//	return
+	//}
+	////TypeName :=  make(map[int]string)
+	//for _, v := range domains {
+	//	p.PreventName = v.DomainName
+	//	p.PreventNum = TypesNums[v.DomainType]
+	//	p.PreventType = v.DomainType
+	//	p.PreventData, err = secret.GetPreventDetailByUserId(u.UserId, u.UserIp, v.DomainType)
+	//	ps = append(ps, p)
+	//}
+	return
+}
+
+//获取用户拦截信息列表
+func (u *U) GetPreventListById() (ps []PreventList, err error) {
+
+	rs, err := secret.GetAllPreventDetailByUserId(u.UserId, u.HighRisk, u.Page, u.PageSize)
+	if err != nil {
+		logging.Error(err)
+		return
+	}
+	for _, v := range rs {
+		ps = append(ps, PreventList{PreventDomain: v.PreventDomain, CreatedAt: time.Unix(v.CreatedAt.Unix(), 0).Format("2006-01-02 15:04:05"), DomainTag: v.DomainTag, DomainSource: v.DomainSource, DomainSourceInfo: v.DomainSourceInfo, RiskLevel: v.RiskLevel})
+	}
+
+	//var (
+	//	p     Prevent
+	//	//Types []int
+	//)
+
+	//pi, err := secret.GetPreventCountByUserId(u.UserId, u.UserIp)
+	//if err != nil {
+	//	logging.Error(err)
+	//	return
+	//}
+	//
+	//TypesNums := make(map[int]int)
+	//for _, v := range pi {
+	//	Types = append(Types, v.PreventName)
+	//	TypesNums[v.PreventName] = v.PreventNum
+	//}
+	//domains, err := secret.GetDomainNameByType(Types)
+	//if err != nil {
+	//	logging.Error(err)
+	//	return
+	//}
+	////TypeName :=  make(map[int]string)
+	//for _, v := range domains {
+	//	p.PreventName = v.DomainName
+	//	p.PreventNum = TypesNums[v.DomainType]
+	//	p.PreventType = v.DomainType
+	//	p.PreventData, err = secret.GetPreventDetailByUserId(u.UserId, u.UserIp, v.DomainType)
+	//	ps = append(ps, p)
+	//}
+	return
+}
+
+//获取用户拦截类型信息
+func (u *U) GetPreventClassifyById() (ps []PreventClassify, err error) {
+
+	rs, err := secret.GetAllPreventClassifyByUserId(u.UserId)
+	if err != nil {
+		logging.Error(err)
+		return
+	}
+	for _, v := range rs {
+		ps = append(ps, PreventClassify{CreatedAt: time.Unix(v.CreatedAt.Unix(), 0).Format("2006-01-02 15:04:05"), DomainTag: v.DomainTag, DomainSource: v.DomainSource, DomainSourceInfo: v.DomainSourceInfo, Count: v.Count})
+	}
+
+	//var (
+	//	p     Prevent
+	//	//Types []int
+	//)
+
+	//pi, err := secret.GetPreventCountByUserId(u.UserId, u.UserIp)
+	//if err != nil {
+	//	logging.Error(err)
+	//	return
+	//}
+	//
+	//TypesNums := make(map[int]int)
+	//for _, v := range pi {
+	//	Types = append(Types, v.PreventName)
+	//	TypesNums[v.PreventName] = v.PreventNum
+	//}
+	//domains, err := secret.GetDomainNameByType(Types)
+	//if err != nil {
+	//	logging.Error(err)
+	//	return
+	//}
+	////TypeName :=  make(map[int]string)
+	//for _, v := range domains {
+	//	p.PreventName = v.DomainName
+	//	p.PreventNum = TypesNums[v.DomainType]
+	//	p.PreventType = v.DomainType
+	//	p.PreventData, err = secret.GetPreventDetailByUserId(u.UserId, u.UserIp, v.DomainType)
+	//	ps = append(ps, p)
+	//}
+	return
+}
+
+//获取用户拦截类型详情信息
+func (u *U) GetPreventClassifyDetailById() (ps []PreventClassifyDetail, err error) {
+
+	rs, err := secret.GetAllPreventClassifyDetailByUserId(u.UserId, u.DomainTag)
+	if err != nil {
+		logging.Error(err)
+		return
+	}
+	for _, v := range rs {
+		ps = append(ps, PreventClassifyDetail{PreventDomain: v.PreventDomain, CreatedAt: time.Unix(v.CreatedAt.Unix(), 0).Format("2006-01-02 15:04:05"), DomainTag: v.DomainTag, DomainSource: v.DomainSource, DomainSourceInfo: v.DomainSourceInfo, RiskLevel: v.RiskLevel})
 	}
 
 	//var (

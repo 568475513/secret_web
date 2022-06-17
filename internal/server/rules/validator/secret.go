@@ -14,6 +14,23 @@ type SecretUserInfoRule struct {
 	Page       int    `form:"page" json:"page" binding:"required"`               // 页码
 }
 
+type SecretUserInfoListRule struct {
+	UserId   string `form:"user_id" json:"user_id" binding:"required"`     // 用户id
+	HighRisk int    `form:"high_risk" json:"high_risk"`                    // 是否高风险
+	PageSize int    `form:"page_size" json:"page_size" binding:"required"` // 页码大小
+	Page     int    `form:"page" json:"page" binding:"required"`           // 页码
+}
+
+type SecretUserInfoClassifyRule struct {
+	UserId string `form:"user_id" json:"user_id" binding:"required"` // 用户id
+
+}
+
+type SecretUserInfoClassifyDetailRule struct {
+	UserId    string `form:"user_id" json:"user_id" binding:"required"`       // 用户id
+	DomainTag string `form:"domain_tag" json:"domain_tag" binding:"required"` //拦截类型
+}
+
 type DomainPreventRule struct {
 	Domain           string `form:"domain" json:"domain" binding:"required"`               // 拦截域名
 	UserId           string `form:"user_id" json:"user_id"`                                //拦截用户id

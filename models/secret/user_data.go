@@ -35,6 +35,23 @@ type PreventDetail struct {
 	CreatedAt     time.Time `json:"created_at"`
 }
 
+type PreventDetailList struct {
+	PreventDomain    string    `json:"domain"`
+	DomainTag        string    `json:"domain_tag"`
+	DomainSource     string    `json:"domain_source"`
+	DomainSourceInfo string    `json:"domain_source_info"`
+	RiskLevel        string    `json:"risk_level"`
+	CreatedAt        time.Time `json:"created_at"`
+}
+
+type PreventClassify struct {
+	Count            int       `json:"count"`
+	DomainTag        string    `json:"domain_tag"`
+	DomainSource     string    `json:"domain_source"`
+	DomainSourceInfo string    `json:"domain_source_info"`
+	CreatedAt        time.Time `json:"created_at"`
+}
+
 type PreventInfo struct {
 	UserId           string `json:"user_id"`
 	DomainType       int    `json:"domain_type"`
@@ -138,4 +155,69 @@ func SelectUserDataTime(userId string) (rs map[string][]UserWeekData, err error)
 		rs[userId] = append(rs[userId], UserWeekData{Count: uw.Count, DomainType: uw.DomainType})
 	}
 	return
+}
+
+//获取用户类型详细数据
+func GetAllPreventDetailByUserId(userId string, highRisk, page, page_size int) (ps []PreventDetailList, err error) {
+
+	var (
+		p  PreventDetailList
+		rs *sql.Rows
+	)
+	if highRisk == 0 {
+		rs, err = db.Table("t_secret_user_data").Select("domain, created_at, domain_tag, domain_source, domain_source_info, risk_level").Where("user_id = ? ", userId).Limit(page_size).Offset((page - 1) * page_size).Order("created_at desc").Rows()
+	} else {
+		rs, err = db.Table("t_secret_user_data").Select("domain, created_at, domain_tag, domain_source, domain_source_info, risk_level").Where("user_id = ? and risk_level = ?", userId, "高风险").Limit(page_size).Offset((page - 1) * page_size).Order("created_at desc").Rows()
+	}
+
+	if err != nil && err != gorm.ErrRecordNotFound || rs == nil {
+		return ps, nil
+	}
+	for rs.Next() {
+		rs.Scan(&p.PreventDomain, &p.CreatedAt, &p.DomainTag, &p.DomainSource, &p.DomainSourceInfo, &p.RiskLevel)
+		ps = append(ps, p)
+	}
+	return ps, nil
+}
+
+//获取用户类型数据
+func GetAllPreventClassifyByUserId(userId string) (ps map[string]PreventClassify, err error) {
+
+	var (
+		p  PreventClassify
+		rs *sql.Rows
+	)
+	rs, err = db.Table("t_secret_user_data").Select("domain_tag, domain_source, domain_source_info, created_at").Where("user_id = ?", userId).Rows()
+
+	if err != nil && err != gorm.ErrRecordNotFound || rs == nil {
+		return ps, nil
+	}
+	ps = make(map[string]PreventClassify)
+
+	for rs.Next() {
+		rs.Scan(&p.DomainTag, &p.DomainSource, &p.DomainSourceInfo, &p.CreatedAt)
+		p.Count = ps[p.DomainTag].Count + 1
+		ps[p.DomainTag] = p
+		//ps = append(ps, p)
+	}
+	return ps, nil
+}
+
+//获取用户类型详细数据
+func GetAllPreventClassifyDetailByUserId(userId, domainTag string) (ps []PreventDetailList, err error) {
+
+	var (
+		p  PreventDetailList
+		rs *sql.Rows
+	)
+	rs, err = db.Table("t_secret_user_data").Select("domain, created_at, domain_tag, domain_source, domain_source_info, risk_level").Where("user_id = ? and domain_tag = ?", userId, domainTag).Order("created_at desc").Rows()
+
+	if err != nil && err != gorm.ErrRecordNotFound || rs == nil {
+		return ps, nil
+	}
+	for rs.Next() {
+		rs.Scan(&p.PreventDomain, &p.CreatedAt, &p.DomainTag, &p.DomainSource, &p.DomainSourceInfo, &p.RiskLevel)
+		ps = append(ps, p)
+	}
+	return ps, nil
 }

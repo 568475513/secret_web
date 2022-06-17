@@ -13,8 +13,16 @@ func SecretBaseRouter(Router *gin.RouterGroup) {
 	{
 		// 用户登录注册接口
 		apiRouterV2.POST("login/1.0.0", secret.UserLogin)
-		// 获取用户信息接口
+		// 用户登录注册接口
+		apiRouterV2.POST("login/2.0.0", secret.UserLoginV2)
+		// 获取用户拦截信息接口
 		apiRouterV2.POST("user_prevent_info", secret.UserPreventInfo)
+		// 获取用户拦截信息列表接口
+		apiRouterV2.POST("user_prevent_info_list/2.0.0", secret.UserPreventInfoList)
+		// 获取用户拦截信息分类接口
+		apiRouterV2.POST("user_prevent_info_classify/2.0.0", secret.UserPreventInfoClassify)
+		// 获取用户拦截信息分类详情接口
+		apiRouterV2.POST("user_prevent_info_classify_detail/2.0.0", secret.UserPreventInfoClassifyDetail)
 		// 用户拦截信息接口
 		apiRouterV2.POST("domain_prevent_add", secret.DomainPrevent)
 		// 用户数据存储缓存

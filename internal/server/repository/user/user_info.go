@@ -23,6 +23,23 @@ type User struct {
 	PreventWeekData      interface{}   `json:"prevent_week_data"`
 }
 
+type UserV2 struct {
+	UserId               string `json:"user_id"`
+	UserIp               string `json:"user_ip"`
+	UserName             string `json:"user_name"`
+	UserDnsPreventDomain string `json:"user_dns_prevent_domain"`
+	RegisterId           string `json:"register_id"`
+	UserConfig           UC     `json:"user_config"`
+}
+
+type UC struct {
+	IsBuy         int `json:"is_buy"`
+	IsBusMonitor  int `json:"is_bus_monitor"`
+	IsLargeData   int `json:"is_large_data"`
+	IsSpy         int `json:"is_spy"`
+	IsCollectInfo int `json:"is_collect_info"`
+}
+
 type UserPrevent struct {
 	PreventName string `json:"prevent_name"`
 	PreventType int    `json:"prevent_type"`
@@ -51,6 +68,16 @@ func (u *User) GetUserOnlyId() *User {
 	u.UserPrice = 80.00000
 	u.UserDnsPreventDomain = "https://privacy.prisecurity.com/dns-query/" + u.UserId
 	secret.RegisterUser(u.UserId, u.UserDnsPreventDomain, u.RegisterId, u.UserPrice)
+	return u
+}
+
+//获取用户id并注册
+func (u *UserV2) GetUserOnlyId() *UserV2 {
+
+	user_id := uuid.NewV4()
+	u.UserId = user_id.String()
+	u.UserDnsPreventDomain = "https://privacy.prisecurity.com/dns-query/" + u.UserId
+	secret.RegisterUserV2(u.UserId, u.UserDnsPreventDomain, u.RegisterId)
 	return u
 }
 
@@ -103,6 +130,42 @@ func (u *User) GetUserInfo() (*User, error) {
 		}
 		u.PreventWeekData = s
 	}
+	return u, nil
+}
+
+//获取用户信息
+func (u *UserV2) GetUserInfo() (*UserV2, error) {
+
+	ui, err := secret.GetUserInfo(u.UserId, u.UserIp)
+	if err != nil || ui == nil {
+		logging.Error(err)
+		return nil, err
+	}
+	//用户基本信息赋值
+	u.UserId = ui.UserId
+	u.UserName = ui.UserName
+	u.UserIp = ui.UserIp
+
+	//判断用户是否存在registerId
+	if u.RegisterId != "" && ui.RegisterId == "" {
+		err := secret.UpdateUserRegisterId(u.UserId, u.RegisterId)
+		if err != nil {
+			logging.Error(err)
+		}
+	} else {
+		u.RegisterId = ui.RegisterId
+	}
+
+	uc, err := secret.GetUserConfig(u.UserId)
+	if err != nil || ui == nil {
+		logging.Error(err)
+		return nil, err
+	}
+	u.UserConfig.IsBuy = uc.IsBuy
+	u.UserConfig.IsBusMonitor = uc.IsBusMonitor
+	u.UserConfig.IsLargeData = uc.IsLargeData
+	u.UserConfig.IsSpy = uc.IsSpy
+	u.UserConfig.IsCollectInfo = uc.IsCollectInfo
 	return u, nil
 }
 

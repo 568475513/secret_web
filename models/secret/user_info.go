@@ -29,6 +29,10 @@ type UId struct {
 	UserPrice            float64 `json:"user_price"`
 }
 
+type UserConf struct {
+	UserId string `json:"user_id"`
+}
+
 // 获取用户信息
 func GetUserInfo(userId, userIp string) (su *SecretUser, err error) {
 
@@ -55,6 +59,29 @@ func RegisterUser(userId, userDPD, registerId string, price float64) (err error)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return
 	}
+	return
+}
+
+//注册用户信息2.0
+func RegisterUserV2(userId, userDPD, registerId string) (err error) {
+	var (
+		ui  UId
+		uid UserConf
+	)
+	ui.UserId = userId
+	ui.UserDnsPreventDomain = userDPD
+	ui.RegisterId = registerId
+	err = db.Table("t_secret_user").Create(ui).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return
+	}
+
+	uid.UserId = userId
+	err = db.Table("t_secret_user_config").Create(uid).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return
+	}
+
 	return
 }
 
