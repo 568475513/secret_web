@@ -87,3 +87,25 @@ func UserPreventInfoClassifyDetail(c *gin.Context) {
 	}
 	app.OkWithData(ps, c)
 }
+
+//用户拦截分类开关接口
+func UserPreventClassifySwitch(c *gin.Context) {
+	var (
+		err error
+		req validator.SecretUserClassifySwitchRule
+		u   prevent.PreventSwitch
+	)
+	if err = app.ParseRequest(c, &req); err != nil {
+		return
+	}
+	u.UserId = req.UserId
+	u.IsBusMonitor = req.IsBusMonitor
+	u.IsCollectInfo = req.IsCollectInfo
+	u.IsSpy = req.IsSpy
+	u.IsLargeData = req.IsLargeData
+	err = u.UpdateUserPreventSwitch()
+	if err != nil {
+		app.FailWithMessage("更新用户开关数据异常", enums.ERROR, c)
+	}
+	app.OkWithData(u, c)
+}

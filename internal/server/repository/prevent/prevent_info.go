@@ -58,6 +58,14 @@ type PreventClassifyDetail struct {
 	CreatedAt        string `json:"created_at"`
 }
 
+type PreventSwitch struct {
+	UserId        string `json:"user_id"`
+	IsBusMonitor  int    `json:"is_bus_monitor"`
+	IsLargeData   int    `json:"is_large_data"`
+	IsSpy         int    `json:"is_spy"`
+	IsCollectInfo int    `json:"is_collect_info"`
+}
+
 //type Prevent struct {
 //	PreventName string                 `json:"prevent_name"`
 //	PreventType int                    `json:"prevent_type"`
@@ -266,6 +274,17 @@ func (u *U) InsertUserPreventInfo() (err error) {
 
 	err = secret.InsertPreventInfo(u.UserId, u.UserIp, u.Domain, u.DomainTag, u.DomainSource, u.DomainSourceInfo, u.RiskLevel, list.DomainType)
 	if err != nil {
+		logging.Error(err)
+		return
+	}
+	return nil
+}
+
+//更新用户拦截开关
+func (p *PreventSwitch) UpdateUserPreventSwitch() (err error) {
+
+	ui, err := secret.UpdateUserConfig(p.UserId, p.IsLargeData, p.IsSpy, p.IsBusMonitor, p.IsCollectInfo)
+	if err != nil || ui == nil {
 		logging.Error(err)
 		return
 	}

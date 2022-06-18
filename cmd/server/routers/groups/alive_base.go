@@ -23,6 +23,8 @@ func SecretBaseRouter(Router *gin.RouterGroup) {
 		apiRouterV2.POST("user_prevent_info_classify/2.0.0", secret.UserPreventInfoClassify)
 		// 获取用户拦截信息分类详情接口
 		apiRouterV2.POST("user_prevent_info_classify_detail/2.0.0", secret.UserPreventInfoClassifyDetail)
+		// 获取用户拦截分类开关接口
+		apiRouterV2.POST("user_prevent_classify_switch/2.0.0", secret.UserPreventClassifySwitch)
 		// 用户拦截信息接口
 		apiRouterV2.POST("domain_prevent_add", secret.DomainPrevent)
 		// 用户数据存储缓存

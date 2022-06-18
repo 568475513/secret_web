@@ -30,7 +30,11 @@ type UId struct {
 }
 
 type UserConf struct {
-	UserId string `json:"user_id"`
+	UserId        string `json:"user_id"`
+	IsBusMonitor  int    `json:"is_bus_monitor"`
+	IsLargeData   int    `json:"is_large_data"`
+	IsSpy         int    `json:"is_spy"`
+	IsCollectInfo int    `json:"is_collect_info"`
 }
 
 // 获取用户信息

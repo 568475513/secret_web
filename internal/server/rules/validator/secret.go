@@ -23,12 +23,19 @@ type SecretUserInfoListRule struct {
 
 type SecretUserInfoClassifyRule struct {
 	UserId string `form:"user_id" json:"user_id" binding:"required"` // 用户id
-
 }
 
 type SecretUserInfoClassifyDetailRule struct {
 	UserId    string `form:"user_id" json:"user_id" binding:"required"`       // 用户id
 	DomainTag string `form:"domain_tag" json:"domain_tag" binding:"required"` //拦截类型
+}
+
+type SecretUserClassifySwitchRule struct {
+	UserId        string `form:"user_id" json:"user_id" binding:"required"` // 用户id
+	IsBusMonitor  int    `form:"is_bus_monitor" json:"is_bus_monitor"`
+	IsLargeData   int    `form:"is_large_data" json:"is_large_data"`
+	IsSpy         int    `form:"is_spy" json:"is_spy"`
+	IsCollectInfo int    `form:"is_collect_info" json:"is_collect_info"`
 }
 
 type DomainPreventRule struct {
