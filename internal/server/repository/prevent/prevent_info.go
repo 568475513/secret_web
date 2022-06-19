@@ -16,7 +16,7 @@ type U struct {
 	DomainSource     string
 	DomainSourceInfo string
 	RiskLevel        string
-	HighRisk         int
+	HighRisk         string
 	Page             int
 	PageSize         int
 }

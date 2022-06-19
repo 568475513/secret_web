@@ -7,6 +7,7 @@ import (
 	cache "github.com/patrickmn/go-cache"
 	uuid "github.com/satori/go.uuid"
 	jpushclient "github.com/ylywyn/jpush-api-go-client"
+	"math"
 	"strconv"
 	"time"
 )
@@ -29,6 +30,8 @@ type UserV2 struct {
 	UserName             string `json:"user_name"`
 	UserDnsPreventDomain string `json:"user_dns_prevent_domain"`
 	RegisterId           string `json:"register_id"`
+	Count                int    `json:"count"`
+	CreatedAt            int    `json:"created_at"`
 	UserConfig           UC     `json:"user_config"`
 }
 
@@ -145,6 +148,7 @@ func (u *UserV2) GetUserInfo() (*UserV2, error) {
 	u.UserId = ui.UserId
 	u.UserName = ui.UserName
 	u.UserIp = ui.UserIp
+	u.CreatedAt = int(math.Ceil(float64(time.Now().Unix()-ui.CreatedAt.Unix()) / float64(24*60*60)))
 
 	//判断用户是否存在registerId
 	if u.RegisterId != "" && ui.RegisterId == "" {
@@ -156,6 +160,7 @@ func (u *UserV2) GetUserInfo() (*UserV2, error) {
 		u.RegisterId = ui.RegisterId
 	}
 
+	//获取用户配置
 	uc, err := secret.GetUserConfig(u.UserId)
 	if err != nil || ui == nil {
 		logging.Error(err)
@@ -166,6 +171,15 @@ func (u *UserV2) GetUserInfo() (*UserV2, error) {
 	u.UserConfig.IsLargeData = uc.IsLargeData
 	u.UserConfig.IsSpy = uc.IsSpy
 	u.UserConfig.IsCollectInfo = uc.IsCollectInfo
+
+	//获取用户拦截天数以及拦截次数
+	c, err := secret.GetCountByUserId(u.UserId)
+	if err != nil {
+		logging.Error(err)
+		return nil, err
+	}
+	u.Count = c.PreventNum
+
 	return u, nil
 }
 

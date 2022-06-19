@@ -158,16 +158,16 @@ func SelectUserDataTime(userId string) (rs map[string][]UserWeekData, err error)
 }
 
 //获取用户类型详细数据
-func GetAllPreventDetailByUserId(userId string, highRisk, page, page_size int) (ps []PreventDetailList, err error) {
+func GetAllPreventDetailByUserId(userId, highRisk string, page, page_size int) (ps []PreventDetailList, err error) {
 
 	var (
 		p  PreventDetailList
 		rs *sql.Rows
 	)
-	if highRisk == 0 {
+	if highRisk == "" {
 		rs, err = db.Table("t_secret_user_data").Select("domain, created_at, domain_tag, domain_source, domain_source_info, risk_level").Where("user_id = ? ", userId).Limit(page_size).Offset((page - 1) * page_size).Order("created_at desc").Rows()
 	} else {
-		rs, err = db.Table("t_secret_user_data").Select("domain, created_at, domain_tag, domain_source, domain_source_info, risk_level").Where("user_id = ? and risk_level = ?", userId, "高风险").Limit(page_size).Offset((page - 1) * page_size).Order("created_at desc").Rows()
+		rs, err = db.Table("t_secret_user_data").Select("domain, created_at, domain_tag, domain_source, domain_source_info, risk_level").Where("user_id = ? and risk_level = ?", userId, highRisk).Limit(page_size).Offset((page - 1) * page_size).Order("created_at desc").Rows()
 	}
 
 	if err != nil && err != gorm.ErrRecordNotFound || rs == nil {

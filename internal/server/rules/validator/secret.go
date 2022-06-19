@@ -16,7 +16,7 @@ type SecretUserInfoRule struct {
 
 type SecretUserInfoListRule struct {
 	UserId   string `form:"user_id" json:"user_id" binding:"required"`     // 用户id
-	HighRisk int    `form:"high_risk" json:"high_risk"`                    // 是否高风险
+	HighRisk string `form:"high_risk" json:"high_risk"`                    // 是否高风险
 	PageSize int    `form:"page_size" json:"page_size" binding:"required"` // 页码大小
 	Page     int    `form:"page" json:"page" binding:"required"`           // 页码
 }
