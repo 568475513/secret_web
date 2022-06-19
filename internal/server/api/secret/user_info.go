@@ -123,3 +123,42 @@ func GetUserConfigList(c *gin.Context) {
 	}
 	app.OkWithData(uc, c)
 }
+
+//用户拦截分类开关接口
+func GetPreventList(c *gin.Context) {
+	var (
+		err error
+		req validator.UserPreventListRule
+	)
+	if err = app.ParseRequest(c, &req); err != nil {
+		return
+	}
+	s := map[int][]string{
+		1: {"mSpy", "eyeZy", "EasySpyApp", "麦苗守护"},
+		2: {"HubStaff", "Atto-Work", "OnTheClock"},
+		3: {"爱卡汽车", "营创书院"},
+		4: {"美团", "淘宝"},
+	}
+	app.OkWithData(s[req.PrevemtType], c)
+}
+
+//用户投诉接口
+func UserComplain(c *gin.Context) {
+	var (
+		err error
+		req validator.UserComplainRule
+		u   user.UserComplain
+	)
+	if err = app.ParseRequest(c, &req); err != nil {
+		return
+	}
+	u.UserId = req.UserId
+	u.ComplainType = req.ComplainType
+	u.ComplainMsg = req.ComplainMsg
+	u.ComplainContact = req.ComplainContact
+	err = u.InsertUserComplainData()
+	if err != nil {
+		app.FailWithMessage("获取用户配置", enums.ERROR, c)
+	}
+	app.OK(c)
+}

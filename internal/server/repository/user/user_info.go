@@ -54,6 +54,13 @@ type UserPrice struct {
 	Count int
 }
 
+type UserComplain struct {
+	UserId          string `json:"user_id"`
+	ComplainType    int    `json:"complain_type"`
+	ComplainMsg     string `json:"complain_msg"`
+	ComplainContact string `json:"complain_contact"`
+}
+
 const appKey = "11066b2bfdf825c774968dce"
 const secretKey = "d245c0ece98da21888765fa6"
 
@@ -293,4 +300,15 @@ func (u *User) GetUserDataWeekPush() (err error) {
 		}
 	}
 	return
+}
+
+//获取所有用户配置信息
+func (u *UserComplain) InsertUserComplainData() error {
+
+	err := secret.InsertUserComplain(u.UserId, u.ComplainMsg, u.ComplainContact, u.ComplainType)
+	if err != nil {
+		logging.Error(err)
+		return err
+	}
+	return nil
 }

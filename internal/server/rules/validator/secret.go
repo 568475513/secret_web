@@ -38,6 +38,17 @@ type SecretUserClassifySwitchRule struct {
 	IsCollectInfo int    `form:"is_collect_info" json:"is_collect_info"`
 }
 
+type UserPreventListRule struct {
+	PrevemtType int `form:"prevent_type" json:"prevent_type" binding:"required"` //拦截类型
+}
+
+type UserComplainRule struct {
+	UserId          string `form:"user_id" json:"user_id" binding:"required"`             //拦截用户id
+	ComplainType    int    `form:"complain_type" json:"complain_type" binding:"required"` //投诉类型
+	ComplainMsg     string `form:"complain_msg" json:"complain_msg" binding:"required"`   //投诉内容
+	ComplainContact string `form:"complain_contact" json:"complain_contact"`              //投诉内容
+}
+
 type DomainPreventRule struct {
 	Domain           string `form:"domain" json:"domain" binding:"required"`               // 拦截域名
 	UserId           string `form:"user_id" json:"user_id"`                                //拦截用户id
