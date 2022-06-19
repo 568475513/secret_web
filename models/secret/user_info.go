@@ -37,6 +37,13 @@ type UserConf struct {
 	IsCollectInfo int    `json:"is_collect_info"`
 }
 
+type UConf struct {
+	IsBusMonitor  int `json:"is_bus_monitor"`
+	IsLargeData   int `json:"is_large_data"`
+	IsSpy         int `json:"is_spy"`
+	IsCollectInfo int `json:"is_collect_info"`
+}
+
 // 获取用户信息
 func GetUserInfo(userId, userIp string) (su *SecretUser, err error) {
 
@@ -86,6 +93,24 @@ func RegisterUserV2(userId, userDPD, registerId string) (err error) {
 		return
 	}
 
+	return
+}
+
+//获取所有用户配置列表
+func GetAllUserConfigList() (UcList map[string]UConf, err error) {
+
+	var uc UserConf
+	rs, err := db.Table("t_secret_user_config").Select("user_id, is_bus_monitor, is_large_data, is_spy, is_collect_info").Rows()
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return
+	}
+	UcList = make(map[string]UConf)
+	if rs != nil {
+		for rs.Next() {
+			rs.Scan(&uc.UserId, &uc.IsBusMonitor, &uc.IsLargeData, &uc.IsSpy, &uc.IsCollectInfo)
+			UcList[uc.UserId] = UConf{IsSpy: uc.IsSpy, IsCollectInfo: uc.IsCollectInfo, IsLargeData: uc.IsLargeData, IsBusMonitor: uc.IsBusMonitor}
+		}
+	}
 	return
 }
 

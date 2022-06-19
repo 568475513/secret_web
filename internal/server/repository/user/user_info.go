@@ -183,6 +183,17 @@ func (u *UserV2) GetUserInfo() (*UserV2, error) {
 	return u, nil
 }
 
+//获取所有用户配置信息
+func (u *UC) GetUserConfList() (map[string]secret.UConf, error) {
+
+	ui, err := secret.GetAllUserConfigList()
+	if err != nil || ui == nil {
+		logging.Error(err)
+		return nil, err
+	}
+	return ui, nil
+}
+
 //获取用户周报数据
 func (u *User) WeekGetUserData() (err error) {
 

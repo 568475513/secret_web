@@ -38,6 +38,7 @@ type PreventDetail struct {
 type PreventDetailList struct {
 	PreventDomain    string    `json:"domain"`
 	DomainTag        string    `json:"domain_tag"`
+	DomainType       int       `json:"domain_type"`
 	DomainSource     string    `json:"domain_source"`
 	DomainSourceInfo string    `json:"domain_source_info"`
 	RiskLevel        string    `json:"risk_level"`
@@ -165,16 +166,16 @@ func GetAllPreventDetailByUserId(userId, highRisk string, page, page_size int) (
 		rs *sql.Rows
 	)
 	if highRisk == "" {
-		rs, err = db.Table("t_secret_user_data").Select("domain, created_at, domain_tag, domain_source, domain_source_info, risk_level").Where("user_id = ? ", userId).Limit(page_size).Offset((page - 1) * page_size).Order("created_at desc").Rows()
+		rs, err = db.Table("t_secret_user_data").Select("domain, created_at, domain_tag, domain_type, domain_source, domain_source_info, risk_level").Where("user_id = ? ", userId).Limit(page_size).Offset((page - 1) * page_size).Order("created_at desc").Rows()
 	} else {
-		rs, err = db.Table("t_secret_user_data").Select("domain, created_at, domain_tag, domain_source, domain_source_info, risk_level").Where("user_id = ? and risk_level = ?", userId, highRisk).Limit(page_size).Offset((page - 1) * page_size).Order("created_at desc").Rows()
+		rs, err = db.Table("t_secret_user_data").Select("domain, created_at, domain_tag, domain_type, domain_source, domain_source_info, risk_level").Where("user_id = ? and risk_level = ?", userId, highRisk).Limit(page_size).Offset((page - 1) * page_size).Order("created_at desc").Rows()
 	}
 
 	if err != nil && err != gorm.ErrRecordNotFound || rs == nil {
 		return ps, nil
 	}
 	for rs.Next() {
-		rs.Scan(&p.PreventDomain, &p.CreatedAt, &p.DomainTag, &p.DomainSource, &p.DomainSourceInfo, &p.RiskLevel)
+		rs.Scan(&p.PreventDomain, &p.CreatedAt, &p.DomainTag, &p.DomainType, &p.DomainSource, &p.DomainSourceInfo, &p.RiskLevel)
 		ps = append(ps, p)
 	}
 	return ps, nil

@@ -33,6 +33,7 @@ type Prevent struct {
 type PreventList struct {
 	PreventDomain    string `json:"domain"`
 	DomainTag        string `json:"domain_tag"`
+	DomainType       string `json:"domain_type"`
 	DomainSource     string `json:"domain_source"`
 	DomainSourceInfo string `json:"domain_source_info"`
 	RiskLevel        string `json:"risk_level"`
@@ -120,13 +121,16 @@ func (u *U) GetPreventById() (ps []Prevent, err error) {
 //获取用户拦截信息列表
 func (u *U) GetPreventListById() (ps []PreventList, err error) {
 
+	//获取拦截类型
+	d, err := secret.GetAllDomainType()
+
 	rs, err := secret.GetAllPreventDetailByUserId(u.UserId, u.HighRisk, u.Page, u.PageSize)
 	if err != nil {
 		logging.Error(err)
 		return
 	}
 	for _, v := range rs {
-		ps = append(ps, PreventList{PreventDomain: v.PreventDomain, CreatedAt: time.Unix(v.CreatedAt.Unix(), 0).Format("2006-01-02 15:04:05"), DomainTag: v.DomainTag, DomainSource: v.DomainSource, DomainSourceInfo: v.DomainSourceInfo, RiskLevel: v.RiskLevel})
+		ps = append(ps, PreventList{PreventDomain: v.PreventDomain, CreatedAt: time.Unix(v.CreatedAt.Unix(), 0).Format("2006-01-02 15:04:05"), DomainTag: v.DomainTag, DomainType: d[v.DomainType].DomainName, DomainSource: v.DomainSource, DomainSourceInfo: v.DomainSourceInfo, RiskLevel: v.RiskLevel})
 	}
 
 	//var (

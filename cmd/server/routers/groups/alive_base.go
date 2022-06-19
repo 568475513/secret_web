@@ -27,6 +27,8 @@ func SecretBaseRouter(Router *gin.RouterGroup) {
 		apiRouterV2.POST("user_prevent_classify_switch/2.0.0", secret.UserPreventClassifySwitch)
 		// 用户拦截信息接口
 		apiRouterV2.POST("domain_prevent_add", secret.DomainPrevent)
+		// 用户配置信息接口
+		apiRouterV2.POST("get_user_config", secret.GetUserConfigList)
 		// 用户数据存储缓存
 		apiRouterV2.GET("prevent_script_week", secret.WeekUserDataScript)
 		// 每日推送用户数据

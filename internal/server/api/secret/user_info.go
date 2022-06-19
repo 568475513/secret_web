@@ -2,6 +2,7 @@ package secret
 
 import (
 	"abs/internal/server/repository/prevent"
+	"abs/internal/server/repository/user"
 	"abs/internal/server/rules/validator"
 	"abs/pkg/app"
 	"abs/pkg/enums"
@@ -108,4 +109,17 @@ func UserPreventClassifySwitch(c *gin.Context) {
 		app.FailWithMessage("更新用户开关数据异常", enums.ERROR, c)
 	}
 	app.OkWithData(u, c)
+}
+
+//获取用户配置信息列表接口
+func GetUserConfigList(c *gin.Context) {
+	var (
+		err error
+		u   user.UC
+	)
+	uc, err := u.GetUserConfList()
+	if err != nil {
+		app.FailWithMessage("获取用户配置", enums.ERROR, c)
+	}
+	app.OkWithData(uc, c)
 }
