@@ -133,11 +133,81 @@ func GetPreventList(c *gin.Context) {
 	if err = app.ParseRequest(c, &req); err != nil {
 		return
 	}
-	s := map[int][]string{
-		1: {"mSpy", "eyeZy", "EasySpyApp", "麦苗守护"},
-		2: {"HubStaff", "Atto-Work", "OnTheClock"},
-		3: {"爱卡汽车", "营创书院"},
-		4: {"美团", "淘宝"},
+	s := map[int][]map[string]string{
+		1: {
+			0: {
+				"AppName": "mSpy",
+				"AppType": "间谍软件",
+				"AppRank": "1",
+				"AppLink": "",
+			},
+			1: {
+				"AppName": "eyeZy",
+				"AppType": "间谍软件",
+				"AppRank": "2",
+				"AppLink": "",
+			},
+			2: {
+				"AppName": "EasySpyApp",
+				"AppType": "间谍软件",
+				"AppRank": "3",
+				"AppLink": "",
+			},
+			3: {
+				"AppName": "麦苗守护",
+				"AppType": "间谍软件",
+				"AppRank": "4",
+				"AppLink": "",
+			},
+		},
+		2: {
+			0: {
+				"AppName": "HubStaff",
+				"AppType": "监控员工软件",
+				"AppRank": "1",
+				"AppLink": "",
+			},
+			1: {
+				"AppName": "Atto-Work",
+				"AppType": "监控员工软件",
+				"AppRank": "2",
+				"AppLink": "",
+			},
+			3: {
+				"AppName": "OnTheClock",
+				"AppType": "监控员工软件",
+				"AppRank": "3",
+				"AppLink": "",
+			},
+		},
+		3: {
+			0: {
+				"AppName": "爱卡汽车",
+				"AppType": "违规收集软件",
+				"AppRank": "1",
+				"AppLink": "",
+			},
+			1: {
+				"AppName": "营创书院",
+				"AppType": "违规收集软件",
+				"AppRank": "1",
+				"AppLink": "",
+			},
+		},
+		4: {
+			0: {
+				"AppName": "美团",
+				"AppType": "大数据滥收集软件",
+				"AppRank": "1",
+				"AppLink": "",
+			},
+			1: {
+				"AppName": "淘宝",
+				"AppType": "大数据滥收集软件",
+				"AppRank": "1",
+				"AppLink": "",
+			},
+		},
 	}
 	app.OkWithData(s[req.PrevemtType], c)
 }
