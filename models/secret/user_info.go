@@ -1,6 +1,7 @@
 package user
 
 import (
+	"abs/pkg/enums"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -97,18 +98,29 @@ func RegisterUserV2(userId, userDPD, registerId string) (err error) {
 }
 
 //获取所有用户配置列表
-func GetAllUserConfigList() (UcList map[string]UConf, err error) {
+func GetAllUserConfigList() (UcList map[string][]string, err error) {
 
 	var uc UserConf
 	rs, err := db.Table("t_secret_user_config").Select("user_id, is_bus_monitor, is_large_data, is_spy, is_collect_info").Rows()
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return
 	}
-	UcList = make(map[string]UConf)
+	UcList = make(map[string][]string)
 	if rs != nil {
 		for rs.Next() {
 			rs.Scan(&uc.UserId, &uc.IsBusMonitor, &uc.IsLargeData, &uc.IsSpy, &uc.IsCollectInfo)
-			UcList[uc.UserId] = UConf{IsSpy: uc.IsSpy, IsCollectInfo: uc.IsCollectInfo, IsLargeData: uc.IsLargeData, IsBusMonitor: uc.IsBusMonitor}
+			if uc.IsSpy == 1 {
+				UcList[uc.UserId] = append(UcList[uc.UserId], enums.IsSpy)
+			}
+			if uc.IsCollectInfo == 1 {
+				UcList[uc.UserId] = append(UcList[uc.UserId], enums.IsCollectInfo)
+			}
+			if uc.IsLargeData == 1 {
+				UcList[uc.UserId] = append(UcList[uc.UserId], enums.IsLargeData)
+			}
+			if uc.IsBusMonitor == 1 {
+				UcList[uc.UserId] = append(UcList[uc.UserId], enums.IsBusMonitor)
+			}
 		}
 	}
 	return

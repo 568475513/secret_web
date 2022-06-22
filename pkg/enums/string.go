@@ -63,4 +63,9 @@ const (
 
 	//直播房间页
 	AliveRoomPage = 0 // 直播房间页
+
+	IsSpy         = "间谍软件"
+	IsCollectInfo = "违规手机信息"
+	IsLargeData   = "大数据滥收集"
+	IsBusMonitor  = "监控员工软件"
 )

@@ -191,7 +191,7 @@ func (u *UserV2) GetUserInfo() (*UserV2, error) {
 }
 
 //获取所有用户配置信息
-func (u *UC) GetUserConfList() (map[string]secret.UConf, error) {
+func (u *UC) GetUserConfList() (map[string][]string, error) {
 
 	ui, err := secret.GetAllUserConfigList()
 	if err != nil || ui == nil {
