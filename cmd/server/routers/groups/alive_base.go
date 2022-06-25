@@ -31,6 +31,8 @@ func SecretBaseRouter(Router *gin.RouterGroup) {
 		apiRouterV2.POST("domain_prevent_add", secret.DomainPrevent)
 		// 用户配置信息接口
 		apiRouterV2.POST("get_user_config", secret.GetUserConfigList)
+		// 用户购买会员回调接口
+		apiRouterV2.POST("user_buy", secret.UserBuy)
 		// 获取支持拦截类型
 		apiRouterV2.POST("get_prevent_list", secret.GetPreventList)
 		// 用户数据存储缓存

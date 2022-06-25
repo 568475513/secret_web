@@ -42,6 +42,11 @@ type UserPreventListRule struct {
 	PrevemtType int `form:"prevent_type" json:"prevent_type" binding:"required"` //拦截类型
 }
 
+type UserBuyRule struct {
+	UserId    string `form:"user_id" json:"user_id" binding:"required"`       // 用户id
+	ValidTime int    `form:"valid_time" json:"valid_time" binding:"required"` //用户有效期
+}
+
 type UserComplainRule struct {
 	UserId          string `form:"user_id" json:"user_id" binding:"required"`             //拦截用户id
 	ComplainType    int    `form:"complain_type" json:"complain_type" binding:"required"` //投诉类型

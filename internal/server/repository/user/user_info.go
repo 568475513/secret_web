@@ -36,11 +36,12 @@ type UserV2 struct {
 }
 
 type UC struct {
-	IsBuy         int `json:"is_buy"`
-	IsBusMonitor  int `json:"is_bus_monitor"`
-	IsLargeData   int `json:"is_large_data"`
-	IsSpy         int `json:"is_spy"`
-	IsCollectInfo int `json:"is_collect_info"`
+	IsBuy         int    `json:"is_buy"`
+	IsBusMonitor  int    `json:"is_bus_monitor"`
+	IsLargeData   int    `json:"is_large_data"`
+	IsSpy         int    `json:"is_spy"`
+	IsCollectInfo int    `json:"is_collect_info"`
+	ExpiredAt     string `json:"expired_at"`
 }
 
 type UserPrevent struct {
@@ -178,6 +179,7 @@ func (u *UserV2) GetUserInfo() (*UserV2, error) {
 	u.UserConfig.IsLargeData = uc.IsLargeData
 	u.UserConfig.IsSpy = uc.IsSpy
 	u.UserConfig.IsCollectInfo = uc.IsCollectInfo
+	u.UserConfig.ExpiredAt = uc.ExpiredAt.Format("2006-01-02 15:04:05")
 
 	//获取用户拦截天数以及拦截次数
 	c, err := secret.GetCountByUserId(u.UserId)
@@ -199,6 +201,18 @@ func (u *UC) GetUserConfList() (map[string][]string, error) {
 		return nil, err
 	}
 	return ui, nil
+}
+
+//用户购买会员回调
+func UserBuyVip(userId string, year int) (err error) {
+
+	etime := time.Now().AddDate(year, 0, 0)
+	err = secret.UpdateUserVipExpired(userId, etime)
+	if err != nil {
+		logging.Error(err)
+		return err
+	}
+	return nil
 }
 
 //获取用户周报数据

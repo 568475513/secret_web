@@ -101,7 +101,7 @@ func RegisterUserV2(userId, userDPD, registerId string) (err error) {
 func GetAllUserConfigList() (UcList map[string][]string, err error) {
 
 	var uc UserConf
-	rs, err := db.Table("t_secret_user_config").Select("user_id, is_bus_monitor, is_large_data, is_spy, is_collect_info").Rows()
+	rs, err := db.Table("t_secret_user_config").Select("user_id, is_bus_monitor, is_large_data, is_spy, is_collect_info").Where("expired_at > ?", time.Now()).Rows()
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return
 	}
