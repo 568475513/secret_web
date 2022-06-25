@@ -157,6 +157,7 @@ func (u *UserV2) GetUserInfo() (*UserV2, error) {
 	u.UserName = ui.UserName
 	u.UserIp = ui.UserIp
 	u.CreatedAt = int(math.Ceil(float64(time.Now().Unix()-ui.CreatedAt.Unix()) / float64(24*60*60)))
+	u.UserDnsPreventDomain = ui.UserDnsPreventDomain
 
 	//判断用户是否存在registerId
 	if u.RegisterId != "" && ui.RegisterId == "" {
