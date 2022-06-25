@@ -16,6 +16,7 @@ type U struct {
 	DomainSource     string
 	DomainSourceInfo string
 	RiskLevel        string
+	IsPrevent        int
 	HighRisk         string
 	Page             int
 	PageSize         int
@@ -276,7 +277,7 @@ func (u *U) InsertUserPreventInfo() (err error) {
 		return
 	}
 
-	err = secret.InsertPreventInfo(u.UserId, u.UserIp, u.Domain, u.DomainTag, u.DomainSource, u.DomainSourceInfo, u.RiskLevel, list.DomainType)
+	err = secret.InsertPreventInfo(u.UserId, u.UserIp, u.Domain, u.DomainTag, u.DomainSource, u.DomainSourceInfo, u.RiskLevel, list.DomainType, u.IsPrevent)
 	if err != nil {
 		logging.Error(err)
 		return

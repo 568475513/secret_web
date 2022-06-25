@@ -26,6 +26,7 @@ func DomainPrevent(c *gin.Context) {
 	u.DomainSource = req.DomainSource
 	u.DomainSourceInfo = req.DomainSourceInfo
 	u.RiskLevel = req.RiskLevel
+	u.IsPrevent = req.IsPrevent
 	err = u.InsertUserPreventInfo()
 	if err != nil {
 		app.FailWithMessage("录入用户数据异常", enums.ERROR, c)

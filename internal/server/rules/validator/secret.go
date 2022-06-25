@@ -58,4 +58,5 @@ type DomainPreventRule struct {
 	DomainSource     string `form:"domain_source" json:"domain_source" binding:"required"` //拦截类型
 	DomainSourceInfo string `form:"domain_source_info" json:"domain_source_info"`          //拦截类型
 	RiskLevel        string `form:"risk_level" json:"risk_level"`                          //拦截类型
+	IsPrevent        int    `form:"is_prevent" json:"is_prevent"`
 }

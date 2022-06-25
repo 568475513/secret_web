@@ -60,6 +60,7 @@ type PreventInfo struct {
 	DomainSource     string `json:"domain_source"`
 	DomainSourceInfo string `json:"domain_source_info"`
 	RiskLevel        string `json:"risk_level"`
+	IsPrevent        int    `json:"is_prevent"`
 	Domain           string `json:"domain"`
 	UserIp           string `json:"user_ip"`
 }
@@ -133,9 +134,9 @@ func GetPreventDetailByUserId(userId, userIp, dt string, page, page_size int) (p
 }
 
 //记录用户拦截信息
-func InsertPreventInfo(userId, userIp, domain, domainTag, domainSource, domainSourceInfo, riskLevel string, domainType int) (err error) {
+func InsertPreventInfo(userId, userIp, domain, domainTag, domainSource, domainSourceInfo, riskLevel string, domainType, isPrevent int) (err error) {
 
-	p := PreventInfo{UserId: userId, UserIp: userIp, Domain: domain, DomainType: domainType, DomainTag: domainTag, DomainSource: domainSource, DomainSourceInfo: domainSourceInfo, RiskLevel: riskLevel}
+	p := PreventInfo{UserId: userId, UserIp: userIp, Domain: domain, DomainType: domainType, DomainTag: domainTag, DomainSource: domainSource, DomainSourceInfo: domainSourceInfo, RiskLevel: riskLevel, IsPrevent: isPrevent}
 	err = db.Table("t_secret_user_data").Create(p).Error
 	return err
 }
