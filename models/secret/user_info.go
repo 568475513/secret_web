@@ -90,7 +90,7 @@ func RegisterUserV2(userId, userDPD, registerId string) (err error) {
 	}
 
 	uid.UserId = userId
-	uid.ExpiredAt = time.Now().Format("2006-01-02 15:04:05")
+	uid.ExpiredAt = "0000-00-00 00:00:00"
 	err = db.Table("t_secret_user_config").Create(uid).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return
