@@ -133,11 +133,11 @@ func UserBuy(c *gin.Context) {
 	if err = app.ParseRequest(c, &req); err != nil {
 		return
 	}
-	err = user.UserBuyVip(req.UserId, req.ValidTime)
+	t, err := user.UserBuyVip(req.UserId, req.ValidTime)
 	if err != nil {
 		app.FailWithMessage("用户购买会员失败", enums.ERROR, c)
 	}
-	app.OK(c)
+	app.OkWithData(t, c)
 }
 
 //用户拦截分类开关接口

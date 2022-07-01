@@ -62,6 +62,10 @@ type UserComplain struct {
 	ComplainContact string `json:"complain_contact"`
 }
 
+type Expired struct {
+	ExpiredAt string `json:"expired_at"`
+}
+
 const appKey = "11066b2bfdf825c774968dce"
 const secretKey = "d245c0ece98da21888765fa6"
 
@@ -205,13 +209,14 @@ func (u *UC) GetUserConfList() (map[string][]string, error) {
 }
 
 //用户购买会员回调
-func UserBuyVip(userId string, year int) (err error) {
+func UserBuyVip(userId string, year int) (ti Expired, err error) {
 
+	e := Expired{}
 	t := time.Time{}
 	s, err := secret.GetUserConfig(userId)
 	if err != nil {
 		logging.Error(err)
-		return err
+		return e, err
 	}
 	if time.Now().Unix() > s.ExpiredAt.Unix() {
 		t = time.Now().AddDate(year, 0, 0)
@@ -221,9 +226,10 @@ func UserBuyVip(userId string, year int) (err error) {
 	err = secret.UpdateUserVipExpired(userId, t)
 	if err != nil {
 		logging.Error(err)
-		return err
+		return e, err
 	}
-	return nil
+	e.ExpiredAt = t.Format("2006-01-02 15:04:05")
+	return e, nil
 }
 
 //获取用户周报数据

@@ -36,6 +36,7 @@ type UserConf struct {
 	IsLargeData   int    `json:"is_large_data"`
 	IsSpy         int    `json:"is_spy"`
 	IsCollectInfo int    `json:"is_collect_info"`
+	ExpiredAt     string `json:"expired_at"`
 }
 
 type UConf struct {
@@ -89,6 +90,7 @@ func RegisterUserV2(userId, userDPD, registerId string) (err error) {
 	}
 
 	uid.UserId = userId
+	uid.ExpiredAt = time.Now().Format("2006-01-02 15:04:05")
 	err = db.Table("t_secret_user_config").Create(uid).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return
