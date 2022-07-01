@@ -207,8 +207,18 @@ func (u *UC) GetUserConfList() (map[string][]string, error) {
 //用户购买会员回调
 func UserBuyVip(userId string, year int) (err error) {
 
-	etime := time.Now().AddDate(year, 0, 0)
-	err = secret.UpdateUserVipExpired(userId, etime)
+	t := time.Time{}
+	s, err := secret.GetUserConfig(userId)
+	if err != nil {
+		logging.Error(err)
+		return err
+	}
+	if time.Now().Unix() > s.ExpiredAt.Unix() {
+		t = time.Now().AddDate(year, 0, 0)
+	} else {
+		t = s.ExpiredAt.AddDate(year, 0, 0)
+	}
+	err = secret.UpdateUserVipExpired(userId, t)
 	if err != nil {
 		logging.Error(err)
 		return err

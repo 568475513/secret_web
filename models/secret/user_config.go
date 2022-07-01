@@ -60,6 +60,6 @@ func UpdateUserConfig(userId string, isLargeData, isSpy, isBusMonitor, isCollect
 //更新用户积分
 func UpdateUserVipExpired(userId string, time time.Time) (err error) {
 
-	err = db.Table("t_secret_user_config").Where("user_id=?", userId).Update("expired_at", time).Error
+	err = db.Table("t_secret_user_config").Where("user_id=?", userId).Update(map[string]interface{}{"expired_at": time, "is_buy": 1}).Error
 	return
 }
