@@ -38,6 +38,7 @@ type PreventList struct {
 	DomainSource     string `json:"domain_source"`
 	DomainSourceInfo string `json:"domain_source_info"`
 	RiskLevel        string `json:"risk_level"`
+	IsPrevent        int    `json:"is_prevent"`
 	CreatedAt        string `json:"created_at"`
 }
 
@@ -57,6 +58,7 @@ type PreventClassifyDetail struct {
 	DomainSource     string `json:"domain_source"`
 	DomainSourceInfo string `json:"domain_source_info"`
 	RiskLevel        string `json:"risk_level"`
+	IsPrevent        int    `json:"is_prevent"`
 	CreatedAt        string `json:"created_at"`
 }
 
@@ -131,7 +133,7 @@ func (u *U) GetPreventListById() (ps []PreventList, err error) {
 		return
 	}
 	for _, v := range rs {
-		ps = append(ps, PreventList{PreventDomain: v.PreventDomain, CreatedAt: time.Unix(v.CreatedAt.Unix(), 0).Format("2006-01-02 15:04:05"), DomainTag: v.DomainTag, DomainType: d[v.DomainType].DomainName, DomainSource: v.DomainSource, DomainSourceInfo: v.DomainSourceInfo, RiskLevel: v.RiskLevel})
+		ps = append(ps, PreventList{PreventDomain: v.PreventDomain, CreatedAt: time.Unix(v.CreatedAt.Unix(), 0).Format("2006-01-02 15:04:05"), DomainTag: v.DomainTag, DomainType: d[v.DomainType].DomainName, DomainSource: v.DomainSource, DomainSourceInfo: v.DomainSourceInfo, RiskLevel: v.RiskLevel, IsPrevent: v.IsPrevent})
 	}
 
 	//var (
@@ -219,7 +221,7 @@ func (u *U) GetPreventClassifyDetailById() (ps []PreventClassifyDetail, err erro
 		return
 	}
 	for _, v := range rs {
-		ps = append(ps, PreventClassifyDetail{PreventDomain: v.PreventDomain, CreatedAt: time.Unix(v.CreatedAt.Unix(), 0).Format("2006-01-02 15:04:05"), DomainTag: v.DomainTag, DomainSource: v.DomainSource, DomainSourceInfo: v.DomainSourceInfo, RiskLevel: v.RiskLevel})
+		ps = append(ps, PreventClassifyDetail{PreventDomain: v.PreventDomain, CreatedAt: time.Unix(v.CreatedAt.Unix(), 0).Format("2006-01-02 15:04:05"), DomainTag: v.DomainTag, DomainSource: v.DomainSource, DomainSourceInfo: v.DomainSourceInfo, RiskLevel: v.RiskLevel, IsPrevent: v.IsPrevent})
 	}
 
 	//var (
