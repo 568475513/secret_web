@@ -81,7 +81,7 @@ func (u *User) GetUserOnlyId() *User {
 	user_id := uuid.NewV4()
 	u.UserId = user_id.String()
 	u.UserPrice = 80.00000
-	u.UserDnsPreventDomain = "https://test.privacy.prisecurity.com/dns-query/" + u.UserId
+	u.UserDnsPreventDomain = "https://privacy.prisecurity.com/dns-query/" + u.UserId
 	secret.RegisterUser(u.UserId, u.UserDnsPreventDomain, u.RegisterId, u.UserPrice)
 	return u
 }
@@ -91,7 +91,7 @@ func (u *UserV2) GetUserOnlyId() *UserV2 {
 
 	user_id := uuid.NewV4()
 	u.UserId = user_id.String()
-	u.UserDnsPreventDomain = "https://privacy.prisecurity.com/dns-query/" + u.UserId
+	u.UserDnsPreventDomain = "https://test.privacy.prisecurity.com/dns-query/" + u.UserId
 	secret.RegisterUserV2(u.UserId, u.UserDnsPreventDomain, u.RegisterId)
 	return u
 }
