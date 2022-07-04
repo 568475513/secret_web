@@ -393,7 +393,7 @@ func GetPreventList(c *gin.Context) {
 				"AppLink": "",
 			},
 			4: {
-				"AppName": "MobTech",
+				"AppName": "GrowingIO",
 				"AppType": "大数据滥收集软件",
 				"AppRank": "0",
 				"AppLink": "",
