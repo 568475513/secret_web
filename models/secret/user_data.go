@@ -224,3 +224,25 @@ func GetAllPreventClassifyDetailByUserId(userId, domainTag string) (ps []Prevent
 	}
 	return ps, nil
 }
+
+//获取用户拦截类型数
+func GetPreventCountByUserIdLastDay(userId string) (tcs map[int]int, err error) {
+
+	var (
+		tc Prevent
+		rs *sql.Rows
+	)
+	t := time.Now().Add(-1 * time.Hour * 24).Format("2006-01-02")
+	now := time.Now().Format("2006-01-02")
+	rs, err = db.Table("t_secret_user_data").Select("domain_type , count(id) as count").Where("user_id = ? and created_at >= ? and created_at < ?", userId, t, now).Group("domain_type").Rows()
+
+	if err != nil || rs == nil {
+		return nil, nil
+	}
+	tcs = make(map[int]int)
+	for rs.Next() {
+		rs.Scan(&tc.PreventName, &tc.PreventNum)
+		tcs[tc.PreventName] = tc.PreventNum
+	}
+	return
+}

@@ -68,4 +68,9 @@ const (
 	IsCollectInfo = "违规收集信息"
 	IsLargeData   = "大数据滥用"
 	IsBusMonitor  = "企业监控"
+
+	IsSpyCode         = 5
+	IsCollectInfoCode = 6
+	IsLargeDataCode   = 4
+	IsBusMonitorCode  = 3
 )

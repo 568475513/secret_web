@@ -2,8 +2,10 @@ package prevent
 
 import (
 	secret "abs/models/secret"
+	"abs/pkg/enums"
 	"abs/pkg/logging"
 	"abs/pkg/util"
+	"github.com/patrickmn/go-cache"
 	"time"
 )
 
@@ -76,6 +78,12 @@ type PreventSwitch struct {
 //	PreventNum  int                    `json:"prevent_num"`
 //	PreventData []secret.PreventDomain `json:"prevent_data"`
 //}
+
+var GoCache *cache.Cache
+
+func init() {
+	GoCache = cache.New(cache.NoExpiration, 60*time.Second)
+}
 
 //获取用户拦截信息
 func (u *U) GetPreventById() (ps []Prevent, err error) {
@@ -284,7 +292,90 @@ func (u *U) InsertUserPreventInfo() (err error) {
 		logging.Error(err)
 		return
 	}
+	if u.RiskLevel == "高风险" {
+		//获取用户配置信息
+		c, err := secret.GetUserConfig(u.UserId)
+		if err != nil {
+			logging.Error(err)
+		}
+		Isbuy := false
+		if c.IsBuy == 1 && c.ExpiredAt.Unix() > time.Now().Unix() {
+			Isbuy = true
+		}
+		//获取用户注册id
+		ui, err = secret.GetUserInfo(u.UserId, "")
+		if err != nil {
+			logging.Error(err)
+			return err
+		}
+		if Isbuy {
+			msg := u.DomainTag + "软件正在监控您的手机，已被拦截，\n" +
+				"点击查看拦截详情"
+			err := util.SendPushMsg(ui.RegisterId, msg)
+			if err != nil {
+				logging.Error(err)
+			}
+		} else {
+			msg := u.DomainTag + "软件正在监控您的手机，您可以开启\n" +
+				"隐私安全模式进行拦截，点击查看详情"
+			err := util.SendPushMsg(ui.RegisterId, msg)
+			if err != nil {
+				logging.Error(err)
+			}
+		}
+	}
+
+	//如果用户拦截到违规收集app数据则发送推送
+	if u.DomainType == enums.IsCollectInfo && !GetUserFirstPushV(u.UserId, u.DomainTag) {
+		//获取用户配置信息
+		c, err := secret.GetUserConfig(u.UserId)
+		if err != nil {
+			logging.Error(err)
+		}
+		Isbuy := false
+		if c.IsBuy == 1 && c.ExpiredAt.Unix() > time.Now().Unix() {
+			Isbuy = true
+		}
+		//获取用户注册id
+		ui, err = secret.GetUserInfo(u.UserId, "")
+		if err != nil {
+			logging.Error(err)
+			return err
+		}
+		if Isbuy {
+			msg := "系统检测到" + u.DomainTag + "正在运行，该应用\n" +
+				"曾被国家通报存在违规收集个人信息行为，\n" +
+				"您已开启隐私安全模式，可以安全使用该应用。"
+			err := util.SendPushMsg(ui.RegisterId, msg)
+			if err != nil {
+				logging.Error(err)
+			}
+		} else {
+			msg := "系统检测到" + u.DomainTag + "正在运行，该应用\n" +
+				"曾被国家通报存在违规收集个人信息行为，\n" +
+				"您可以开启隐私安全模式进行拦截，点击查看详情。"
+			err := util.SendPushMsg(ui.RegisterId, msg)
+			if err != nil {
+				logging.Error(err)
+			}
+		}
+		err = GoCache.Add(u.UserId+":"+u.DomainTag, 1, cache.NoExpiration)
+		if err != nil {
+			logging.Error(err)
+		}
+	}
 	return nil
+}
+
+func GetUserFirstPushV(userId, domainTag string) (in bool) {
+
+	r, t := GoCache.Get(userId + ":" + domainTag)
+	if t == true && r != nil {
+		if r == 1 {
+			in = true
+		}
+	}
+	return
 }
 
 //更新用户拦截开关

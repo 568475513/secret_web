@@ -41,5 +41,7 @@ func SecretBaseRouter(Router *gin.RouterGroup) {
 		apiRouterV2.GET("prevent_script_day", secret.DayUserDataScript)
 		// 每周日推送用户数据
 		apiRouterV2.GET("prevent_script_week_push", secret.DayUserDataPushScript)
+		// 每日推送用户数据2.0
+		apiRouterV2.GET("prevent_script_day/2.0.0", secret.DayUserDataScript2)
 	}
 }

@@ -180,3 +180,21 @@ func GetUserIdAndRegisterID() (err error, ids map[string]UId) {
 	}
 	return
 }
+
+//获取用户id和极光推送id
+func GetUidRid() (err error, ids map[string]UId) {
+
+	var ui UId
+	ids = make(map[string]UId)
+	rs, err := db.Table("t_secret_user").Select("user_id, register_id").Where("register_id != '' and user_dns_prevent_domain like 'https://test.privacy.prisecurity.com/%'").Rows()
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return
+	}
+	if rs != nil {
+		for rs.Next() {
+			rs.Scan(&ui.UserId, &ui.RegisterId)
+			ids[ui.UserId] = ui
+		}
+	}
+	return
+}

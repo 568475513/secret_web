@@ -2,7 +2,9 @@ package user
 
 import (
 	secret "abs/models/secret"
+	"abs/pkg/enums"
 	"abs/pkg/logging"
+	"abs/pkg/util"
 	"fmt"
 	cache "github.com/patrickmn/go-cache"
 	uuid "github.com/satori/go.uuid"
@@ -292,6 +294,85 @@ func (u *User) GetUserPriceDay() (err error) {
 			fmt.Printf("err:%s", err.Error())
 		} else {
 			fmt.Printf("ok:%s", str)
+		}
+	}
+	return
+}
+
+//获取每日用户数据
+func (u *User) GetUserPriceDay2() (err error) {
+
+	// 获取用户id以及registerId列表
+	err, ids := secret.GetUidRid()
+	if err != nil {
+		logging.Error(err)
+	}
+	for k, v := range ids {
+		c, err := secret.GetUserConfig(k)
+		if err != nil {
+			logging.Error(err)
+		}
+		Isbuy := false
+		if c.IsBuy == 1 && c.ExpiredAt.Unix() > time.Now().Unix() {
+			Isbuy = true
+		}
+		d, err := secret.GetPreventCountByUserIdLastDay(k)
+		if err != nil {
+			logging.Error(err)
+		}
+		count := 0
+		spy := 0
+		buz := 0
+		col := 0
+		lar := 0
+		if Isbuy {
+			for k, v := range d {
+				count = count + v
+				if k == enums.IsSpyCode {
+					spy = v
+				}
+				if k == enums.IsBusMonitorCode {
+					buz = v
+				}
+				if k == enums.IsCollectInfoCode {
+					col = v
+				}
+				if k == enums.IsLargeDataCode {
+					lar = v
+				}
+			}
+			msg := fmt.Sprintf("过去24小时内已为您拦截%d条隐私监控行为，\n"+
+				"其中间谍软件拦截%d条，企业监控拦截%d条，\n"+
+				"违规收集信息拦截%d条，大数据滥收集拦截%d条\n"+
+				"其中拦截最多的应用是mSpy，点击查看详情", count, spy, buz, col, lar)
+			err := util.SendPushMsg(v.RegisterId, msg)
+			if err != nil {
+				logging.Error(err)
+			}
+		} else {
+			for k, v := range d {
+				count = count + v
+				if k == enums.IsSpyCode {
+					spy = v
+				}
+				if k == enums.IsBusMonitorCode {
+					buz = v
+				}
+				if k == enums.IsCollectInfoCode {
+					col = v
+				}
+				if k == enums.IsLargeDataCode {
+					lar = v
+				}
+			}
+			msg := fmt.Sprintf("过去24小时内已发现%d条隐私监控行为，\n"+
+				"其中间谍软件%d条，企业监控%d条，\n"+
+				"违规收集信息%d条，大数据滥收集%d条，\n"+
+				"您可以开启隐私安全模式进行拦截，点击查看详情", count, spy, buz, col, lar)
+			err := util.SendPushMsg(v.RegisterId, msg)
+			if err != nil {
+				logging.Error(err)
+			}
 		}
 	}
 	return

@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"fmt"
+	jpushclient "github.com/ylywyn/jpush-api-go-client"
 	"os"
 	"reflect"
 	"strings"
@@ -282,6 +283,45 @@ func GetPrice(price float64) (prices float64) {
 	default:
 		prices = price
 		break
+	}
+	return
+}
+
+const appKey = "11066b2bfdf825c774968dce"
+const secretKey = "d245c0ece98da21888765fa6"
+
+//获取每日用户数据
+func SendPushMsg(registerId string, msg interface{}) (err error) {
+	var (
+		pf     jpushclient.Platform
+		ad     jpushclient.Audience
+		op     jpushclient.Option
+		notice jpushclient.Notice
+		m      jpushclient.Message
+	)
+	pf.Add(jpushclient.IOS)
+	op.ApnsProduction = true
+	ad.SetID([]string{registerId})
+	notice.SetIOSNotice(&jpushclient.IOSNotice{Alert: msg})
+	m.Title = "Test Msg"
+	m.Content = "123123"
+	m.Extras = map[string]interface{}{
+		"url": "https://www.baidu.com/",
+	}
+	payload := jpushclient.NewPushPayLoad()
+	payload.SetPlatform(&pf)
+	payload.SetAudience(&ad)
+	payload.SetNotice(&notice)
+	payload.SetOptions(&op)
+	payload.SetMessage(&m)
+	bytes, _ := payload.ToBytes()
+	fmt.Printf("%s\r\n", string(bytes))
+	c := jpushclient.NewPushClient(secretKey, appKey)
+	str, err := c.Send(bytes)
+	if err != nil {
+		fmt.Printf("err:%s", err.Error())
+	} else {
+		fmt.Printf("ok:%s", str)
 	}
 	return
 }
