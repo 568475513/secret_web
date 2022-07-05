@@ -291,7 +291,7 @@ const appKey = "11066b2bfdf825c774968dce"
 const secretKey = "d245c0ece98da21888765fa6"
 
 //获取每日用户数据
-func SendPushMsg(registerId string, msg interface{}) (err error) {
+func SendPushMsg(registerId, url string, msg interface{}) (err error) {
 	var (
 		pf     jpushclient.Platform
 		ad     jpushclient.Audience
@@ -304,9 +304,9 @@ func SendPushMsg(registerId string, msg interface{}) (err error) {
 	ad.SetID([]string{registerId})
 	notice.SetIOSNotice(&jpushclient.IOSNotice{Alert: msg})
 	m.Title = "Test Msg"
-	m.Content = "123123"
+	m.Content = ""
 	m.Extras = map[string]interface{}{
-		"url": "https://www.baidu.com/",
+		"url": url,
 	}
 	payload := jpushclient.NewPushPayLoad()
 	payload.SetPlatform(&pf)

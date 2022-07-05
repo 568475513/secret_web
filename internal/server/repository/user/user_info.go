@@ -345,7 +345,7 @@ func (u *User) GetUserPriceDay2() (err error) {
 				"其中间谍软件拦截%d条，企业监控拦截%d条，\n"+
 				"违规收集信息拦截%d条，大数据滥收集拦截%d条\n"+
 				"其中拦截最多的应用是mSpy，点击查看详情", count, spy, buz, col, lar)
-			err := util.SendPushMsg(v.RegisterId, msg)
+			err := util.SendPushMsg(v.RegisterId, "", msg)
 			if err != nil {
 				logging.Error(err)
 			}
@@ -369,7 +369,7 @@ func (u *User) GetUserPriceDay2() (err error) {
 				"其中间谍软件%d条，企业监控%d条，\n"+
 				"违规收集信息%d条，大数据滥收集%d条，\n"+
 				"您可以开启隐私安全模式进行拦截，点击查看详情", count, spy, buz, col, lar)
-			err := util.SendPushMsg(v.RegisterId, msg)
+			err := util.SendPushMsg(v.RegisterId, "", msg)
 			if err != nil {
 				logging.Error(err)
 			}

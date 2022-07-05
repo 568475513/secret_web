@@ -311,14 +311,14 @@ func (u *U) InsertUserPreventInfo() (err error) {
 		if Isbuy {
 			msg := u.DomainTag + "软件正在监控您的手机，已被拦截，\n" +
 				"点击查看拦截详情"
-			err := util.SendPushMsg(ui.RegisterId, msg)
+			err := util.SendPushMsg(ui.RegisterId, "", msg)
 			if err != nil {
 				logging.Error(err)
 			}
 		} else {
 			msg := u.DomainTag + "软件正在监控您的手机，您可以开启\n" +
 				"隐私安全模式进行拦截，点击查看详情"
-			err := util.SendPushMsg(ui.RegisterId, msg)
+			err := util.SendPushMsg(ui.RegisterId, "", msg)
 			if err != nil {
 				logging.Error(err)
 			}
@@ -346,7 +346,7 @@ func (u *U) InsertUserPreventInfo() (err error) {
 			msg := "系统检测到" + u.DomainTag + "正在运行，该应用\n" +
 				"曾被国家通报存在违规收集个人信息行为，\n" +
 				"您已开启隐私安全模式，可以安全使用该应用。"
-			err := util.SendPushMsg(ui.RegisterId, msg)
+			err := util.SendPushMsg(ui.RegisterId, "", msg)
 			if err != nil {
 				logging.Error(err)
 			}
@@ -354,7 +354,7 @@ func (u *U) InsertUserPreventInfo() (err error) {
 			msg := "系统检测到" + u.DomainTag + "正在运行，该应用\n" +
 				"曾被国家通报存在违规收集个人信息行为，\n" +
 				"您可以开启隐私安全模式进行拦截，点击查看详情。"
-			err := util.SendPushMsg(ui.RegisterId, msg)
+			err := util.SendPushMsg(ui.RegisterId, "", msg)
 			if err != nil {
 				logging.Error(err)
 			}
