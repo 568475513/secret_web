@@ -327,6 +327,10 @@ func (u *U) InsertUserPreventInfo() (err error) {
 
 	//如果用户拦截到违规收集app数据则发送推送
 	if u.DomainType == enums.IsCollectInfo && !GetUserFirstPushV(u.UserId, u.DomainTag) {
+		err = GoCache.Add(u.UserId+":"+u.DomainTag, 1, cache.NoExpiration)
+		if err != nil {
+			logging.Error(err)
+		}
 		//获取用户配置信息
 		c, err := secret.GetUserConfig(u.UserId)
 		if err != nil {
@@ -358,10 +362,6 @@ func (u *U) InsertUserPreventInfo() (err error) {
 			if err != nil {
 				logging.Error(err)
 			}
-		}
-		err = GoCache.Add(u.UserId+":"+u.DomainTag, 1, cache.NoExpiration)
-		if err != nil {
-			logging.Error(err)
 		}
 	}
 	return nil
