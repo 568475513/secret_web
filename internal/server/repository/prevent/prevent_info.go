@@ -292,7 +292,11 @@ func (u *U) InsertUserPreventInfo() (err error) {
 		logging.Error(err)
 		return
 	}
-	if u.RiskLevel == "高风险" {
+	if u.RiskLevel == "高风险" && !GetUserFirstPushV(u.UserId, u.DomainTag) {
+		err = GoCache.Add(u.UserId+":"+u.DomainTag, 1, time.Minute*5)
+		if err != nil {
+			logging.Error(err)
+		}
 		//获取用户配置信息
 		c, err := secret.GetUserConfig(u.UserId)
 		if err != nil {
