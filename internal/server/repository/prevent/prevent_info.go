@@ -2,7 +2,6 @@ package prevent
 
 import (
 	secret "abs/models/secret"
-	"abs/pkg/enums"
 	"abs/pkg/logging"
 	"abs/pkg/util"
 	"github.com/patrickmn/go-cache"
@@ -329,45 +328,6 @@ func (u *U) InsertUserPreventInfo() (err error) {
 		}
 	}
 
-	//如果用户拦截到违规收集app数据则发送推送
-	if u.DomainType == enums.IsCollectInfo && !GetUserFirstPushV(u.UserId, u.DomainTag) {
-		err = GoCache.Add(u.UserId+":"+u.DomainTag, 1, cache.NoExpiration)
-		if err != nil {
-			logging.Error(err)
-		}
-		//获取用户配置信息
-		c, err := secret.GetUserConfig(u.UserId)
-		if err != nil {
-			logging.Error(err)
-		}
-		Isbuy := false
-		if c.IsBuy == 1 && c.ExpiredAt.Unix() > time.Now().Unix() {
-			Isbuy = true
-		}
-		//获取用户注册id
-		ui, err = secret.GetUserInfo(u.UserId, "")
-		if err != nil {
-			logging.Error(err)
-			return err
-		}
-		if Isbuy {
-			msg := "系统检测到" + u.DomainTag + "正在运行，该应用\n" +
-				"曾被国家通报存在违规收集个人信息行为，\n" +
-				"您已开启隐私安全模式，可以安全使用该应用。"
-			err := util.SendPushMsg(ui.RegisterId, "", msg)
-			if err != nil {
-				logging.Error(err)
-			}
-		} else {
-			msg := "系统检测到" + u.DomainTag + "正在运行，该应用\n" +
-				"曾被国家通报存在违规收集个人信息行为，\n" +
-				"您可以开启隐私安全模式进行拦截，点击查看详情。"
-			err := util.SendPushMsg(ui.RegisterId, "", msg)
-			if err != nil {
-				logging.Error(err)
-			}
-		}
-	}
 	return nil
 }
 

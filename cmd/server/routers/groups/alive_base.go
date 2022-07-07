@@ -29,6 +29,8 @@ func SecretBaseRouter(Router *gin.RouterGroup) {
 		apiRouterV2.POST("user_complain/2.0.0", secret.UserComplain)
 		// 用户拦截信息接口
 		apiRouterV2.POST("domain_prevent_add", secret.DomainPrevent)
+		// 违规收集类App安装推送接口
+		apiRouterV2.POST("collect_push", secret.CollectPush)
 		// 用户配置信息接口
 		apiRouterV2.POST("get_user_config", secret.GetUserConfigList)
 		// 用户购买会员回调接口

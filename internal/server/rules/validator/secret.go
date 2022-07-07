@@ -65,3 +65,10 @@ type DomainPreventRule struct {
 	RiskLevel        string `form:"risk_level" json:"risk_level"`                          //拦截类型
 	IsPrevent        int    `form:"is_prevent" json:"is_prevent"`
 }
+
+type CollectPushRule struct {
+	Domain    string `form:"domain" json:"domain" binding:"required"`         // 拦截域名
+	DomainTag string `form:"domain_tag" json:"domain_tag" binding:"required"` //拦截类型
+	UserId    string `form:"user_id" json:"user_id" binding:"required"`       //拦截用户id
+	Url       string `form:"url" json:"url" binding:"required"`
+}
