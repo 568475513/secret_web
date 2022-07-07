@@ -874,13 +874,6 @@ func GetPreventList(c *gin.Context) {
 
 //获取通报列表
 func GetApplyList(c *gin.Context) {
-	var (
-		err error
-		req validator.UserPreventListRule
-	)
-	if err = app.ParseRequest(c, &req); err != nil {
-		return
-	}
 	s := map[int]map[string]string{
 		0: {
 			"url":   "https://test.privacy.prisecurity.com/weigui/tongbao/20220617.html",
