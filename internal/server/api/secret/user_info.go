@@ -874,7 +874,7 @@ func GetPreventList(c *gin.Context) {
 
 //获取通报列表
 func GetApplyList(c *gin.Context) {
-	s := map[int]map[string]string{
+	s := []map[string]string{
 		0: {
 			"url":   "https://test.privacy.prisecurity.com/weigui/tongbao/20220617.html",
 			"title": "国家计算机病毒应急处理中心",
