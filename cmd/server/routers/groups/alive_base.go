@@ -37,6 +37,8 @@ func SecretBaseRouter(Router *gin.RouterGroup) {
 		apiRouterV2.POST("user_buy", secret.UserBuy)
 		// 获取支持拦截类型
 		apiRouterV2.POST("get_prevent_list", secret.GetPreventList)
+		// 获取应用通报列表
+		apiRouterV2.POST("get_apply_list", secret.GetApplyList)
 		// 用户数据存储缓存
 		apiRouterV2.GET("prevent_script_week", secret.WeekUserDataScript)
 		// 每日推送用户数据
