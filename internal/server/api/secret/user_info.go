@@ -362,7 +362,7 @@ func GetPreventList(c *gin.Context) {
 				"AppName": "贝壳找房",
 				"AppType": "违规收集软件",
 				"AppRank": "1",
-				"AppLink": "https://test.privacy.prisecurity.com/weigui/beikezhaofang.html",
+				"AppLink": "https://test.privacy.prisecurity.com/weigui/beihezhaofang.html",
 			},
 			2: {
 				"AppName": "安居客",
